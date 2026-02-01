@@ -97,6 +97,7 @@
         data-testid="product-information-media"
       >
         {{ media_gallery }}
+        {% render 'color-carousel', product: closest.product %}
       </div>
     {% endcapture %}
 

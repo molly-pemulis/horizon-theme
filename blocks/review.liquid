@@ -3,15 +3,17 @@
 {% liquid
   assign block_settings = block.settings
   assign product = closest.product
-  assign rating = product.metafields.reviews.rating.value.rating
-  assign scale_max = product.metafields.reviews.rating.value.scale_max
-  assign rating_count = product.metafields.reviews.rating_count
+  
+  # Use custom metafields for rating (rating_value and review_count)
+  assign rating = product.metafields.custom.rating_value.value | plus: 0
+  assign scale_max = 5
+  assign rating_count = product.metafields.custom.review_count.value | plus: 0
 
   if request.visual_preview_mode and product == blank
     assign product = collections.all.products.first
-    assign rating = product.metafields.reviews.rating.value | default: 4
-    assign scale_max = product.metafields.reviews.rating.value.scale_max | default: 5
-    assign rating_count = product.metafields.reviews.rating_count | default: 3
+    assign rating = 4
+    assign scale_max = 5
+    assign rating_count = 3
   endif
 -%}
 

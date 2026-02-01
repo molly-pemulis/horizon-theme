@@ -3,11 +3,17 @@
   ================================
   Replaces Shopify's {{ product | structured_data }}
   Includes custom metafields for richer SEO.
+  
+  - Uses custom.rating_value and custom.review_count for ratings
+  - Includes dateModified from product.updated_at
+  - Adds metafields as additionalProperty
 {% endcomment %}
 
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
   assign first_image = product.featured_image | default: product.images.first
+  assign rating = product.metafields.custom.rating_value.value | plus: 0
+  assign review_count = product.metafields.custom.review_count.value | plus: 0
 -%}
 
 <script type="application/ld+json">
@@ -17,6 +23,7 @@
   "name": {{ product.title | json }},
   "url": "{{ shop.url }}{{ product.url }}",
   "description": {{ product.description | strip_html | truncate: 5000 | json }},
+  "dateModified": "{{ product.updated_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
   {%- if first_image -%}
   "image": [
     {%- for image in product.images limit: 5 -%}
@@ -36,39 +43,103 @@
   {%- if current_variant.barcode != blank -%}
   "gtin": {{ current_variant.barcode | json }},
   {%- endif -%}
-  {%- if product.metafields.custom != blank -%}
+  
+  {%- comment %} Custom metafields as additionalProperty - exclude rating/review fields {% endcomment -%}
+  {%- assign has_custom_props = false -%}
+  {%- if product.metafields.custom.designer_name.value != blank -%}{%- assign has_custom_props = true -%}{%- endif -%}
+  {%- if product.metafields.custom.designer_origin.value != blank -%}{%- assign has_custom_props = true -%}{%- endif -%}
+  {%- if product.metafields.custom.fin_construction.value != blank -%}{%- assign has_custom_props = true -%}{%- endif -%}
+  
+  {%- if has_custom_props -%}
   "additionalProperty": [
-    {%- for metafield in product.metafields.custom -%}
-      {%- if metafield.value != blank -%}
+    {%- assign prop_count = 0 -%}
+    {%- if product.metafields.custom.designer_name.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
       {
         "@type": "PropertyValue",
-        "name": {{ metafield.key | replace: '_', ' ' | capitalize | json }},
-        "value": {{ metafield.value | json }}
-      }{% unless forloop.last %},{% endunless %}
-      {%- endif -%}
-    {%- endfor -%}
+        "name": "Designer",
+        "value": {{ product.metafields.custom.designer_name.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.designer_origin.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Origin",
+        "value": {{ product.metafields.custom.designer_origin.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.designer_bio.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Designer Bio",
+        "value": {{ product.metafields.custom.designer_bio.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.fin_construction.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Construction",
+        "value": {{ product.metafields.custom.fin_construction.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.height.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Height",
+        "value": {{ product.metafields.custom.height.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.base.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Base",
+        "value": {{ product.metafields.custom.base.value | json }}
+      }
+      {%- assign prop_count = prop_count | plus: 1 -%}
+    {%- endif -%}
+    {%- if product.metafields.custom.area.value != blank -%}
+      {%- if prop_count > 0 -%},{%- endif -%}
+      {
+        "@type": "PropertyValue",
+        "name": "Area",
+        "value": {{ product.metafields.custom.area.value | json }}
+      }
+    {%- endif -%}
   ],
   {%- endif -%}
+  
   "offers": {
     "@type": "Offer",
     "url": "{{ shop.url }}{{ product.url }}",
     "priceCurrency": {{ cart.currency.iso_code | json }},
     "price": {{ current_variant.price | divided_by: 100.0 | json }},
+    "priceValidUntil": "{{ 'now' | date: '%Y' | plus: 1 }}-12-31",
     "availability": "https://schema.org/{% if current_variant.available %}InStock{% else %}OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition",
     "seller": {
       "@type": "Organization",
       "name": {{ shop.name | json }}
     }
-    {%- if product.variants.size > 1 -%}
-    ,"itemCondition": "https://schema.org/NewCondition"
-    {%- endif -%}
   }
-  {%- if product.metafields.reviews.rating.value != blank -%}
+  
+  {%- comment %} Aggregate rating from custom metafields {% endcomment -%}
+  {%- if rating > 0 and review_count > 0 -%}
   ,"aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": {{ product.metafields.reviews.rating.value.rating | json }},
-    "bestRating": {{ product.metafields.reviews.rating.value.scale_max | json }},
-    "ratingCount": {{ product.metafields.reviews.rating_count | json }}
+    "ratingValue": {{ rating | json }},
+    "bestRating": 5,
+    "worstRating": 1,
+    "ratingCount": {{ review_count | json }}
   }
   {%- endif -%}
 }

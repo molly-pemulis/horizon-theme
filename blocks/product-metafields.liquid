@@ -120,19 +120,7 @@
       </div>
     {% endif %}
     
-    {% if product.metafields.custom.rating_value.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Rating</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.rating_value.value }}</dd>
-      </div>
-    {% endif %}
-    
-    {% if product.metafields.custom.review_count.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Reviews</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.review_count.value }}</dd>
-      </div>
-    {% endif %}
+    {% comment %} Rating and reviews displayed separately via product-rating block {% endcomment %}
   </dl>
 </div>
 

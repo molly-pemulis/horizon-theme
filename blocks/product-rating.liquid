@@ -1,0 +1,124 @@
+{% comment %}
+  PRODUCT RATING DISPLAY
+  ======================
+  Shows star rating and review count.
+  Place this block near the product title.
+{% endcomment %}
+
+{% liquid
+  assign product = closest.product
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+  
+  assign rating = product.metafields.custom.rating_value.value | plus: 0
+  assign review_count = product.metafields.custom.review_count.value | plus: 0
+%}
+
+{% if rating > 0 %}
+  <div class="product-rating" {{ block.shopify_attributes }}>
+    <div class="product-rating__stars" aria-label="Rated {{ rating }} out of 5 stars">
+      {% comment %} Generate 5 stars, filled based on rating {% endcomment %}
+      {% for i in (1..5) %}
+        {% if rating >= i %}
+          <span class="product-rating__star product-rating__star--full">★</span>
+        {% elsif rating >= i | minus: 0.5 %}
+          <span class="product-rating__star product-rating__star--half">★</span>
+        {% else %}
+          <span class="product-rating__star product-rating__star--empty">☆</span>
+        {% endif %}
+      {% endfor %}
+      <span class="product-rating__value">({{ rating }})</span>
+    </div>
+    {% if review_count > 0 %}
+      <span class="product-rating__count">{{ review_count }} review{% if review_count != 1 %}s{% endif %}</span>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .product-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm, 8px);
+    flex-wrap: wrap;
+  }
+  
+  .product-rating__stars {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+  }
+  
+  .product-rating__star {
+    font-size: 1.1em;
+    line-height: 1;
+  }
+  
+  .product-rating__star--full {
+    color: #f5a623;
+  }
+  
+  .product-rating__star--half {
+    color: #f5a623;
+    position: relative;
+  }
+  
+  .product-rating__star--empty {
+    color: #ccc;
+  }
+  
+  .product-rating__value {
+    font-size: 0.9em;
+    color: rgb(var(--color-foreground-rgb) / 0.7);
+    margin-left: 4px;
+  }
+  
+  .product-rating__count {
+    font-size: 0.9em;
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product rating",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Displays star rating from rating_value and review_count metafields."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product rating",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

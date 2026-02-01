@@ -1,0 +1,75 @@
+{% comment %}
+  CUSTOM PRODUCT SCHEMA (JSON-LD)
+  ================================
+  Replaces Shopify's {{ product | structured_data }}
+  Includes custom metafields for richer SEO.
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign first_image = product.featured_image | default: product.images.first
+-%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": "{{ shop.url }}{{ product.url }}",
+  "description": {{ product.description | strip_html | truncate: 5000 | json }},
+  {%- if first_image -%}
+  "image": [
+    {%- for image in product.images limit: 5 -%}
+      "{{ image | image_url: width: 1200 }}"{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ],
+  {%- endif -%}
+  {%- if product.vendor != blank -%}
+  "brand": {
+    "@type": "Brand",
+    "name": {{ product.vendor | json }}
+  },
+  {%- endif -%}
+  {%- if current_variant.sku != blank -%}
+  "sku": {{ current_variant.sku | json }},
+  {%- endif -%}
+  {%- if current_variant.barcode != blank -%}
+  "gtin": {{ current_variant.barcode | json }},
+  {%- endif -%}
+  {%- if product.metafields.custom != blank -%}
+  "additionalProperty": [
+    {%- for metafield in product.metafields.custom -%}
+      {%- if metafield.value != blank -%}
+      {
+        "@type": "PropertyValue",
+        "name": {{ metafield.key | replace: '_', ' ' | capitalize | json }},
+        "value": {{ metafield.value | json }}
+      }{% unless forloop.last %},{% endunless %}
+      {%- endif -%}
+    {%- endfor -%}
+  ],
+  {%- endif -%}
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ shop.url }}{{ product.url }}",
+    "priceCurrency": {{ cart.currency.iso_code | json }},
+    "price": {{ current_variant.price | divided_by: 100.0 | json }},
+    "availability": "https://schema.org/{% if current_variant.available %}InStock{% else %}OutOfStock{% endif %}",
+    "seller": {
+      "@type": "Organization",
+      "name": {{ shop.name | json }}
+    }
+    {%- if product.variants.size > 1 -%}
+    ,"itemCondition": "https://schema.org/NewCondition"
+    {%- endif -%}
+  }
+  {%- if product.metafields.reviews.rating.value != blank -%}
+  ,"aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ product.metafields.reviews.rating.value.rating | json }},
+    "bestRating": {{ product.metafields.reviews.rating.value.scale_max | json }},
+    "ratingCount": {{ product.metafields.reviews.rating_count | json }}
+  }
+  {%- endif -%}
+}
+</script>

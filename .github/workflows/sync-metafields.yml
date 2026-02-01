@@ -3,6 +3,10 @@ name: Sync Metafield Keys
 on:
   push:
     branches: [main]
+  schedule:
+    # Run daily at midnight UTC to catch any new metafield definitions
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   sync-metafields:
@@ -19,14 +23,14 @@ jobs:
       - name: Install dependencies
         run: pip install requests
       
-      - name: Sync metafield keys from Shopify
+      - name: Generate metafields Liquid file
         env:
           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
         run: |
           python3 << 'EOF'
           import requests
-          import re
           import os
+          from datetime import datetime
 
           SHOP_URL = "7aa0b1-14.myshopify.com"
           API_VERSION = "2024-01"
@@ -34,7 +38,7 @@ jobs:
           THEME_FILE = "blocks/product-metafields.liquid"
 
           if not ACCESS_TOKEN:
-              print("No SHOPIFY_ADMIN_TOKEN set, skipping sync")
+              print("No SHOPIFY_ADMIN_TOKEN set, skipping")
               exit(0)
 
           # Fetch metafield definitions
@@ -45,6 +49,8 @@ jobs:
               edges {
                 node {
                   key
+                  name
+                  type { name }
                 }
               }
             }
@@ -64,38 +70,111 @@ jobs:
           
           data = response.json()
           edges = data.get('data', {}).get('metafieldDefinitions', {}).get('edges', [])
-          keys = [e['node']['key'] for e in edges]
           
-          if not keys:
-              print("No metafield keys found")
+          if not edges:
+              print("No metafield definitions found")
               exit(0)
           
-          key_list = ','.join(keys)
-          print(f"Found keys: {key_list}")
+          fields = [{'key': e['node']['key'], 'name': e['node']['name']} for e in edges]
+          print(f"Found {len(fields)} metafield definitions")
           
-          # Update theme file
-          with open(THEME_FILE, 'r') as f:
-              content = f.read()
+          # Generate field blocks
+          field_blocks = []
+          for f in fields:
+              block = f'''    {{% if product.metafields.custom.{f['key']}.value != blank %}}
+              <div class="product-metafields__item">
+                <dt class="product-metafields__label">{f['name']}</dt>
+                <dd class="product-metafields__value">{{{{ product.metafields.custom.{f['key']}.value }}}}</dd>
+              </div>
+            {{% endif %}}'''
+              field_blocks.append(block)
           
-          pattern = r"assign metafield_keys = '[^']*' \| split: ','"
-          replacement = f"assign metafield_keys = '{key_list}' | split: ','"
+          fields_html = '\n'.join(field_blocks)
           
-          if re.search(pattern, content):
-              new_content = re.sub(pattern, replacement, content)
-              if new_content != content:
-                  with open(THEME_FILE, 'w') as f:
-                      f.write(new_content)
-                  print("Updated metafield keys")
-              else:
-                  print("No changes needed")
-          else:
-              print("Could not find metafield_keys in theme file")
+          liquid = f'''{{% comment %}}
+            PRODUCT METAFIELDS - AUTO-GENERATED
+            ====================================
+            Generated: {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}
+            Fields: {len(fields)}
+            
+            DO NOT EDIT - This file is auto-generated from Shopify metafield definitions.
+            Add new metafields in Shopify Admin > Settings > Custom data > Metafields
+          {{% endcomment %}}
+
+          {{% liquid
+            assign product = closest.product
+            if product == blank and request.visual_preview_mode
+              assign product = collections.all.products.first
+            endif
+          %}}
+
+          <div class="product-metafields" {{{{ block.shopify_attributes }}}}>
+            {{% if block.settings.show_heading and block.settings.heading != blank %}}
+              <h3 class="product-metafields__heading {{{{ block.settings.heading_size }}}}">
+                {{{{ block.settings.heading }}}}
+              </h3>
+            {{% endif %}}
+            
+            <dl class="product-metafields__list">
+          {fields_html}
+            </dl>
+          </div>
+
+          {{% stylesheet %}}
+            .product-metafields {{ width: 100%; }}
+            .product-metafields__heading {{ margin-bottom: var(--margin-sm); }}
+            .product-metafields__list {{ display: grid; gap: var(--gap-xs); margin: 0; }}
+            .product-metafields__item {{
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              gap: var(--gap-md);
+              padding: var(--padding-xs) 0;
+              border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+            }}
+            .product-metafields__item:last-child {{ border-bottom: none; }}
+            .product-metafields__label {{
+              font-weight: var(--font-weight-semibold);
+              color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+              flex-shrink: 0;
+            }}
+            .product-metafields__value {{ margin: 0; text-align: right; max-width: 65%; }}
+          {{% endstylesheet %}}
+
+          {{% schema %}}
+          {{
+            "name": "Product specs",
+            "tag": null,
+            "settings": [
+              {{ "type": "paragraph", "content": "Auto-generated from Shopify metafields." }},
+              {{ "type": "checkbox", "id": "show_heading", "label": "Show heading", "default": true }},
+              {{ "type": "text", "id": "heading", "label": "Heading", "default": "Specifications" }},
+              {{ "type": "select", "id": "heading_size", "label": "Heading size", "options": [
+                {{ "value": "h4", "label": "Small" }},
+                {{ "value": "h3", "label": "Medium" }},
+                {{ "value": "h2", "label": "Large" }}
+              ], "default": "h4" }},
+              {{ "type": "range", "id": "padding-block-start", "label": "Top padding", "min": 0, "max": 100, "step": 1, "unit": "px", "default": 16 }},
+              {{ "type": "range", "id": "padding-block-end", "label": "Bottom padding", "min": 0, "max": 100, "step": 1, "unit": "px", "default": 16 }}
+            ],
+            "presets": [{{ "name": "Product specs", "category": "Product" }}]
+          }}
+          {{% endschema %}}'''
+
+          with open(THEME_FILE, 'w') as f:
+              f.write(liquid)
+          
+          print(f"Generated {THEME_FILE}")
           EOF
 
-      - name: Commit changes if any
+      - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || git commit -m "Sync metafield keys from Shopify"
-          git push || echo "Nothing to push"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-generate metafields from Shopify definitions"
+            git push
+          fi

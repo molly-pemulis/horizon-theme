@@ -7,8 +7,6 @@
   Just assign metafields to products in Shopify admin.
   If metafield exists and has value → it shows.
   If metafield is empty or doesn't exist → nothing shows.
-  
-  No product-type conditionals. No hardcoded field names.
 {% endcomment %}
 
 {% liquid
@@ -17,18 +15,6 @@
     assign product = collections.all.products.first
   endif
 %}
-
-{% liquid
-  # Build array of metafields that have values
-  assign has_metafields = false
-  assign custom = product.metafields.custom
-%}
-
-{% comment %} Debug: show what we have {% endcomment %}
-<div style="background:#ffc;padding:10px;margin:10px 0;font-size:12px;">
-  DEBUG: Product={{ product.title }}<br>
-  custom namespace exists: {{ custom | json | slice: 0, 100 }}
-</div>
 
 <div 
   class="product-metafields"
@@ -41,33 +27,40 @@
   {% endif %}
   
   <dl class="product-metafields__list">
-    {% comment %} Try direct access to known metafields {% endcomment %}
-    {% if product.metafields.custom.designer_name.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Designer Name</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.designer_name.value }}</dd>
-      </div>
-    {% endif %}
+    {% comment %} 
+      Loop through all custom metafields
+      Shopify stores them as product.metafields.custom.<key>
+      We access them via the json filter to get all keys
+    {% endcomment %}
     
-    {% if product.metafields.custom.designer_origin.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Designer Origin</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.designer_origin.value }}</dd>
-      </div>
-    {% endif %}
-    
-    {% if product.metafields.custom.designer_bio.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Designer Bio</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.designer_bio.value }}</dd>
-      </div>
-    {% endif %}
-    
-    {% if product.metafields.custom.fin_construction.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Fin Construction</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.fin_construction.value }}</dd>
-      </div>
+    {% assign custom_json = product.metafields.custom | json %}
+    {% if custom_json != '{}' and custom_json != 'null' and custom_json != blank %}
+      
+      {% comment %} Known metafield keys - add more as needed {% endcomment %}
+      {% assign metafield_keys = 'designer_name,designer_origin,designer_bio,fin_construction,rating_value,review_count,height,base,area,front_height,front_base,front_area,rear_height,rear_base,rear_area,brand_buying_guide,availability' | split: ',' %}
+      
+      {% for key in metafield_keys %}
+        {% assign mf = product.metafields.custom[key] %}
+        {% if mf.value != blank %}
+          <div class="product-metafields__item">
+            <dt class="product-metafields__label">
+              {{ key | replace: '_', ' ' | capitalize }}
+            </dt>
+            <dd class="product-metafields__value">
+              {% if mf.type == 'boolean' %}
+                {% if mf.value %}Yes{% else %}No{% endif %}
+              {% elsif mf.type == 'list.single_line_text_field' %}
+                {{ mf.value | join: ', ' }}
+              {% elsif mf.type == 'rich_text_field' or mf.type == 'multi_line_text_field' %}
+                {{ mf.value }}
+              {% else %}
+                {{ mf.value }}
+              {% endif %}
+            </dd>
+          </div>
+        {% endif %}
+      {% endfor %}
+      
     {% endif %}
   </dl>
 </div>
@@ -124,7 +117,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Displays all custom metafields from the product. Metafields must be in the 'custom' namespace."
+      "content": "Displays custom metafields from the product."
     },
     {
       "type": "checkbox",

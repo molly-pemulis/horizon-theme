@@ -26,6 +26,7 @@
   endfor
 %}
 
+<!-- DEBUG: product={{ product.title }}, keys={{ metafield_keys | join: ',' }}, visible={{ visible_metafields | join: ',' }} -->
 {% if visible_metafields.size > 0 %}
   <div 
     class="product-metafields"

@@ -1,8 +1,8 @@
 {% comment %}
-  COLOR CAROUSEL
+  IMAGE CAROUSEL
   ==============
-  Horizontal scrollable carousel of variant color images.
-  Click to preview (changes main image) but doesn't select variant.
+  Horizontal scrollable carousel of ALL product images.
+  Click to preview (changes main image).
   
   Usage: {% render 'color-carousel', product: product %}
 {% endcomment %}
@@ -12,50 +12,33 @@
   if product == blank and request.visual_preview_mode
     assign product = collections.all.products.first
   endif
-  
-  # Get available variants with images
-  assign has_variant_images = false
-  for variant in product.variants
-    if variant.available and variant.featured_image != blank
-      assign has_variant_images = true
-      break
-    endif
-  endfor
 %}
 
-{% if has_variant_images %}
+{% if product.images.size > 1 %}
   <div class="color-carousel" data-product-id="{{ product.id }}">
     <div class="color-carousel__track">
-      {%- assign shown_images = '' -%}
-      {%- for variant in product.variants -%}
-        {%- if variant.available and variant.featured_image != blank -%}
-          {%- assign image_src = variant.featured_image | image_url: width: 100 -%}
-          {%- unless shown_images contains image_src -%}
-            <button 
-              type="button"
-              class="color-carousel__item"
-              data-image-url="{{ variant.featured_image | image_url: width: 800 }}"
-              data-variant-title="{{ variant.title | escape }}"
-              aria-label="Preview {{ variant.title }}"
-            >
-              <img 
-                src="{{ image_src }}" 
-                alt="{{ variant.title | escape }}"
-                loading="lazy"
-                width="60"
-                height="60"
-              >
-            </button>
-            {%- capture shown_images -%}{{ shown_images }}|{{ image_src }}{%- endcapture -%}
-          {%- endunless -%}
-        {%- endif -%}
+      {%- for image in product.images -%}
+        <button 
+          type="button"
+          class="color-carousel__item{% if forloop.first %} color-carousel__item--active{% endif %}"
+          data-image-url="{{ image | image_url: width: 800 }}"
+          data-image-index="{{ forloop.index0 }}"
+          aria-label="View image {{ forloop.index }}"
+        >
+          <img 
+            src="{{ image | image_url: width: 100 }}" 
+            alt="{{ image.alt | default: product.title | escape }}"
+            loading="lazy"
+            width="60"
+            height="60"
+          >
+        </button>
       {%- endfor -%}
     </div>
   </div>
   
   <script>
     (function() {
-      // Only init once
       if (window.colorCarouselInit) return;
       window.colorCarouselInit = true;
       
@@ -73,7 +56,7 @@
           mainImage.srcset = '';
         }
         
-        // Update active state in carousel
+        // Update active state
         const carousel = item.closest('.color-carousel');
         carousel.querySelectorAll('.color-carousel__item').forEach(i => {
           i.classList.remove('color-carousel__item--active');

@@ -11,7 +11,7 @@
   assign price_dollars = current_variant.price | divided_by: 100.0
 -%}
 
-<div style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;overflow:hidden;" data-nosnippet aria-hidden="true">
+<div class="sr-only" data-nosnippet>
   <p>
     {{ product.title }} is available at {{ shop.name }} for ${{ price_dollars }} USD.
     {% if in_stock %}

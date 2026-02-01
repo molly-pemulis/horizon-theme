@@ -1,0 +1,60 @@
+{% comment %}
+  CASCADING VARIANT PICKER BLOCK
+  ==============================
+  Drop-in replacement for standard variant picker.
+  Use this block instead of variant-picker for cascading behavior.
+{% endcomment %}
+
+{% liquid
+  assign product_resource = closest.product
+  if request.visual_preview_mode and product_resource == blank
+    assign product_resource = collections.all.products.first
+  endif
+%}
+
+{% unless product_resource == blank %}
+  {% render 'cascading-variant-picker', product_resource: product_resource %}
+{% endunless %}
+
+{% schema %}
+{
+  "name": "Cascading variant picker",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Displays variant options in cascading dropdowns. Unavailable variants are hidden. Each dropdown enables after the previous selection."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cascading variant picker",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,61 @@
+{% comment %}
+  COLOR CAROUSEL BLOCK
+  ====================
+  Add this block to show scrollable color variant previews.
+{% endcomment %}
+
+{% liquid
+  assign product_resource = closest.product
+  if request.visual_preview_mode and product_resource == blank
+    assign product_resource = collections.all.products.first
+  endif
+%}
+
+{% unless product_resource == blank %}
+  <div class="color-carousel-block" {{ block.shopify_attributes }}>
+    {% render 'color-carousel', product: product_resource %}
+  </div>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "Color carousel",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows scrollable thumbnails of color variants. Click to preview without selecting."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Color carousel",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

@@ -18,55 +18,59 @@
   endif
 %}
 
-{% if product.metafields.custom != blank %}
-  <div 
-    class="product-metafields"
-    {{ block.shopify_attributes }}
-  >
-    {% if block.settings.show_heading and block.settings.heading != blank %}
-      <h3 class="product-metafields__heading {{ block.settings.heading_size }}">
-        {{ block.settings.heading }}
-      </h3>
+{% liquid
+  # Build array of metafields that have values
+  assign has_metafields = false
+  assign custom = product.metafields.custom
+%}
+
+{% comment %} Debug: show what we have {% endcomment %}
+<div style="background:#ffc;padding:10px;margin:10px 0;font-size:12px;">
+  DEBUG: Product={{ product.title }}<br>
+  custom namespace exists: {{ custom | json | slice: 0, 100 }}
+</div>
+
+<div 
+  class="product-metafields"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.show_heading and block.settings.heading != blank %}
+    <h3 class="product-metafields__heading {{ block.settings.heading_size }}">
+      {{ block.settings.heading }}
+    </h3>
+  {% endif %}
+  
+  <dl class="product-metafields__list">
+    {% comment %} Try direct access to known metafields {% endcomment %}
+    {% if product.metafields.custom.designer_name.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer Name</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_name.value }}</dd>
+      </div>
     {% endif %}
     
-    <dl class="product-metafields__list">
-      {% for metafield in product.metafields.custom %}
-        {% if metafield.value != blank %}
-          <div class="product-metafields__item">
-            <dt class="product-metafields__label">
-              {{ metafield.key | replace: '_', ' ' | capitalize }}
-            </dt>
-            <dd class="product-metafields__value">
-              {% case metafield.type %}
-                {% when 'boolean' %}
-                  {% if metafield.value %}Yes{% else %}No{% endif %}
-                {% when 'list.single_line_text_field' %}
-                  {{ metafield.value | join: ', ' }}
-                {% when 'rich_text_field' %}
-                  {{ metafield.value | metafield_tag }}
-                {% when 'file_reference' %}
-                  {% if metafield.value.media_type == 'IMAGE' %}
-                    <img 
-                      src="{{ metafield.value | image_url: width: 200 }}" 
-                      alt="{{ metafield.key }}"
-                      loading="lazy"
-                      width="200"
-                    >
-                  {% endif %}
-                {% when 'url' %}
-                  <a href="{{ metafield.value }}" target="_blank" rel="noopener">
-                    {{ metafield.value | truncate: 40 }}
-                  </a>
-                {% else %}
-                  {{ metafield.value }}
-              {% endcase %}
-            </dd>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </dl>
-  </div>
-{% endif %}
+    {% if product.metafields.custom.designer_origin.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer Origin</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_origin.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.designer_bio.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer Bio</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_bio.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.fin_construction.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Fin Construction</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.fin_construction.value }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+</div>
 
 {% stylesheet %}
   .product-metafields {

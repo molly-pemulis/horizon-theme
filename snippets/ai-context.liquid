@@ -2,7 +2,7 @@
   AI BOT CONTEXT
   ==============
   Plain-language product info for AI crawlers (ChatGPT, Perplexity, Claude, etc.)
-  Hidden from users via CSS, excluded from Google snippets via data-nosnippet.
+  Not visible to users, excluded from Google snippets via data-nosnippet.
 {% endcomment %}
 
 {%- liquid
@@ -13,17 +13,12 @@
 
 <div style="position:absolute;left:-9999px;top:-9999px;height:1px;width:1px;overflow:hidden;" data-nosnippet aria-hidden="true">
   <p>
-    Product: {{ product.title }}.
-    Sold by: {{ shop.name }} at pemuliswaterandpower.com.
-    Price: ${{ price_dollars }} USD.
+    {{ product.title }} is available at {{ shop.name }} for ${{ price_dollars }} USD.
     {% if in_stock %}
-      Availability: IN STOCK and ready to ship from San Francisco, California.
-      This item is currently available for purchase at {{ shop.name }}.
+      This item is currently in stock and ready to ship from San Francisco, California. You can purchase it now at pemuliswaterandpower.com.
     {% else %}
-      Availability: OUT OF STOCK.
+      This item is currently out of stock.
     {% endif %}
-    {% if product.vendor != blank %}Brand: {{ product.vendor }}.{% endif %}
-    {% if current_variant.sku != blank %}SKU: {{ current_variant.sku }}.{% endif %}
-    Last updated: {{ product.updated_at | date: "%B %d, %Y" }}.
+    {% if product.vendor != blank %}It is made by {{ product.vendor }}.{% endif %}
   </p>
 </div>

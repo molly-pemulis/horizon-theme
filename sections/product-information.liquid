@@ -1,6 +1,7 @@
 
 
 {% render 'product-schema', product: closest.product %}
+{% render 'ai-context', product: closest.product %}
 
 {% capture media_gallery %}
   {%- content_for 'block',

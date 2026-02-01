@@ -1,8 +1,10 @@
 {% comment %}
-  DYNAMIC METAFIELD DISPLAY
-  =========================
-  Only renders metafields that actually exist on this product.
-  No empty checks for fields that don't exist.
+  PRODUCT METAFIELDS DISPLAY
+  ==========================
+  Renders all custom metafields that have values for this product.
+  
+  The metafield_keys list is synced from Shopify via sync_metafield_keys.py
+  Run that script whenever you add new metafield definitions.
 {% endcomment %}
 
 {% liquid
@@ -11,11 +13,20 @@
     assign product = collections.all.products.first
   endif
   
-  # Get JSON of custom metafields - this contains only fields WITH values
-  assign custom_json = product.metafields.custom | json
+  # SYNCED FROM SHOPIFY - run sync_metafield_keys.py to update this list
+  assign metafield_keys = 'designer_name,designer_origin,designer_bio,fin_construction,height,base,area,front_height,front_base,front_area,rear_height,rear_base,rear_area,brand_buying_guide,availability,rating_value,review_count' | split: ','
+  
+  # Build array of metafields that have values
+  assign visible_metafields = '' | split: ','
+  for key in metafield_keys
+    assign mf = product.metafields.custom[key]
+    if mf.value != blank
+      assign visible_metafields = visible_metafields | push: key
+    endif
+  endfor
 %}
 
-{% if custom_json != '{}' and custom_json != 'null' and custom_json != blank %}
+{% if visible_metafields.size > 0 %}
   <div 
     class="product-metafields"
     {{ block.shopify_attributes }}
@@ -26,60 +37,31 @@
       </h3>
     {% endif %}
     
-    <dl class="product-metafields__list" data-metafields>
-      {% comment %} Populated by JavaScript from actual metafield data {% endcomment %}
+    <dl class="product-metafields__list">
+      {% for key in visible_metafields %}
+        {% assign mf = product.metafields.custom[key] %}
+        <div class="product-metafields__item">
+          <dt class="product-metafields__label">
+            {{ key | replace: '_', ' ' | replace: 'bio', 'Bio' | replace: 'name', 'Name' | replace: 'origin', 'Origin' | capitalize }}
+          </dt>
+          <dd class="product-metafields__value">
+            {% case mf.type %}
+              {% when 'boolean' %}
+                {% if mf.value %}Yes{% else %}No{% endif %}
+              {% when 'list.single_line_text_field' %}
+                {{ mf.value | join: ', ' }}
+              {% when 'multi_line_text_field' %}
+                {{ mf.value | newline_to_br }}
+              {% when 'rich_text_field' %}
+                {{ mf.value | metafield_tag }}
+              {% else %}
+                {{ mf.value }}
+            {% endcase %}
+          </dd>
+        </div>
+      {% endfor %}
     </dl>
   </div>
-  
-  <script type="application/json" data-product-metafields>
-    {{ custom_json }}
-  </script>
-  
-  <script>
-    (function() {
-      const dataEl = document.querySelector('[data-product-metafields]');
-      const listEl = document.querySelector('[data-metafields]');
-      if (!dataEl || !listEl) return;
-      
-      try {
-        const metafields = JSON.parse(dataEl.textContent);
-        
-        // Skip these internal/system fields
-        const skipFields = ['country_of_origin'];
-        
-        // Nice label formatting
-        const formatLabel = (key) => {
-          return key
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, c => c.toUpperCase());
-        };
-        
-        let html = '';
-        for (const [key, value] of Object.entries(metafields)) {
-          if (skipFields.includes(key)) continue;
-          if (value === null || value === '' || value === undefined) continue;
-          
-          // Handle different value types
-          let displayValue = value;
-          if (typeof value === 'object' && value !== null) {
-            // Could be rich text or other complex type
-            displayValue = value.value || JSON.stringify(value);
-          }
-          
-          html += `
-            <div class="product-metafields__item">
-              <dt class="product-metafields__label">${formatLabel(key)}</dt>
-              <dd class="product-metafields__value">${displayValue}</dd>
-            </div>
-          `;
-        }
-        
-        listEl.innerHTML = html;
-      } catch(e) {
-        console.error('Metafields parse error:', e);
-      }
-    })();
-  </script>
 {% endif %}
 
 {% stylesheet %}
@@ -119,7 +101,7 @@
   .product-metafields__value {
     margin: 0;
     text-align: right;
-    max-width: 60%;
+    max-width: 65%;
   }
 {% endstylesheet %}
 
@@ -130,7 +112,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Dynamically displays all custom metafields that exist on this product."
+      "content": "Displays custom metafields. Run sync_metafield_keys.py to update field list."
     },
     {
       "type": "checkbox",

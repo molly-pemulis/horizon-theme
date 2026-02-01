@@ -1,0 +1,101 @@
+name: Sync Metafield Keys
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync-metafields:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install requests
+      
+      - name: Sync metafield keys from Shopify
+        env:
+          SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import requests
+          import re
+          import os
+
+          SHOP_URL = "7aa0b1-14.myshopify.com"
+          API_VERSION = "2024-01"
+          ACCESS_TOKEN = os.environ.get('SHOPIFY_ADMIN_TOKEN')
+          THEME_FILE = "blocks/product-metafields.liquid"
+
+          if not ACCESS_TOKEN:
+              print("No SHOPIFY_ADMIN_TOKEN set, skipping sync")
+              exit(0)
+
+          # Fetch metafield definitions
+          url = f"https://{SHOP_URL}/admin/api/{API_VERSION}/graphql.json"
+          query = """
+          {
+            metafieldDefinitions(ownerType: PRODUCT, first: 100, namespace: "custom") {
+              edges {
+                node {
+                  key
+                }
+              }
+            }
+          }
+          """
+          
+          headers = {
+              "X-Shopify-Access-Token": ACCESS_TOKEN,
+              "Content-Type": "application/json"
+          }
+          
+          response = requests.post(url, json={"query": query}, headers=headers)
+          
+          if response.status_code != 200:
+              print(f"API error: {response.status_code}")
+              exit(1)
+          
+          data = response.json()
+          edges = data.get('data', {}).get('metafieldDefinitions', {}).get('edges', [])
+          keys = [e['node']['key'] for e in edges]
+          
+          if not keys:
+              print("No metafield keys found")
+              exit(0)
+          
+          key_list = ','.join(keys)
+          print(f"Found keys: {key_list}")
+          
+          # Update theme file
+          with open(THEME_FILE, 'r') as f:
+              content = f.read()
+          
+          pattern = r"assign metafield_keys = '[^']*' \| split: ','"
+          replacement = f"assign metafield_keys = '{key_list}' | split: ','"
+          
+          if re.search(pattern, content):
+              new_content = re.sub(pattern, replacement, content)
+              if new_content != content:
+                  with open(THEME_FILE, 'w') as f:
+                      f.write(new_content)
+                  print("Updated metafield keys")
+              else:
+                  print("No changes needed")
+          else:
+              print("Could not find metafield_keys in theme file")
+          EOF
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Sync metafield keys from Shopify"
+          git push || echo "Nothing to push"

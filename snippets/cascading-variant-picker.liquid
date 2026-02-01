@@ -222,20 +222,16 @@
     }
 
     updateMainImage(imageUrl) {
-      // Try multiple selectors for the main product image
-      const mainImage = document.querySelector(
-        '.product-media-gallery__image img, ' +
-        '.media-gallery img, ' +
-        '[data-product-media] img, ' +
-        '.product__media img'
-      );
+      // Horizon uses .product-media__image for the main product image
+      // Target the first one (main/featured image)
+      const mainImage = document.querySelector('.product-media__image');
       
       if (mainImage) {
         mainImage.src = imageUrl;
-        mainImage.srcset = '';
+        mainImage.srcset = ''; // Clear srcset so src takes effect
       }
       
-      // Dispatch event for other components
+      // Also dispatch event for other components that might listen
       this.dispatchEvent(new CustomEvent('variant:image-changed', {
         bubbles: true,
         detail: { imageUrl }

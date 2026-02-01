@@ -2,9 +2,6 @@
   PRODUCT METAFIELDS DISPLAY
   ==========================
   Renders all custom metafields that have values for this product.
-  
-  The metafield_keys list is synced from Shopify via sync_metafield_keys.py
-  Run that script whenever you add new metafield definitions.
 {% endcomment %}
 
 {% liquid
@@ -12,58 +9,132 @@
   if product == blank and request.visual_preview_mode
     assign product = collections.all.products.first
   endif
-  
-  # SYNCED FROM SHOPIFY - run sync_metafield_keys.py to update this list
-  assign metafield_keys = 'designer_name,designer_origin,designer_bio,fin_construction,height,base,area,front_height,front_base,front_area,rear_height,rear_base,rear_area,brand_buying_guide,availability,rating_value,review_count' | split: ','
-  
-  # Build array of metafields that have values
-  assign visible_metafields = '' | split: ','
-  for key in metafield_keys
-    assign mf = product.metafields.custom[key]
-    if mf.value != blank
-      assign visible_metafields = visible_metafields | push: key
-    endif
-  endfor
 %}
 
-<!-- DEBUG: product={{ product.title }}, keys={{ metafield_keys | join: ',' }}, visible={{ visible_metafields | join: ',' }} -->
-{% if visible_metafields.size > 0 %}
-  <div 
-    class="product-metafields"
-    {{ block.shopify_attributes }}
-  >
-    {% if block.settings.show_heading and block.settings.heading != blank %}
-      <h3 class="product-metafields__heading {{ block.settings.heading_size }}">
-        {{ block.settings.heading }}
-      </h3>
+<div 
+  class="product-metafields"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.show_heading and block.settings.heading != blank %}
+    <h3 class="product-metafields__heading {{ block.settings.heading_size }}">
+      {{ block.settings.heading }}
+    </h3>
+  {% endif %}
+  
+  <dl class="product-metafields__list">
+    {% if product.metafields.custom.designer_name.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_name.value }}</dd>
+      </div>
     {% endif %}
     
-    <dl class="product-metafields__list">
-      {% for key in visible_metafields %}
-        {% assign mf = product.metafields.custom[key] %}
-        <div class="product-metafields__item">
-          <dt class="product-metafields__label">
-            {{ key | replace: '_', ' ' | replace: 'bio', 'Bio' | replace: 'name', 'Name' | replace: 'origin', 'Origin' | capitalize }}
-          </dt>
-          <dd class="product-metafields__value">
-            {% case mf.type %}
-              {% when 'boolean' %}
-                {% if mf.value %}Yes{% else %}No{% endif %}
-              {% when 'list.single_line_text_field' %}
-                {{ mf.value | join: ', ' }}
-              {% when 'multi_line_text_field' %}
-                {{ mf.value | newline_to_br }}
-              {% when 'rich_text_field' %}
-                {{ mf.value | metafield_tag }}
-              {% else %}
-                {{ mf.value }}
-            {% endcase %}
-          </dd>
-        </div>
-      {% endfor %}
-    </dl>
-  </div>
-{% endif %}
+    {% if product.metafields.custom.designer_origin.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Origin</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_origin.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.designer_bio.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer Bio</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_bio.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.fin_construction.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Construction</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.fin_construction.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.height.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Height</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.height.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.base.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Base</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.base.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.area.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Area</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.area.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.front_height.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Front Height</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_height.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.front_base.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Front Base</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_base.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.front_area.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Front Area</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_area.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.rear_height.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rear Height</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.rear_height.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.rear_base.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rear Base</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.rear_base.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.rear_area.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rear Area</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.rear_area.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.brand_buying_guide.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Buying Guide</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.brand_buying_guide.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.rating_value.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rating</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.rating_value.value }}</dd>
+      </div>
+    {% endif %}
+    
+    {% if product.metafields.custom.review_count.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Reviews</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.review_count.value }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+</div>
 
 {% stylesheet %}
   .product-metafields {
@@ -113,7 +184,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Displays custom metafields. Run sync_metafield_keys.py to update field list."
+      "content": "Displays custom metafields from the product."
     },
     {
       "type": "checkbox",

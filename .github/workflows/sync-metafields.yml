@@ -7,6 +7,9 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   sync-metafields:
     runs-on: ubuntu-latest

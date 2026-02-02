@@ -1,6 +1,6 @@
 {%- comment -%}
-  Subcollection Navigation
-  Displays linked collections from metafields as nav pills
+  Subcollection Navigation — renders nav pills from collection metafields
+  Replaces heavy filters block in main-collection.liquid
   Metafields: custom.subcollections, custom.subcollections_brands
 {%- endcomment -%}
 
@@ -10,7 +10,7 @@
 -%}
 
 {% if subcollections != blank or subcollections_brands != blank %}
-  <nav class="subcollection-nav" {{ block.shopify_attributes }}>
+  <nav class="subcollection-nav">
     {% if subcollections != blank %}
       <div class="subcollection-nav__group">
         <span class="subcollection-nav__label">Category</span>
@@ -43,28 +43,28 @@
   </nav>
 {% endif %}
 
-{% stylesheet %}
+{% style %}
   .subcollection-nav {
     display: flex;
     flex-direction: column;
-    gap: var(--gap-md);
-    padding: var(--padding-md) 0;
+    gap: 1rem;
+    padding: 1rem 0;
   }
   .subcollection-nav__group {
     display: flex;
     flex-direction: column;
-    gap: var(--gap-xs);
+    gap: 0.5rem;
   }
   .subcollection-nav__label {
     font-weight: 600;
-    font-size: var(--font-size-sm);
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   .subcollection-nav__list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-xs);
+    gap: 0.5rem;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -72,28 +72,14 @@
   .subcollection-nav__link {
     display: inline-block;
     padding: 0.5rem 1rem;
-    border: 1px solid rgb(var(--color-foreground-rgb) / 0.2);
+    border: 1px solid rgba(0,0,0,0.15);
     border-radius: 2rem;
-    font-size: var(--font-size-sm);
+    font-size: 0.85rem;
     text-decoration: none;
     transition: all 0.2s;
   }
   .subcollection-nav__link:hover {
-    background: rgb(var(--color-foreground-rgb) / 0.05);
-    border-color: rgb(var(--color-foreground-rgb) / 0.4);
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.3);
   }
-{% endstylesheet %}
-
-{% schema %}
-{
-  "name": "Subcollection Nav",
-  "tag": null,
-  "settings": [],
-  "presets": [
-    {
-      "name": "Subcollection Nav",
-      "category": "Collection"
-    }
-  ]
-}
-{% endschema %}
+{% endstyle %}

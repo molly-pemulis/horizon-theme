@@ -72,6 +72,12 @@
             "padding-inline-end": 0
           },
           "blocks": {
+            "availability_status_aWPgxC": {
+              "type": "availability-status",
+              "name": "Availability Status",
+              "settings": {},
+              "blocks": {}
+            },
             "sku_jjdhzd": {
               "type": "sku",
               "name": "t:names.product_sku",
@@ -213,11 +219,6 @@
                 "price_tVjtKg"
               ]
             },
-            "availability_status_pemulis": {
-              "type": "availability-status",
-              "name": "Availability Status",
-              "settings": {}
-            },
             "cascading_variant_picker_zQjVLH": {
               "type": "cascading-variant-picker",
               "name": "Cascading variant picker",
@@ -302,11 +303,11 @@
             }
           },
           "block_order": [
+            "availability_status_aWPgxC",
             "sku_jjdhzd",
             "swatches_frFbUc",
             "review_f8dWdY",
             "group_icgrde",
-            "availability_status_pemulis",
             "cascading_variant_picker_zQjVLH",
             "buy_buttons_eYQEYi",
             "text_aEtTtq",

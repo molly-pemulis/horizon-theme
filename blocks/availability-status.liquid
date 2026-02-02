@@ -1,8 +1,10 @@
-{%- comment -%}
-  Availability status block
-  Displays custom.availability metafield in prominent orange text
-  Used for stock status, pre-order notices, etc.
-{%- endcomment -%}
+<style>
+  .custom-orange-text {
+    color: #FFF;
+    font-size: 4px;
+    margin: 2px 10;
+  }
+</style>
 
 {%- liquid
   assign product = closest.product
@@ -12,19 +14,10 @@
 -%}
 
 {% if product.metafields.custom.availability != blank %}
-  <div class="availability-status" {{ block.shopify_attributes }}>
+  <div class="custom-orange-text" {{ block.shopify_attributes }}>
     {{ product.metafields.custom.availability }}
   </div>
 {% endif %}
-
-{% stylesheet %}
-  .availability-status {
-    color: #FF6B35;
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    padding-block: var(--padding-xs);
-  }
-{% endstylesheet %}
 
 {% schema %}
 {

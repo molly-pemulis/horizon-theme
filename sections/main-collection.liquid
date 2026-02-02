@@ -24,6 +24,37 @@
 
 {% comment %} We always render this full-width, as the child blocks have width: page/full settings {% endcomment %}
 <div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+{% comment %} DOLPHIN SECTION: Out of stock + hold-tagged products {% endcomment %}
+{% assign seemore_tag = 'hold' %}
+{% assign unavailable_count = 0 %}
+{% for product in collection.products %}
+  {% if product.available == false %}
+    {% assign unavailable_count = unavailable_count | plus: 1 %}
+  {% elsif product.tags contains seemore_tag %}
+    {% assign unavailable_count = unavailable_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% if unavailable_count > 0 %}
+  <div class="dolphin-section page-width">
+    <details class="collection-see-more">
+      <summary>
+        <img src="{{ 'see-more-pemulis-dolphin-icon.png' | asset_url }}" alt="See more products" class="see-more-icon">
+      </summary>
+      <ul class="product-grid dolphin-grid">
+        {% for product in collection.products %}
+          {% if product.available == false or product.tags contains seemore_tag %}
+            <li class="product-grid__item">
+              {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </details>
+  </div>
+{% endif %}
+
 <results-list
   class="section product-grid-container color-{{ section.settings.color_scheme }}"
   style="--padding-block-start: {{ section.settings.padding-block-start }}px; --padding-block-end: {{ section.settings.padding-block-end }}px;"

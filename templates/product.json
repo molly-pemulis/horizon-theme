@@ -39,7 +39,14 @@
             "padding-inline-start": 0,
             "padding-inline-end": 0
           },
-          "blocks": {}
+          "blocks": {
+            "breadcrumbs_pemulis": {
+              "type": "breadcrumbs",
+              "name": "Breadcrumbs",
+              "settings": {}
+            }
+          },
+          "block_order": ["breadcrumbs_pemulis"]
         },
         "product-details": {
           "type": "_product-details",
@@ -68,12 +75,6 @@
             "padding-inline-end": 0
           },
           "blocks": {
-            "breadcrumbs_pemulis": {
-              "type": "breadcrumbs",
-              "name": "Breadcrumbs",
-              "settings": {},
-              "blocks": {}
-            },
             "sku_jjdhzd": {
               "type": "sku",
               "name": "t:names.product_sku",
@@ -299,7 +300,6 @@
             }
           },
           "block_order": [
-            "breadcrumbs_pemulis",
             "sku_jjdhzd",
             "swatches_frFbUc",
             "review_f8dWdY",

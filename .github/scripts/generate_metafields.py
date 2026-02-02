@@ -13,7 +13,7 @@ ACCESS_TOKEN = os.environ.get('SHOPIFY_ADMIN_TOKEN')
 THEME_FILE = "blocks/product-metafields.liquid"
 
 INCLUDE_NAMESPACES = ['custom', 'gato_heroi', 'reviews', 'descriptors']
-EXCLUDE_KEYS = ['rating_value', 'review_count', 'rating', 'rating_count']
+EXCLUDE_KEYS = ['rating_value', 'review_count', 'rating', 'rating_count', 'availability']
 
 if not ACCESS_TOKEN:
     print("No SHOPIFY_ADMIN_TOKEN set, skipping")

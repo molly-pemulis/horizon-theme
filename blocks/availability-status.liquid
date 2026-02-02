@@ -1,0 +1,41 @@
+{%- comment -%}
+  Availability status block
+  Displays custom.availability metafield in prominent orange text
+  Used for stock status, pre-order notices, etc.
+{%- endcomment -%}
+
+{%- liquid
+  assign product = closest.product
+  if product == blank and request.visual_preview_mode
+    assign product = collections.all.products.first
+  endif
+-%}
+
+{% if product.metafields.custom.availability != blank %}
+  <div class="availability-status" {{ block.shopify_attributes }}>
+    {{ product.metafields.custom.availability }}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .availability-status {
+    color: #FF6B35;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    padding-block: var(--padding-xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Availability Status",
+  "tag": null,
+  "settings": [],
+  "presets": [
+    {
+      "name": "Availability Status",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

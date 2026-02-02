@@ -108,6 +108,52 @@
 </results-list>
 
 {% stylesheet %}
+  /* Dolphin section styles */
+  .dolphin-section {
+    margin-bottom: 2rem;
+  }
+  .collection-see-more {
+    margin-top: 1rem;
+  }
+  .collection-see-more summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    list-style: none;
+  }
+  .see-more-icon {
+    width: 48px;
+    height: auto;
+    cursor: pointer;
+  }
+  .collection-see-more summary::-webkit-details-marker {
+    display: none;
+  }
+  .collection-see-more summary::marker {
+    content: '';
+  }
+  .collection-see-more[open] summary {
+    margin-bottom: 1.25rem;
+  }
+  .dolphin-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap-md);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  @media screen and (max-width: 749px) {
+    .dolphin-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
   .main-collection-grid {
     grid-column: var(--grid-column--mobile);
 

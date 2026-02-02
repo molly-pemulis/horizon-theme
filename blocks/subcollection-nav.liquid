@@ -1,0 +1,99 @@
+{%- comment -%}
+  Subcollection Navigation
+  Displays linked collections from metafields as nav pills
+  Metafields: custom.subcollections, custom.subcollections_brands
+{%- endcomment -%}
+
+{%- liquid
+  assign subcollections = collection.metafields.custom.subcollections.value
+  assign subcollections_brands = collection.metafields.custom.subcollections_brands.value
+-%}
+
+{% if subcollections != blank or subcollections_brands != blank %}
+  <nav class="subcollection-nav" {{ block.shopify_attributes }}>
+    {% if subcollections != blank %}
+      <div class="subcollection-nav__group">
+        <span class="subcollection-nav__label">Category</span>
+        <ul class="subcollection-nav__list">
+          {% for subcol in subcollections %}
+            <li>
+              <a href="{{ subcol.url }}" class="subcollection-nav__link">
+                {{ subcol.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if subcollections_brands != blank %}
+      <div class="subcollection-nav__group">
+        <span class="subcollection-nav__label">Brand</span>
+        <ul class="subcollection-nav__list">
+          {% for subcol in subcollections_brands %}
+            <li>
+              <a href="{{ subcol.url }}" class="subcollection-nav__link">
+                {{ subcol.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </nav>
+{% endif %}
+
+{% stylesheet %}
+  .subcollection-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+    padding: var(--padding-md) 0;
+  }
+  .subcollection-nav__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs);
+  }
+  .subcollection-nav__label {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .subcollection-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .subcollection-nav__link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.2);
+    border-radius: 2rem;
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .subcollection-nav__link:hover {
+    background: rgb(var(--color-foreground-rgb) / 0.05);
+    border-color: rgb(var(--color-foreground-rgb) / 0.4);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Subcollection Nav",
+  "tag": null,
+  "settings": [],
+  "presets": [
+    {
+      "name": "Subcollection Nav",
+      "category": "Collection"
+    }
+  ]
+}
+{% endschema %}

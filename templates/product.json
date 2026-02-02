@@ -9,6 +9,10 @@
  */
 {
   "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {}
+    },
     "main": {
       "type": "product-information",
       "blocks": {
@@ -39,14 +43,7 @@
             "padding-inline-start": 0,
             "padding-inline-end": 0
           },
-          "blocks": {
-            "breadcrumbs_pemulis": {
-              "type": "breadcrumbs",
-              "name": "Breadcrumbs",
-              "settings": {}
-            }
-          },
-          "block_order": ["breadcrumbs_pemulis"]
+          "blocks": {}
         },
         "product-details": {
           "type": "_product-details",
@@ -629,6 +626,7 @@
     }
   },
   "order": [
+    "breadcrumbs",
     "main",
     "product_recommendations_qggXJq",
     "collection_list_yJdKUr"

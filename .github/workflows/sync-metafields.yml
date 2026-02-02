@@ -3,6 +3,8 @@ name: Sync Metafield Keys
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'blocks/product-metafields.liquid'
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:

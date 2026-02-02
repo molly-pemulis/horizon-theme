@@ -1,7 +1,11 @@
 {% comment %}
-  PRODUCT METAFIELDS DISPLAY
-  ==========================
-  Renders all custom metafields that have values for this product.
+  PRODUCT METAFIELDS - AUTO-GENERATED
+  ====================================
+  Generated: 2026-02-02 02:16 UTC
+  Fields: 37
+  Namespaces: custom, gato_heroi, reviews, descriptors
+  
+  DO NOT EDIT - This file is auto-generated from Shopify metafield definitions.
 {% endcomment %}
 
 {% liquid
@@ -11,10 +15,7 @@
   endif
 %}
 
-<div 
-  class="product-metafields"
-  {{ block.shopify_attributes }}
->
+<div class="product-metafields" {{ block.shopify_attributes }}>
   {% if block.settings.show_heading and block.settings.heading != blank %}
     <h3 class="product-metafields__heading {{ block.settings.heading_size }}">
       {{ block.settings.heading }}
@@ -22,123 +23,235 @@
   {% endif %}
   
   <dl class="product-metafields__list">
+    {% if product.metafields.descriptors.care_guide.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Care guide</dt>
+        <dd class="product-metafields__value">{{ product.metafields.descriptors.care_guide.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.designed_and_tested_in_los_angeles_by_crap_eyewear.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Manufacturer details</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designed_and_tested_in_los_angeles_by_crap_eyewear.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.product_materials.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Product Materials</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.product_materials.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.surfboard_shipping.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">surfboard shipping</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.surfboard_shipping.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.country_of_origin.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Country of origin</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.country_of_origin.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.brand_buying_guide.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Brand buying guide</dt>
+        <dd class="product-metafields__value"><a href="{{ product.metafields.custom.brand_buying_guide.value }}" target="_blank">View Guide</a></dd>
+      </div>
+    {% endif %}
     {% if product.metafields.custom.designer_name.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Designer</dt>
+        <dt class="product-metafields__label">Designer Name</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.designer_name.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.designer_origin.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Origin</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.designer_origin.value }}</dd>
-      </div>
-    {% endif %}
-    
     {% if product.metafields.custom.designer_bio.value != blank %}
       <div class="product-metafields__item">
         <dt class="product-metafields__label">Designer Bio</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.designer_bio.value }}</dd>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_bio.value | newline_to_br }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.fin_construction.value != blank %}
+    {% if product.metafields.custom.designer_origin.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Construction</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.fin_construction.value }}</dd>
+        <dt class="product-metafields__label">Designer Origin</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.designer_origin.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.height.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Height</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.height.value }}</dd>
-      </div>
-    {% endif %}
-    
-    {% if product.metafields.custom.base.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Base</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.base.value }}</dd>
-      </div>
-    {% endif %}
-    
     {% if product.metafields.custom.area.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Area</dt>
+        <dt class="product-metafields__label">area</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.area.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.front_height.value != blank %}
+    {% if product.metafields.custom.base.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Front Height</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.front_height.value }}</dd>
+        <dt class="product-metafields__label">base</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.base.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.front_base.value != blank %}
+    {% if product.metafields.custom.height.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Front Base</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.front_base.value }}</dd>
+        <dt class="product-metafields__label">height</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.height.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.front_area.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Front Area</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.front_area.value }}</dd>
-      </div>
-    {% endif %}
-    
     {% if product.metafields.custom.rear_height.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Rear Height</dt>
+        <dt class="product-metafields__label">rear_height</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.rear_height.value }}</dd>
       </div>
     {% endif %}
-    
+    {% if product.metafields.custom.front_area.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">front_area</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_area.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.front_base.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">front_base</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_base.value }}</dd>
+      </div>
+    {% endif %}
     {% if product.metafields.custom.rear_base.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Rear Base</dt>
+        <dt class="product-metafields__label">rear_base</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.rear_base.value }}</dd>
       </div>
     {% endif %}
-    
     {% if product.metafields.custom.rear_area.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Rear Area</dt>
+        <dt class="product-metafields__label">rear_area</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.rear_area.value }}</dd>
       </div>
     {% endif %}
-    
-    {% if product.metafields.custom.brand_buying_guide.value != blank %}
+    {% if product.metafields.custom.front_height.value != blank %}
       <div class="product-metafields__item">
-        <dt class="product-metafields__label">Buying Guide</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.brand_buying_guide.value }}</dd>
+        <dt class="product-metafields__label">front_height</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.front_height.value }}</dd>
       </div>
     {% endif %}
-    
-    {% comment %} Rating and reviews displayed separately via product-rating block {% endcomment %}
+    {% if product.metafields.custom.fin_construction.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Fin Construction</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.fin_construction.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.model_name.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Model Name</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.model_name.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.series.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Series</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.series.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.length_range.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Length Range</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.length_range.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.fin_setup.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Fin Setup</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.fin_setup.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.skill_level.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Skill Level</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.skill_level.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.best_for.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Best For</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.best_for.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.model_description.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Model Description</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.model_description.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.rail_type.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rail Type</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.rail_type.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.bottom_contour.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Bottom Contour</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.bottom_contour.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.tail_shape.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Tail Shape</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.tail_shape.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.rocker_profile.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Rocker Profile</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.rocker_profile.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.design_era.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Design Era</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.design_era.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.year_introduced.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Year Introduced</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.year_introduced.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.recommended_fins.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Recommended Fins</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.recommended_fins.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.brand_buying_guide.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Brand Buying Guide</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.brand_buying_guide.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.designer_bio.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Designer Bio</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.designer_bio.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.gato_heroi.origin.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Origin</dt>
+        <dd class="product-metafields__value">{{ product.metafields.gato_heroi.origin.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.availability.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Availability</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.availability.value | newline_to_br }}</dd>
+      </div>
+    {% endif %}
   </dl>
 </div>
 
 {% stylesheet %}
-  .product-metafields {
-    width: 100%;
-  }
-  
-  .product-metafields__heading {
-    margin-bottom: var(--margin-sm);
-  }
-  
-  .product-metafields__list {
-    display: grid;
-    gap: var(--gap-xs);
-    margin: 0;
-  }
-  
+  .product-metafields { width: 100%; }
+  .product-metafields__heading { margin-bottom: var(--margin-sm); }
+  .product-metafields__list { display: grid; gap: var(--gap-xs); margin: 0; }
   .product-metafields__item {
     display: flex;
     justify-content: space-between;
@@ -147,22 +260,14 @@
     padding: var(--padding-xs) 0;
     border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
   }
-  
-  .product-metafields__item:last-child {
-    border-bottom: none;
-  }
-  
+  .product-metafields__item:last-child { border-bottom: none; }
   .product-metafields__label {
     font-weight: var(--font-weight-semibold);
     color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
     flex-shrink: 0;
   }
-  
-  .product-metafields__value {
-    margin: 0;
-    text-align: right;
-    max-width: 65%;
-  }
+  .product-metafields__value { margin: 0; text-align: right; max-width: 65%; }
+  .product-metafields__value a { color: var(--color-primary); text-decoration: underline; }
 {% endstylesheet %}
 
 {% schema %}
@@ -170,63 +275,17 @@
   "name": "Product specs",
   "tag": null,
   "settings": [
-    {
-      "type": "paragraph",
-      "content": "Displays custom metafields from the product."
-    },
-    {
-      "type": "checkbox",
-      "id": "show_heading",
-      "label": "Show heading",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Specifications"
-    },
-    {
-      "type": "select",
-      "id": "heading_size",
-      "label": "Heading size",
-      "options": [
-        { "value": "h4", "label": "Small" },
-        { "value": "h3", "label": "Medium" },
-        { "value": "h2", "label": "Large" }
-      ],
-      "default": "h4"
-    },
-    {
-      "type": "header",
-      "content": "Padding"
-    },
-    {
-      "type": "range",
-      "id": "padding-block-start",
-      "label": "Top",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 16
-    },
-    {
-      "type": "range",
-      "id": "padding-block-end",
-      "label": "Bottom",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 16
-    }
+    { "type": "paragraph", "content": "Auto-generated from Shopify metafields." },
+    { "type": "checkbox", "id": "show_heading", "label": "Show heading", "default": true },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Specifications" },
+    { "type": "select", "id": "heading_size", "label": "Heading size", "options": [
+      { "value": "h4", "label": "Small" },
+      { "value": "h3", "label": "Medium" },
+      { "value": "h2", "label": "Large" }
+    ], "default": "h4" },
+    { "type": "range", "id": "padding-block-start", "label": "Top padding", "min": 0, "max": 100, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "padding-block-end", "label": "Bottom padding", "min": 0, "max": 100, "step": 1, "unit": "px", "default": 16 }
   ],
-  "presets": [
-    {
-      "name": "Product specs",
-      "category": "Product"
-    }
-  ]
+  "presets": [{ "name": "Product specs", "category": "Product" }]
 }
 {% endschema %}

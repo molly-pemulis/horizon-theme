@@ -1,0 +1,88 @@
+{%- comment -%}
+  Breadcrumbs navigation
+  Shows: Home > Collection > Product
+  Includes structured data for SEO
+{%- endcomment -%}
+
+{%- liquid
+  assign home_title = 'Home'
+  assign divider = ' / '
+-%}
+
+{%- if template.name == 'product' or template.name == 'collection' -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": {{ home_title | json }},
+          "item": {{ shop.url | append: routes.root_url | json }}
+        }
+        {%- if template.name == 'collection' and collection.handle -%}
+          ,{
+            "@type": "ListItem",
+            "position": 2,
+            "name": {{ collection.title | json }},
+            "item": {{ shop.url | append: collection.url | json }}
+          }
+        {%- elsif template.name == 'product' -%}
+          {%- if collection -%}
+            ,{
+              "@type": "ListItem",
+              "position": 2,
+              "name": {{ collection.title | json }},
+              "item": {{ shop.url | append: collection.url | json }}
+            }
+            ,{
+              "@type": "ListItem",
+              "position": 3,
+              "name": {{ product.title | json }},
+              "item": {{ shop.url | append: product.url | json }}
+            }
+          {%- else -%}
+            ,{
+              "@type": "ListItem",
+              "position": 2,
+              "name": {{ product.title | json }},
+              "item": {{ shop.url | append: product.url | json }}
+            }
+          {%- endif -%}
+        {%- endif -%}
+      ]
+    }
+  </script>
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ routes.root_url }}">{{ home_title }}</a>
+    {%- if template.name == 'collection' and collection.handle -%}
+      {{ divider }}<span aria-current="page">{{ collection.title }}</span>
+    {%- elsif template.name == 'product' -%}
+      {%- if collection -%}
+        {{ divider }}<a href="{{ collection.url }}">{{ collection.title }}</a>
+      {%- endif -%}
+      {{ divider }}<span aria-current="page">{{ product.title }}</span>
+    {%- endif -%}
+  </nav>
+{%- endif -%}
+
+{% stylesheet %}
+  .breadcrumbs {
+    font-size: var(--font-size-sm);
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+    padding-block: var(--gap-sm);
+  }
+  .breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .breadcrumbs a:hover {
+    color: var(--color-foreground);
+    text-decoration: underline;
+  }
+  .breadcrumbs span[aria-current] {
+    color: var(--color-foreground);
+  }
+{% endstylesheet %}

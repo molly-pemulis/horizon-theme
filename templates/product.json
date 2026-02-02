@@ -209,6 +209,11 @@
             "padding-inline-end": 0
           },
           "blocks": {
+            "breadcrumbs_pemulis": {
+              "type": "breadcrumbs",
+              "name": "Breadcrumbs",
+              "settings": {}
+            },
             "sku_jjdhzd": {
               "type": "sku",
               "name": "t:names.product_sku",
@@ -434,6 +439,7 @@
             }
           },
           "block_order": [
+            "breadcrumbs_pemulis",
             "sku_jjdhzd",
             "swatches_frFbUc",
             "review_f8dWdY",

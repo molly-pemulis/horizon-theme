@@ -6,7 +6,8 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
     "main": {
       "type": "main-page",
@@ -54,9 +55,78 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "gallery_E6cGHw": {
+      "type": "gallery",
+      "blocks": {
+        "image_NpNwLL": {
+          "type": "image",
+          "settings": {
+            "enlarge": true,
+            "subheading": "",
+            "title": "",
+            "button_label": "",
+            "link": "",
+            "text_position": "bottom-left"
+          }
+        },
+        "image_XBhYYr": {
+          "type": "image",
+          "settings": {
+            "enlarge": false,
+            "subheading": "",
+            "title": "",
+            "button_label": "",
+            "link": "",
+            "text_position": "bottom-left"
+          }
+        },
+        "image_n3yqNB": {
+          "type": "image",
+          "settings": {
+            "enlarge": false,
+            "subheading": "",
+            "title": "",
+            "button_label": "",
+            "link": "",
+            "text_position": "bottom-left"
+          }
+        },
+        "image_t6gaHD": {
+          "type": "image",
+          "settings": {
+            "enlarge": true,
+            "subheading": "",
+            "title": "",
+            "button_label": "",
+            "link": "",
+            "text_position": "bottom-left"
+          }
+        }
+      },
+      "block_order": [
+        "image_NpNwLL",
+        "image_XBhYYr",
+        "image_n3yqNB",
+        "image_t6gaHD"
+      ],
+      "name": "Gallery",
+      "settings": {
+        "title": "",
+        "columns": 2,
+        "mobile_columns": "1",
+        "gap": 8,
+        "image_height": 400,
+        "image_height_mobile": 300,
+        "section_width": "page-width",
+        "color_scheme": "",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "gallery_E6cGHw"
   ]
 }

@@ -1,7 +1,9 @@
 {%- comment -%}
-  Subcollection Navigation — renders nav pills from collection metafields
-  Replaces heavy filters block in main-collection.liquid
-  Metafields: custom.subcollections, custom.subcollections_brands
+  Subcollection Sidebar Navigation
+  Renders as left sidebar with linked collections from metafields
+  First metafield (subcollections) always labeled "Type"
+  Additional metafields labeled by last word of key (e.g. subcollections_brands → "Brands")
+  Only renders if at least one metafield has values
 {%- endcomment -%}
 
 {%- liquid
@@ -10,14 +12,15 @@
 -%}
 
 {% if subcollections != blank or subcollections_brands != blank %}
-  <nav class="subcollection-nav">
+  <aside class="subcollection-sidebar">
+
     {% if subcollections != blank %}
-      <div class="subcollection-nav__group">
-        <span class="subcollection-nav__label">Category</span>
-        <ul class="subcollection-nav__list">
+      <div class="subcollection-sidebar__group">
+        <h3 class="subcollection-sidebar__heading">Type</h3>
+        <ul class="subcollection-sidebar__list">
           {% for subcol in subcollections %}
             <li>
-              <a href="{{ subcol.url }}" class="subcollection-nav__link">
+              <a href="{{ subcol.url }}" class="subcollection-sidebar__link {% if request.path == subcol.url %}is-active{% endif %}">
                 {{ subcol.title }}
               </a>
             </li>
@@ -27,12 +30,12 @@
     {% endif %}
 
     {% if subcollections_brands != blank %}
-      <div class="subcollection-nav__group">
-        <span class="subcollection-nav__label">Brand</span>
-        <ul class="subcollection-nav__list">
+      <div class="subcollection-sidebar__group">
+        <h3 class="subcollection-sidebar__heading">Brands</h3>
+        <ul class="subcollection-sidebar__list">
           {% for subcol in subcollections_brands %}
             <li>
-              <a href="{{ subcol.url }}" class="subcollection-nav__link">
+              <a href="{{ subcol.url }}" class="subcollection-sidebar__link {% if request.path == subcol.url %}is-active{% endif %}">
                 {{ subcol.title }}
               </a>
             </li>
@@ -40,46 +43,99 @@
         </ul>
       </div>
     {% endif %}
-  </nav>
+
+  </aside>
 {% endif %}
 
 {% style %}
-  .subcollection-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem 0;
+  /* Sidebar container — sits left of product grid */
+  .subcollection-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    padding: 0 1.5rem 1rem 0;
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    min-width: 180px;
+    max-width: 220px;
   }
-  .subcollection-nav__group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+
+  /* When sidebar is present, make collection-wrapper a 2-col grid */
+  .collection-wrapper:has(.subcollection-sidebar) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0;
   }
-  .subcollection-nav__label {
-    font-weight: 600;
-    font-size: 0.75rem;
+
+  /* Push product grid and pagination into column 2 */
+  .collection-wrapper:has(.subcollection-sidebar) .product-grid-wrapper,
+  .collection-wrapper:has(.subcollection-sidebar) .collection-pagination {
+    grid-column: 2;
+  }
+
+  .subcollection-sidebar__group {
+    margin-bottom: 1.5rem;
+  }
+
+  .subcollection-sidebar__heading {
+    font-size: 0.85rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.75rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
   }
-  .subcollection-nav__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+
+  .subcollection-sidebar__list {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  .subcollection-nav__link {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba(0,0,0,0.15);
-    border-radius: 2rem;
+
+  .subcollection-sidebar__link {
+    display: block;
+    padding: 0.4rem 0.6rem;
     font-size: 0.85rem;
     text-decoration: none;
-    transition: all 0.2s;
+    border-radius: 4px;
+    transition: background 0.15s;
+    color: inherit;
   }
-  .subcollection-nav__link:hover {
+
+  .subcollection-sidebar__link:hover {
     background: rgba(0,0,0,0.04);
-    border-color: rgba(0,0,0,0.3);
+  }
+
+  .subcollection-sidebar__link.is-active {
+    font-weight: 600;
+    background: rgba(0,0,0,0.06);
+  }
+
+  /* Mobile: collapse sidebar above grid */
+  @media (max-width: 749px) {
+    .collection-wrapper:has(.subcollection-sidebar) {
+      grid-template-columns: 1fr;
+    }
+    .subcollection-sidebar {
+      position: static;
+      max-width: none;
+      padding: 0 0 1rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .subcollection-sidebar__list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .subcollection-sidebar__link {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 2rem;
+    }
   }
 {% endstyle %}

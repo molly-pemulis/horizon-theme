@@ -1,0 +1,459 @@
+{%- comment -%}
+  Gallery Section for Horizon Theme
+  A responsive image grid with optional text overlays, links, and masonry-style enlargement.
+  Ported from Symmetry theme patterns, adapted to Horizon conventions.
+
+  Created: 2026-02-02
+  Author: Claude Code
+{%- endcomment -%}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+<div
+  class="
+    section
+    section--{{ section.settings.section_width }}
+    color-{{ section.settings.color_scheme }}
+    section-gallery
+    spacing-style
+  "
+  style="
+    {% render 'spacing-style', settings: section.settings %}
+    --gallery-columns: {{ section.settings.columns }};
+    --gallery-columns-mobile: {{ section.settings.mobile_columns }};
+    --gallery-gap: {{ section.settings.gap }}px;
+    --gallery-image-height: {{ section.settings.image_height }}px;
+    --gallery-image-height-mobile: {{ section.settings.image_height_mobile }}px;
+  "
+  data-testid="gallery-section"
+>
+  {%- if section.settings.title != blank -%}
+    <header class="gallery__header">
+      <h2 class="gallery__title">{{ section.settings.title }}</h2>
+    </header>
+  {%- endif -%}
+
+  <div class="gallery__grid">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign has_overlay = false
+        if block.settings.title != blank or block.settings.subheading != blank or block.settings.button_label != blank
+          assign has_overlay = true
+        endif
+
+        assign item_class = 'gallery__item'
+        if block.settings.enlarge
+          assign item_class = item_class | append: ' gallery__item--enlarged'
+        endif
+      -%}
+
+      <div
+        class="{{ item_class }}"
+        {{ block.shopify_attributes }}
+      >
+        {%- if block.settings.link != blank -%}
+          <a href="{{ block.settings.link }}" class="gallery__link">
+        {%- endif -%}
+
+        <div class="gallery__media">
+          {%- if block.settings.video != blank -%}
+            {{
+              block.settings.video
+              | video_tag:
+                autoplay: true,
+                loop: true,
+                muted: true,
+                controls: false,
+                class: 'gallery__video'
+            }}
+          {%- elsif block.settings.image != blank -%}
+            {{
+              block.settings.image
+              | image_url: width: 1600
+              | image_tag:
+                loading: 'lazy',
+                class: 'gallery__image',
+                widths: '400, 600, 800, 1000, 1200, 1600',
+                sizes: '(min-width: 750px) calc(100vw / var(--gallery-columns)), 100vw'
+            }}
+          {%- else -%}
+            <div class="gallery__placeholder">
+              {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if has_overlay -%}
+          <div class="gallery__overlay gallery__overlay--{{ block.settings.text_position }}">
+            <div class="gallery__overlay-content">
+              {%- if block.settings.subheading != blank -%}
+                <span class="gallery__subheading">{{ block.settings.subheading }}</span>
+              {%- endif -%}
+              {%- if block.settings.title != blank -%}
+                <h3 class="gallery__item-title">{{ block.settings.title }}</h3>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank -%}
+                <span class="gallery__button button button--secondary">
+                  {{ block.settings.button_label }}
+                </span>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if block.settings.link != blank -%}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  .section-gallery {
+    container-type: inline-size;
+  }
+
+  .gallery__header {
+    margin-block-end: 24px;
+  }
+
+  .gallery__title {
+    margin: 0;
+  }
+
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--gallery-columns-mobile, 1), 1fr);
+    gap: var(--gallery-gap, 8px);
+  }
+
+  @container (min-width: 750px) {
+    .gallery__grid {
+      grid-template-columns: repeat(var(--gallery-columns, 2), 1fr);
+    }
+  }
+
+  .gallery__item {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--media-radius);
+  }
+
+  .gallery__item--enlarged {
+    grid-column: span 1;
+  }
+
+  @container (min-width: 750px) {
+    .gallery__item--enlarged {
+      grid-row: span 2;
+    }
+  }
+
+  .gallery__link {
+    display: block;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .gallery__media {
+    position: relative;
+    width: 100%;
+    height: var(--gallery-image-height-mobile, 300px);
+    overflow: hidden;
+  }
+
+  @container (min-width: 750px) {
+    .gallery__media {
+      height: var(--gallery-image-height, 400px);
+    }
+
+    .gallery__item--enlarged .gallery__media {
+      height: calc((var(--gallery-image-height, 400px) * 2) + var(--gallery-gap, 8px));
+    }
+  }
+
+  .gallery__image,
+  .gallery__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gallery__placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--color-background-secondary, #f5f5f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery__placeholder svg {
+    width: 50%;
+    height: 50%;
+    opacity: 0.5;
+  }
+
+  .gallery__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    padding: 16px;
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+    color: #fff;
+    pointer-events: none;
+  }
+
+  .gallery__overlay--bottom-left {
+    align-items: flex-end;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .gallery__overlay--bottom-center {
+    align-items: flex-end;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .gallery__overlay--bottom-right {
+    align-items: flex-end;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .gallery__overlay--center {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .gallery__overlay--top-left {
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 50%);
+  }
+
+  .gallery__overlay-content {
+    pointer-events: auto;
+  }
+
+  .gallery__subheading {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-block-end: 4px;
+    opacity: 0.9;
+  }
+
+  .gallery__item-title {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+  }
+
+  .gallery__button {
+    display: inline-block;
+    margin-block-start: 8px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Gallery",
+  "class": "section-gallery-wrapper",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": ""
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns (desktop)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Columns (mobile)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between items",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Image height (desktop)",
+      "min": 200,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "image_height_mobile",
+      "label": "Image height (mobile)",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 300
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "options": [
+        { "value": "page-width", "label": "Page width" },
+        { "value": "full-width", "label": "Full width" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Video will autoplay muted and loop."
+        },
+        {
+          "type": "checkbox",
+          "id": "enlarge",
+          "label": "Enlarge item",
+          "info": "Spans 2 rows on desktop",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Text position",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ],
+          "default": "bottom-left"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gallery",
+      "category": "Image",
+      "settings": {
+        "columns": 2,
+        "gap": 8,
+        "image_height": 400
+      },
+      "blocks": [
+        { "type": "image", "settings": { "enlarge": true } },
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image", "settings": { "enlarge": true } }
+      ]
+    }
+  ]
+}
+{% endschema %}

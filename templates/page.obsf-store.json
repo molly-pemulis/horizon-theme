@@ -6,8 +6,7 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */
-{
+ */{
   "sections": {
     "main": {
       "type": "main-page",
@@ -20,20 +19,40 @@
             "width": "100%",
             "max_width": "normal",
             "alignment": "left",
-            "type_preset": "h2"
+            "type_preset": "h2",
+            "font": "var(--font-primary--family)",
+            "font_size": "",
+            "line_height": "normal",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "pretty",
+            "color": "",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
           },
+          "blocks": {}
+        },
+        "page-content": {
+          "type": "page-content",
+          "settings": {},
           "blocks": {}
         }
       },
       "block_order": [
-        "heading"
+        "heading",
+        "page-content"
       ],
       "settings": {
         "content_direction": "column",
         "gap": 32,
         "color_scheme": "",
         "padding-block-start": 40,
-        "padding-block-end": 40
+        "padding-block-end": 80
       }
     },
     "gallery": {
@@ -44,10 +63,6 @@
           "settings": {
             "image": "shopify://shop_images/DSC09578.jpg",
             "enlarge": true,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         },
@@ -56,10 +71,6 @@
           "settings": {
             "image": "shopify://shop_images/DSC09559.jpg",
             "enlarge": false,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         },
@@ -68,10 +79,6 @@
           "settings": {
             "image": "shopify://shop_images/pemulis_interior_used_board_rack.jpg",
             "enlarge": false,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         },
@@ -80,10 +87,6 @@
           "settings": {
             "image": "shopify://shop_images/pemulis_interior_used_board_rack-1.jpg",
             "enlarge": false,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         },
@@ -92,10 +95,6 @@
           "settings": {
             "image": "shopify://shop_images/pemulis_interior_small_fin_display-1.jpg",
             "enlarge": false,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         },
@@ -104,10 +103,6 @@
           "settings": {
             "image": "shopify://shop_images/5BF92E3B-BAE1-42D2-99EF-24AD71AE7ED8.jpg",
             "enlarge": true,
-            "subheading": "",
-            "title": "",
-            "button_label": "",
-            "link": "",
             "text_position": "bottom-left"
           }
         }
@@ -121,7 +116,6 @@
         "image_6"
       ],
       "settings": {
-        "title": "",
         "columns": 2,
         "mobile_columns": "1",
         "gap": 8,
@@ -133,24 +127,10 @@
         "padding-block-end": 48
       }
     },
-    "store_facade": {
-      "type": "hero",
-      "blocks": {},
-      "block_order": [],
-      "settings": {
-        "image_1": "shopify://shop_images/pemulis_store_outside_facade.jpg",
-        "media_type_1": "image",
-        "section_width": "full-width",
-        "section_height": "medium",
-        "color_scheme": "scheme-1",
-        "padding-block-start": 0,
-        "padding-block-end": 0
-      }
-    },
-    "map": {
+    "map_hours": {
       "type": "custom-liquid",
       "settings": {
-        "liquid": "<div style=\"text-align: center; padding: 48px 24px;\">\n  <h2 style=\"margin-bottom: 16px;\">PEMULIS SAN FRANCISCO</h2>\n  <p>4051 Judah Street<br>San Francisco, CA</p>\n  <p style=\"margin-top: 16px;\">Hours:<br>Weekdays: 1 pm - 6 pm<br>Weekends: 11 am - 4 pm</p>\n  <a href=\"https://maps.google.com/?q=4051+Judah+Street+San+Francisco+CA\" target=\"_blank\" style=\"display: inline-block; margin-top: 24px; padding: 12px 24px; background: var(--color-button); color: var(--color-button-text); text-decoration: none;\">Directions</a>\n  <div style=\"margin-top: 32px;\">\n    <iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3154.5!2d-122.5!3d37.76!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDQ1JzM2LjAiTiAxMjLCsDMwJzAwLjAiVw!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus\" width=\"100%\" height=\"400\" style=\"border:0; max-width: 800px;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>\n  </div>\n</div>",
+        "liquid": "<div style=\"text-align: center; padding: 48px 24px;\">\n  <h2 style=\"margin-bottom: 16px;\">PEMULIS SAN FRANCISCO</h2>\n  <p>4051 Judah Street<br>San Francisco, CA</p>\n  <p style=\"margin-top: 16px;\">Hours:<br>Weekdays: 1 pm - 6 pm<br>Weekends: 11 am - 4 pm</p>\n  <a href=\"https://maps.google.com/?q=4051+Judah+Street+San+Francisco+CA\" target=\"_blank\" style=\"display: inline-block; margin-top: 24px; padding: 12px 24px; border: 1px solid currentColor; text-decoration: none;\">Directions</a>\n  <div style=\"margin-top: 32px;\">\n    <iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3154.5!2d-122.5!3d37.76!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDQ1JzM2LjAiTiAxMjLCsDMwJzAwLjAiVw!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus\" width=\"100%\" height=\"400\" style=\"border:0; max-width: 800px;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>\n  </div>\n</div>",
         "color_scheme": "scheme-1",
         "padding-block-start": 0,
         "padding-block-end": 48
@@ -160,7 +140,6 @@
   "order": [
     "main",
     "gallery",
-    "store_facade",
-    "map"
+    "map_hours"
   ]
 }

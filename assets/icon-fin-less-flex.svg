@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Fin spectrum icon: Less Flex / Responsive (stiff fin with horizontal stiffener lines) -->
+  <path d="M24 8C24 8 22 16 20 26C18 34 16 40 12 44L34 44C32 40 30 34 30 26C28 16 24 8 24 8Z" fill="currentColor"/>
+  <!-- White stiffener lines to show rigidity -->
+  <line x1="21" y1="16" x2="27" y2="16" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="20" y1="24" x2="28" y2="24" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="18" y1="32" x2="30" y2="32" stroke="white" stroke-width="1" stroke-linecap="round"/>
+</svg>

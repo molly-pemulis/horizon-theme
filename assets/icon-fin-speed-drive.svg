@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Fin spectrum icon: Speed Generating / Drive (forward arrows) -->
+  <path d="M22 8C22 8 20 16 18 26C16 34 14 40 10 44L32 44C30 40 28 34 28 26C28 16 22 8 22 8Z" fill="currentColor"/>
+  <path d="M36 16L42 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M40 13L43 16L40 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M36 26L42 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M40 23L43 26L40 29" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>

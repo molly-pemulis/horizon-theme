@@ -20,6 +20,43 @@ THEME_FILE = "blocks/product-metafields.liquid"
 INCLUDE_NAMESPACES = ['custom', 'gato_heroi', 'reviews', 'descriptors']
 EXCLUDE_KEYS = ['rating_value', 'review_count', 'rating', 'rating_count', 'availability']
 
+# Bar field configurations: define left/right labels and icons for each field
+# Format: 'metaobject_type.field_key': { left_label, right_label, left_icon, right_icon }
+BAR_FIELD_CONFIG = {
+    'fin_characteristics.rake': {
+        'left_label': 'Upright',
+        'left_sublabel': 'Tight Turns',
+        'right_label': 'Raked',
+        'right_sublabel': 'Drawn-Out Turns',
+        'left_icon': 'icon-fin-upright.svg',
+        'right_icon': 'icon-fin-raked.svg'
+    },
+    'fin_characteristics.area': {
+        'left_label': 'Less Area',
+        'left_sublabel': 'Loose',
+        'right_label': 'More Area',
+        'right_sublabel': 'Stable',
+        'left_icon': 'icon-fin-less-area.svg',
+        'right_icon': 'icon-fin-more-area.svg'
+    },
+    'fin_characteristics.speed': {
+        'left_label': 'Speed Control',
+        'left_sublabel': '',
+        'right_label': 'Speed Generating',
+        'right_sublabel': 'Drive',
+        'left_icon': 'icon-fin-speed-control.svg',
+        'right_icon': 'icon-fin-speed-drive.svg'
+    },
+    'fin_characteristics.flex': {
+        'left_label': 'Less Flex',
+        'left_sublabel': 'Responsive',
+        'right_label': 'More Flex',
+        'right_sublabel': 'Projection',
+        'left_icon': 'icon-fin-less-flex.svg',
+        'right_icon': 'icon-fin-more-flex.svg'
+    }
+}
+
 if not ACCESS_TOKEN:
     print("No SHOPIFY_ADMIN_TOKEN set, skipping")
     exit(0)
@@ -190,12 +227,44 @@ for mo_type, mo_def in metaobject_definitions.items():
     if bar_fields:
         viz_html += '    <div class="metaobject-viz__bars">\n'
         for bf in bar_fields:
+            config_key = f"{mo_type}.{bf['key']}"
+            config = BAR_FIELD_CONFIG.get(config_key, {})
+
+            left_label = config.get('left_label', bf['name'])
+            left_sublabel = config.get('left_sublabel', '')
+            right_label = config.get('right_label', '')
+            right_sublabel = config.get('right_sublabel', '')
+            left_icon = config.get('left_icon', '')
+            right_icon = config.get('right_icon', '')
+
+            # Build left side
+            left_html = '<span class="metaobject-viz__endpoint metaobject-viz__endpoint--left">'
+            if left_icon:
+                left_html += f'<span class="metaobject-viz__icon">{{{{ "{left_icon}" | asset_url | split: "?" | first }}}}</span>'
+            left_html += f'<span class="metaobject-viz__endpoint-text"><strong>{left_label}</strong>'
+            if left_sublabel:
+                left_html += f' {left_sublabel}'
+            left_html += '</span></span>'
+
+            # Build right side
+            right_html = '<span class="metaobject-viz__endpoint metaobject-viz__endpoint--right">'
+            right_html += f'<span class="metaobject-viz__endpoint-text"><strong>{right_label}</strong>'
+            if right_sublabel:
+                right_html += f' {right_sublabel}'
+            right_html += '</span>'
+            if right_icon:
+                right_html += f'<span class="metaobject-viz__icon">{{{{ "{right_icon}" | asset_url | split: "?" | first }}}}</span>'
+            right_html += '</span>'
+
             viz_html += f'''      {{% if {viz_var}.{bf['key']}.value != blank %}}
       <div class="metaobject-viz__bar-group">
-        <div class="metaobject-viz__bar">
-          <div class="metaobject-viz__marker" style="left: {{{{ {viz_var}.{bf['key']}.value }}}}%;"></div>
+        <div class="metaobject-viz__bar-row">
+          {left_html}
+          <div class="metaobject-viz__bar">
+            <div class="metaobject-viz__marker" style="left: {{{{ {viz_var}.{bf['key']}.value }}}}%;"></div>
+          </div>
+          {right_html}
         </div>
-        <div class="metaobject-viz__bar-label">{bf['name']}</div>
       </div>
       {{% endif %}}
 '''

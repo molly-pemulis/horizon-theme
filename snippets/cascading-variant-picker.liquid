@@ -20,28 +20,35 @@
     assign product = collections.all.products.first
   endif
   
-  # Detect which option is "color" - check name or if variants have images
+  # Detect which option is "color" - check name patterns
   assign color_option_index = -1
   for option in product.options_with_values
     assign option_name_lower = option.name | downcase
-    if option_name_lower contains 'color' or option_name_lower contains 'colour'
+    if option_name_lower contains 'color' or option_name_lower contains 'colour' or option_name_lower contains 'finish' or option_name_lower contains 'shade'
       assign color_option_index = forloop.index0
       break
     endif
   endfor
-  
-  # If no color option found by name, check if any option's variants have unique images
+
+  # If no color option found by name, check which option actually has variant images
+  # (only set if variants with different values for that option have different images)
   if color_option_index == -1
     for option in product.options_with_values
-      assign has_variant_images = false
+      assign option_idx = forloop.index0
+      assign images_for_option = ''
+      assign values_with_images = 0
       for variant in product.variants
         if variant.featured_image != blank
-          assign has_variant_images = true
-          break
+          assign opt_val = variant.options[option_idx]
+          unless images_for_option contains opt_val
+            assign values_with_images = values_with_images | plus: 1
+            assign images_for_option = images_for_option | append: '|' | append: opt_val
+          endunless
         endif
       endfor
-      if has_variant_images
-        assign color_option_index = forloop.index0
+      # Only use this option for swatches if multiple values have images
+      if values_with_images > 1
+        assign color_option_index = option_idx
         break
       endif
     endfor
@@ -252,26 +259,42 @@
 
     renderColorSwatches(optionIndex) {
       const container = this.querySelector(`.cascading-picker__swatches[data-option-index="${optionIndex}"]`);
-      if (!container) return;
-      
+      if (!container) {
+        // Container not found - might already be converted to dropdown, try updating that instead
+        this.updateSelectDropdown(optionIndex);
+        return;
+      }
+
       const availableValues = this.getAvailableValuesWithImages(optionIndex);
       const previousSelected = optionIndex === 0 || this.selections[optionIndex - 1] !== null;
-      
+
       container.innerHTML = '';
       container.dataset.disabled = !previousSelected;
-      
+
       if (!previousSelected) return;
-      
+
+      // If no available values, convert to dropdown to show "no options available" state
+      if (availableValues.length === 0) {
+        this.convertToDropdown(optionIndex, []);
+        return;
+      }
+
       // Check if ANY values have images
       const hasAnyImages = availableValues.some(v => v.image);
-      
+
+      // If no images at all, fall back to dropdown immediately
+      if (!hasAnyImages) {
+        this.convertToDropdown(optionIndex, availableValues);
+        return;
+      }
+
       availableValues.forEach(({ value, image }) => {
         const swatch = document.createElement('button');
         swatch.type = 'button';
         swatch.className = 'cascading-picker__swatch';
         swatch.dataset.optionIndex = optionIndex;
         swatch.dataset.value = value;
-        
+
         if (image) {
           swatch.dataset.imageUrl = image.url;
           swatch.innerHTML = `<img src="${image.thumb}" alt="${image.alt || value}" loading="lazy">`;
@@ -280,11 +303,11 @@
           swatch.classList.add('cascading-picker__swatch--text');
           swatch.innerHTML = `<span>${value}</span>`;
         }
-        
+
         swatch.addEventListener('click', this.handleSwatchClick.bind(this));
         container.appendChild(swatch);
       });
-      
+
       // AUTO-SELECT: If only one color available after pruning, select it automatically.
       // This makes the variant image show immediately when size is picked and only
       // one color remains (e.g. Magenta 9.5" is the only C Fin in stock).
@@ -294,48 +317,65 @@
           onlySwatch.click();
         }
       }
-      
-      // If no images at all, fall back to dropdown (replace swatches container)
-      if (!hasAnyImages && availableValues.length > 0) {
-        this.convertToDropdown(optionIndex, availableValues);
-      }
     }
 
     convertToDropdown(optionIndex, availableValues) {
       const optionContainer = this.querySelector(`.cascading-picker__option[data-option-index="${optionIndex}"]`);
+      if (!optionContainer) return;
+
       const swatchContainer = optionContainer.querySelector('.cascading-picker__swatches');
       const hiddenInput = optionContainer.querySelector('input[type="hidden"]');
-      
+
+      // If already converted to dropdown, just update it
+      if (!swatchContainer) {
+        this.updateSelectDropdown(optionIndex);
+        return;
+      }
+
       // Create select element
       const wrapper = document.createElement('div');
       wrapper.className = 'cascading-picker__select-wrapper';
-      
+
       const select = document.createElement('select');
       select.name = `option${optionIndex + 1}`;
       select.dataset.optionIndex = optionIndex;
-      
+
       const placeholder = document.createElement('option');
       placeholder.value = '';
       placeholder.disabled = true;
       placeholder.selected = true;
-      placeholder.textContent = `Select ${this.options[optionIndex].name}`;
+      placeholder.textContent = availableValues.length === 0
+        ? `No ${this.options[optionIndex]?.name || 'options'} available`
+        : `Select ${this.options[optionIndex]?.name || 'option'}`;
       select.appendChild(placeholder);
-      
+
       availableValues.forEach(({ value }) => {
         const opt = document.createElement('option');
         opt.value = value;
         opt.textContent = value;
         select.appendChild(opt);
       });
-      
+
       select.addEventListener('change', this.handleChange.bind(this));
-      
+
+      // Build wrapper with caret icon
       wrapper.appendChild(select);
-      wrapper.innerHTML += `<svg class="cascading-picker__caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      
+      const caret = document.createElement('svg');
+      caret.className = 'cascading-picker__caret';
+      caret.setAttribute('viewBox', '0 0 10 6');
+      caret.setAttribute('aria-hidden', 'true');
+      caret.innerHTML = '<path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+      wrapper.appendChild(caret);
+
       // Replace swatch container with dropdown
       swatchContainer.replaceWith(wrapper);
       if (hiddenInput) hiddenInput.remove();
+
+      // Auto-select if only one value
+      if (availableValues.length === 1) {
+        select.selectedIndex = 1;
+        select.dispatchEvent(new Event('change'));
+      }
     }
 
     updateSelectDropdown(optionIndex) {

@@ -1,0 +1,358 @@
+{%- comment -%}
+  ============================================================
+  RANDOM COLLECTION PRODUCTS — Horizon Theme
+  ============================================================
+  Shows random products from the same collection as the current product.
+  Server-rendered Liquid, no JS dependency — Googlebot sees links on first crawl.
+  
+  WHY THIS EXISTS:
+  - Shopify's built-in product-recommendations section loads via AJAX/JS,
+    so Googlebot may not see those links on initial HTML crawl.
+  - This section is pure Liquid = server-rendered HTML = always crawlable.
+  - Products rotate on each page load using a time-based offset, so:
+    1. Pages always look fresh to repeat visitors
+    2. Internal links spread across more products over time (SEO link equity)
+    3. No metadata/tagging required — uses existing Shopify collections
+  
+  HOW THE "RANDOMNESS" WORKS:
+  Liquid has no random function. We use (current_time_in_seconds % collection_size)
+  as an offset to pick a starting point, then grab N products skipping the current
+  product. Products change every second = effectively random for humans and crawlers.
+  
+  HORIZON THEME COMPATIBILITY:
+  This section does NOT use Horizon's content_for 'block' / _product-card system
+  because that requires static block definitions in the schema. Instead it renders
+  lightweight product cards that inherit Horizon's CSS variables and spacing system.
+  The cards include: product image, title, price, and a full clickable link.
+  ============================================================
+{%- endcomment -%}
+
+{%- liquid
+  # -- CONFIG --
+  assign show_count = section.settings.products_to_show
+  assign columns = section.settings.columns
+  assign mobile_columns = section.settings.mobile_columns
+  assign columns_gap = section.settings.columns_gap
+  assign rows_gap = section.settings.rows_gap
+
+  # -- FIND THE PRODUCT'S FIRST COLLECTION --
+  assign source_collection = product.collections.first
+  if source_collection == blank
+    break
+  endif
+
+  # -- PSEUDO-RANDOM OFFSET --
+  # "now" in epoch seconds mod collection size = rotating starting point.
+  # Every second the offset changes, so different products appear each load.
+  assign collection_size = source_collection.products_count
+  assign now_seconds = 'now' | date: '%s' | plus: 0
+  assign offset = now_seconds | modulo: collection_size
+
+  assign rendered = 0
+-%}
+
+{%- if collection_size > 1 -%}
+  <div class="section-background color-{{ section.settings.color_scheme }}"></div>
+  <div
+    class="
+      section
+      section--{{ section.settings.section_width }}
+      color-{{ section.settings.color_scheme }}
+      section-resource-list
+      spacing-style
+      gap-style
+    "
+    style="
+      {% render 'spacing-style', settings: section.settings %}
+      {% render 'gap-style', value: section.settings.gap %}
+    "
+    {{ section.shopify_attributes }}
+  >
+    {%- comment -%} Section heading {%- endcomment -%}
+    <div class="section-resource-list__content">
+      {%- if section.settings.title != blank -%}
+        <h3>{{ section.settings.title }}</h3>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}
+      PRODUCT GRID
+      Uses Horizon's resource-list--grid CSS class for consistent grid layout.
+      Each card is a minimal product card with image, title, price.
+    {%- endcomment -%}
+    <div
+      class="resource-list resource-list--grid"
+      style="
+        --resource-list-column-gap-desktop: {{ columns_gap }}px;
+        --resource-list-row-gap-desktop: {{ rows_gap }}px;
+        --resource-list-columns: repeat({{ columns }}, 1fr);
+        --resource-list-columns-mobile: repeat({{ mobile_columns }}, 1fr);
+        --column-count-mobile: {{ mobile_columns }};
+      "
+    >
+      {%- comment -%}
+        PASS 1: Start from the random offset position to end of collection.
+        We iterate up to 50 products (Shopify's Liquid limit for collection.products).
+        Skip the current product so we don't recommend what they're already viewing.
+      {%- endcomment -%}
+      {%- for p in source_collection.products limit: 50 -%}
+        {%- liquid
+          if p.id == product.id
+            continue
+          endif
+          if forloop.index0 < offset and rendered == 0
+            continue
+          endif
+          if rendered >= show_count
+            break
+          endif
+          assign rendered = rendered | plus: 1
+        -%}
+
+        <div class="resource-list__item">
+          <div class="random-product-card" style="position: relative;">
+            {%- comment -%} Full-card clickable link (accessible, covers entire card) {%- endcomment -%}
+            <a href="{{ p.url }}" class="random-product-card__link" aria-label="{{ p.title }}">
+              <span class="visually-hidden">{{ p.title }}</span>
+            </a>
+
+            {%- comment -%} Product image — uses Shopify's image_url for responsive sizing {%- endcomment -%}
+            {%- if p.featured_image -%}
+              <div class="random-product-card__image">
+                <img
+                  src="{{ p.featured_image | image_url: width: 600 }}"
+                  alt="{{ p.featured_image.alt | default: p.title | escape }}"
+                  width="{{ p.featured_image.width }}"
+                  height="{{ p.featured_image.height }}"
+                  loading="lazy"
+                  style="width: 100%; height: auto; display: block; aspect-ratio: {{ p.featured_image.aspect_ratio }};"
+                >
+              </div>
+            {%- endif -%}
+
+            {%- comment -%} Product title {%- endcomment -%}
+            <div class="random-product-card__title" style="margin-top: 8px;">
+              <a href="{{ p.url }}" style="text-decoration: none; color: var(--color-foreground);">
+                {{ p.title }}
+              </a>
+            </div>
+
+            {%- comment -%} Product price {%- endcomment -%}
+            <div class="random-product-card__price" style="margin-top: 4px; color: var(--color-foreground);">
+              {%- if p.compare_at_price > p.price -%}
+                <s style="opacity: 0.6;">{{ p.compare_at_price | money }}</s>
+                {{ p.price | money }}
+              {%- else -%}
+                {{ p.price | money }}
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- endfor -%}
+
+      {%- comment -%}
+        PASS 2: If offset was near the end and we didn't get enough products,
+        wrap around from the beginning of the collection.
+      {%- endcomment -%}
+      {%- if rendered < show_count -%}
+        {%- for p in source_collection.products limit: show_count -%}
+          {%- liquid
+            if p.id == product.id
+              continue
+            endif
+            if rendered >= show_count
+              break
+            endif
+            assign rendered = rendered | plus: 1
+          -%}
+
+          <div class="resource-list__item">
+            <div class="random-product-card" style="position: relative;">
+              <a href="{{ p.url }}" class="random-product-card__link" aria-label="{{ p.title }}">
+                <span class="visually-hidden">{{ p.title }}</span>
+              </a>
+              {%- if p.featured_image -%}
+                <div class="random-product-card__image">
+                  <img
+                    src="{{ p.featured_image | image_url: width: 600 }}"
+                    alt="{{ p.featured_image.alt | default: p.title | escape }}"
+                    width="{{ p.featured_image.width }}"
+                    height="{{ p.featured_image.height }}"
+                    loading="lazy"
+                    style="width: 100%; height: auto; display: block; aspect-ratio: {{ p.featured_image.aspect_ratio }};"
+                  >
+                </div>
+              {%- endif -%}
+              <div class="random-product-card__title" style="margin-top: 8px;">
+                <a href="{{ p.url }}" style="text-decoration: none; color: var(--color-foreground);">
+                  {{ p.title }}
+                </a>
+              </div>
+              <div class="random-product-card__price" style="margin-top: 4px; color: var(--color-foreground);">
+                {%- if p.compare_at_price > p.price -%}
+                  <s style="opacity: 0.6;">{{ p.compare_at_price | money }}</s>
+                  {{ p.price | money }}
+                {%- else -%}
+                  {{ p.price | money }}
+                {%- endif -%}
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+
+{% stylesheet %}
+  /* -- RANDOM PRODUCT CARD STYLES --
+   * Minimal styling that inherits Horizon's CSS variables.
+   * The full-card link overlay makes the entire card clickable
+   * without wrapping everything in an <a> tag (better accessibility).
+   */
+  .random-product-card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .random-product-card__title a,
+  .random-product-card__price {
+    font-family: var(--font-body--family);
+    font-size: 1rem;
+    line-height: normal;
+  }
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Random collection products",
+  "class": "section-random-collection-products",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows random products from the same collection as the current product. Products rotate on each page load — no configuration or metadata needed."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "More from this collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Columns (mobile)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "columns_gap",
+      "label": "Horizontal gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "rows_gap",
+      "label": "Vertical gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "options": [
+        { "value": "page-width", "label": "Page" },
+        { "value": "full-width", "label": "Full" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Random collection products",
+      "category": "Products"
+    }
+  ],
+  "templates": ["product"]
+}
+{% endschema %}

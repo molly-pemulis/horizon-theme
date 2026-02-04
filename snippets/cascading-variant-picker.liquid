@@ -404,22 +404,58 @@
       const hiddenInput = this.querySelector('[data-selected-variant-id]');
       const numOptions = this.options.length;
       const numSelected = this.selections.filter(s => s !== null).length;
-      
+
       if (numSelected === numOptions) {
-        const variant = this.variants.find(v => 
+        const variant = this.variants.find(v =>
           v.options.every((opt, i) => opt === this.selections[i])
         );
-        
+
         if (variant) {
           hiddenInput.value = variant.id;
-          
+
+          // Dispatch variant:selected for components that listen to it
           this.dispatchEvent(new CustomEvent('variant:selected', {
             bubbles: true,
             detail: { variant, sectionId: this.dataset.sectionId }
           }));
+
+          // Dispatch variant:update to enable the Add to Cart button
+          this.dispatchEvent(new CustomEvent('variant:update', {
+            bubbles: true,
+            detail: {
+              resource: {
+                id: variant.id,
+                available: true,
+                price: variant.price,
+                compare_at_price: variant.compare_at_price,
+                sku: variant.sku,
+                featured_media: variant.featured_image ? {
+                  preview_image: { src: variant.featured_image.url }
+                } : null
+              },
+              sourceId: this.dataset.sectionId,
+              data: {
+                productId: this.dataset.productId,
+                html: document
+              }
+            }
+          }));
         }
       } else {
         hiddenInput.value = '';
+
+        // Dispatch variant:update with null to disable Add to Cart
+        this.dispatchEvent(new CustomEvent('variant:update', {
+          bubbles: true,
+          detail: {
+            resource: null,
+            sourceId: this.dataset.sectionId,
+            data: {
+              productId: this.dataset.productId,
+              html: document
+            }
+          }
+        }));
       }
     }
   }

@@ -1,7 +1,7 @@
 {% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
-  Generated: 2026-02-04 00:02 UTC
+  Generated: 2026-02-04 02:51 UTC
   Regular fields: 34
   Metaobject types: fin_characteristics
   Namespaces: custom, gato_heroi, reviews, descriptors
@@ -34,34 +34,46 @@
     <div class="metaobject-viz__bars">
       {% if mo_fin_characteristics.rake.value != blank %}
       <div class="metaobject-viz__bar-group">
-        <div class="metaobject-viz__bar">
-          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.rake.value }}%;"></div>
+        <div class="metaobject-viz__bar-row">
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--left"><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-upright.svg' | asset_url }}" alt="Upright" loading="lazy"></span><span class="metaobject-viz__endpoint-text"><strong>Upright</strong> Tight Turns</span></span>
+          <div class="metaobject-viz__bar">
+            <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.rake.value }}%;"></div>
+          </div>
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--right"><span class="metaobject-viz__endpoint-text"><strong>Raked</strong> Drawn-Out Turns</span><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-raked.svg' | asset_url }}" alt="Raked" loading="lazy"></span></span>
         </div>
-        <div class="metaobject-viz__bar-label">Rake</div>
       </div>
       {% endif %}
       {% if mo_fin_characteristics.area.value != blank %}
       <div class="metaobject-viz__bar-group">
-        <div class="metaobject-viz__bar">
-          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.area.value }}%;"></div>
+        <div class="metaobject-viz__bar-row">
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--left"><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-less-area.svg' | asset_url }}" alt="Less Area" loading="lazy"></span><span class="metaobject-viz__endpoint-text"><strong>Less Area</strong> Loose</span></span>
+          <div class="metaobject-viz__bar">
+            <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.area.value }}%;"></div>
+          </div>
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--right"><span class="metaobject-viz__endpoint-text"><strong>More Area</strong> Stable</span><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-more-area.svg' | asset_url }}" alt="More Area" loading="lazy"></span></span>
         </div>
-        <div class="metaobject-viz__bar-label">Area</div>
       </div>
       {% endif %}
       {% if mo_fin_characteristics.speed.value != blank %}
       <div class="metaobject-viz__bar-group">
-        <div class="metaobject-viz__bar">
-          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.speed.value }}%;"></div>
+        <div class="metaobject-viz__bar-row">
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--left"><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-speed-control.svg' | asset_url }}" alt="Speed Control" loading="lazy"></span><span class="metaobject-viz__endpoint-text"><strong>Speed Control</strong></span></span>
+          <div class="metaobject-viz__bar">
+            <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.speed.value }}%;"></div>
+          </div>
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--right"><span class="metaobject-viz__endpoint-text"><strong>Speed Generating</strong> Drive</span><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-speed-drive.svg' | asset_url }}" alt="Speed Generating" loading="lazy"></span></span>
         </div>
-        <div class="metaobject-viz__bar-label">Speed</div>
       </div>
       {% endif %}
       {% if mo_fin_characteristics.flex.value != blank %}
       <div class="metaobject-viz__bar-group">
-        <div class="metaobject-viz__bar">
-          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.flex.value }}%;"></div>
+        <div class="metaobject-viz__bar-row">
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--left"><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-less-flex.svg' | asset_url }}" alt="Less Flex" loading="lazy"></span><span class="metaobject-viz__endpoint-text"><strong>Less Flex</strong> Responsive</span></span>
+          <div class="metaobject-viz__bar">
+            <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.flex.value }}%;"></div>
+          </div>
+          <span class="metaobject-viz__endpoint metaobject-viz__endpoint--right"><span class="metaobject-viz__endpoint-text"><strong>More Flex</strong> Projection</span><span class="metaobject-viz__icon"><img src="{{ 'icon-fin-more-flex.svg' | asset_url }}" alt="More Flex" loading="lazy"></span></span>
         </div>
-        <div class="metaobject-viz__bar-label">Flex</div>
       </div>
       {% endif %}
     </div>
@@ -321,14 +333,26 @@
 
   /* Metaobject visualizations */
   .metaobject-viz { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
-  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-md); text-transform: uppercase; letter-spacing: 0.05em; }
   .metaobject-viz__bars { margin-bottom: var(--margin-md); }
-  .metaobject-viz__bar-group { margin-bottom: 0.75rem; }
-  .metaobject-viz__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
-  .metaobject-viz__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
-  .metaobject-viz__bar-label { margin-top: 0.25rem; font-size: 0.7rem; color: rgb(var(--color-foreground-rgb) / var(--opacity-70)); }
-  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
+  .metaobject-viz__bar-group { margin-bottom: 1rem; }
+  .metaobject-viz__bar-row { display: flex; align-items: center; gap: 0.75rem; }
+  .metaobject-viz__bar { position: relative; height: 10px; border: 1px solid #898989; background: transparent; flex: 1; min-width: 80px; }
+  .metaobject-viz__marker { position: absolute; top: -2px; bottom: -2px; width: 4px; background: #A82E2D; transform: translateX(-50%); }
+  .metaobject-viz__endpoint { display: flex; align-items: center; gap: 0.375rem; flex-shrink: 0; width: 120px; }
+  .metaobject-viz__endpoint--left { justify-content: flex-start; }
+  .metaobject-viz__endpoint--right { justify-content: flex-end; text-align: right; }
+  .metaobject-viz__endpoint-text { font-size: 0.7rem; color: #898989; line-height: 1.2; }
+  .metaobject-viz__endpoint-text strong { color: rgb(var(--color-foreground-rgb)); display: block; }
+  .metaobject-viz__icon { width: 24px; height: 24px; flex-shrink: 0; }
+  .metaobject-viz__icon img { width: 100%; height: 100%; object-fit: contain; }
+  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.5rem; font-size: var(--font-size-sm); }
   .metaobject-viz__description strong { text-transform: uppercase; }
+  @media (max-width: 600px) {
+    .metaobject-viz__endpoint { width: auto; max-width: 90px; }
+    .metaobject-viz__endpoint-text { font-size: 0.65rem; }
+    .metaobject-viz__icon { width: 20px; height: 20px; }
+  }
 {% endstylesheet %}
 
 {% schema %}

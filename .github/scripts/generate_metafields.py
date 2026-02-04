@@ -240,7 +240,7 @@ for mo_type, mo_def in metaobject_definitions.items():
             # Build left side
             left_html = '<span class="metaobject-viz__endpoint metaobject-viz__endpoint--left">'
             if left_icon:
-                left_html += f'<span class="metaobject-viz__icon">{{{{ "{left_icon}" | asset_url | split: "?" | first }}}}</span>'
+                left_html += f'<span class="metaobject-viz__icon"><img src="{{{{ \'{left_icon}\' | asset_url }}}}" alt="{left_label}" loading="lazy"></span>'
             left_html += f'<span class="metaobject-viz__endpoint-text"><strong>{left_label}</strong>'
             if left_sublabel:
                 left_html += f' {left_sublabel}'
@@ -253,7 +253,7 @@ for mo_type, mo_def in metaobject_definitions.items():
                 right_html += f' {right_sublabel}'
             right_html += '</span>'
             if right_icon:
-                right_html += f'<span class="metaobject-viz__icon">{{{{ "{right_icon}" | asset_url | split: "?" | first }}}}</span>'
+                right_html += f'<span class="metaobject-viz__icon"><img src="{{{{ \'{right_icon}\' | asset_url }}}}" alt="{right_label}" loading="lazy"></span>'
             right_html += '</span>'
 
             viz_html += f'''      {{% if {viz_var}.{bf['key']}.value != blank %}}
@@ -353,14 +353,26 @@ liquid = '''{% comment %}
 
   /* Metaobject visualizations */
   .metaobject-viz { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
-  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-md); text-transform: uppercase; letter-spacing: 0.05em; }
   .metaobject-viz__bars { margin-bottom: var(--margin-md); }
-  .metaobject-viz__bar-group { margin-bottom: 0.75rem; }
-  .metaobject-viz__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
-  .metaobject-viz__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
-  .metaobject-viz__bar-label { margin-top: 0.25rem; font-size: 0.7rem; color: rgb(var(--color-foreground-rgb) / var(--opacity-70)); }
-  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
+  .metaobject-viz__bar-group { margin-bottom: 1rem; }
+  .metaobject-viz__bar-row { display: flex; align-items: center; gap: 0.75rem; }
+  .metaobject-viz__bar { position: relative; height: 10px; border: 1px solid #898989; background: transparent; flex: 1; min-width: 80px; }
+  .metaobject-viz__marker { position: absolute; top: -2px; bottom: -2px; width: 4px; background: #A82E2D; transform: translateX(-50%); }
+  .metaobject-viz__endpoint { display: flex; align-items: center; gap: 0.375rem; flex-shrink: 0; width: 120px; }
+  .metaobject-viz__endpoint--left { justify-content: flex-start; }
+  .metaobject-viz__endpoint--right { justify-content: flex-end; text-align: right; }
+  .metaobject-viz__endpoint-text { font-size: 0.7rem; color: #898989; line-height: 1.2; }
+  .metaobject-viz__endpoint-text strong { color: rgb(var(--color-foreground-rgb)); display: block; }
+  .metaobject-viz__icon { width: 24px; height: 24px; flex-shrink: 0; }
+  .metaobject-viz__icon img { width: 100%; height: 100%; object-fit: contain; }
+  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.5rem; font-size: var(--font-size-sm); }
   .metaobject-viz__description strong { text-transform: uppercase; }
+  @media (max-width: 600px) {
+    .metaobject-viz__endpoint { width: auto; max-width: 90px; }
+    .metaobject-viz__endpoint-text { font-size: 0.65rem; }
+    .metaobject-viz__icon { width: 20px; height: 20px; }
+  }
 {% endstylesheet %}
 
 {% schema %}

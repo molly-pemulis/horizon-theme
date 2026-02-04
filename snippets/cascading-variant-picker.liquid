@@ -27,11 +27,14 @@
     data-product-url="{{ product.url }}"
     data-section-id="{{ section.id }}"
   >
-    {%- comment -%} JSON data for JavaScript {%- endcomment -%}
+    {%- comment -%} JSON data for JavaScript - collect available variants {%- endcomment -%}
     <script type="application/json" data-variants>
       [
+        {%- assign first_available = true -%}
         {%- for variant in product.variants -%}
           {%- if variant.available -%}
+            {%- unless first_available -%},{%- endunless -%}
+            {%- assign first_available = false -%}
             {
               "id": {{ variant.id }},
               "options": {{ variant.options | json }},
@@ -39,7 +42,7 @@
               "compare_at_price": {{ variant.compare_at_price | default: 'null' }},
               "sku": {{ variant.sku | json }},
               "featured_image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 800 | json }}{% else %}null{% endif %}
-            }{% unless forloop.last %},{% endunless %}
+            }
           {%- endif -%}
         {%- endfor -%}
       ]

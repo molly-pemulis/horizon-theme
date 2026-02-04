@@ -1,10 +1,10 @@
 {% comment %}
   CASCADING VARIANT PICKER
   ========================
-  - Renders all options server-side (like standard picker)
-  - Uses swatch snippet for consistent styling
-  - JavaScript hides unavailable options (pruning)
-  - Shows variant photos after picking prior options
+  - Size: dropdown select
+  - Color: swatches/variant photos (rendered server-side with swatch snippet)
+  - Prunes unavailable options via JavaScript
+  - Shows variant photos when selecting color
 
   Usage: {% render 'cascading-variant-picker', product_resource: product %}
 {% endcomment %}
@@ -27,7 +27,7 @@
     data-product-url="{{ product.url }}"
     data-section-id="{{ section.id }}"
   >
-    {%- comment -%} JSON data for JavaScript - collect available variants {%- endcomment -%}
+    {%- comment -%} JSON data for JavaScript {%- endcomment -%}
     <script type="application/json" data-variants>
       [
         {%- assign first_available = true -%}
@@ -53,98 +53,102 @@
         {% assign option_index = forloop.index0 %}
         {% assign option_name_lower = option.name | downcase %}
 
-        {%- comment -%} Check if this is a color-type option by name {%- endcomment -%}
+        {%- comment -%} Check if this is a color-type option {%- endcomment -%}
         {% assign is_color_option = false %}
         {% if option_name_lower contains 'color' or option_name_lower contains 'colour' or option_name_lower contains 'finish' or option_name_lower contains 'shade' %}
           {% assign is_color_option = true %}
         {% endif %}
 
-        {%- comment -%} Check if this option has Shopify swatches defined {%- endcomment -%}
-        {% assign swatch_count = option.values | map: 'swatch' | compact | size %}
-        {% assign has_swatches = false %}
-        {% if swatch_count > 0 %}
-          {% assign has_swatches = true %}
-        {% endif %}
-
-        {%- comment -%} Check if this option has variant images (only matters for color options) {%- endcomment -%}
-        {% assign has_variant_images = false %}
-        {% if is_color_option %}
-          {% for value in option.values %}
-            {% if value.variant.featured_media != blank %}
-              {% assign has_variant_images = true %}
-              {% break %}
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-
-        {%- comment -%} Use swatches only for color-type options that have swatches or variant images {%- endcomment -%}
-        {% assign use_swatches = false %}
-        {% if is_color_option and has_swatches %}
-          {% assign use_swatches = true %}
-        {% elsif is_color_option and has_variant_images %}
-          {% assign use_swatches = true %}
-        {% endif %}
-
-        <fieldset
-          class="cascading-picker__option{% if use_swatches %} cascading-picker__option--swatches{% endif %}"
-          data-option-index="{{ option_index }}"
-          {% if option_index > 0 %}disabled{% endif %}
-        >
-          <legend>
+        <div class="cascading-picker__option" data-option-index="{{ option_index }}">
+          <label class="cascading-picker__label-text">
             {{ option.name }}
             <span class="cascading-picker__selected-value" data-selected-label></span>
-          </legend>
+          </label>
 
-          <div class="cascading-picker__values{% if use_swatches %} cascading-picker__values--swatches{% endif %}">
-            {%- for value in option.values -%}
-              {% liquid
-                # Get the variant for this option value to access its image
-                assign value_variant = value.variant
-                assign featured_media = value_variant.featured_media
+          {% if is_color_option %}
+            {%- comment -%} COLOR: Render variant photos as swatches {%- endcomment -%}
+            <div class="cascading-picker__swatches" data-option-index="{{ option_index }}" {% if option_index > 0 %}data-disabled="true"{% endif %}>
+              {%- for value in option.values -%}
+                {% liquid
+                  assign value_string = value | escape
 
-                # Convert value to string for comparison
-                assign value_string = value | escape
+                  # Find the first available variant with this color to get its image
+                  assign variant_image = null
+                  assign variant_image_url = null
+                  assign value_available = false
 
-                # Check if this value leads to any available variant
-                assign value_available = false
-                for variant in product.variants
-                  assign variant_option_value = variant.options[option_index] | escape
-                  if variant.available and variant_option_value == value_string
-                    assign value_available = true
-                    break
-                  endif
-                endfor
-              %}
-
-              <label
-                class="cascading-picker__label{% if use_swatches %} cascading-picker__label--swatch{% endif %}{% unless value_available %} cascading-picker__label--unavailable{% endunless %}"
-                data-option-value="{{ value | escape }}"
-                data-option-index="{{ option_index }}"
-                {% unless value_available %}data-unavailable="true"{% endunless %}
-              >
-                <input
-                  type="radio"
-                  name="option{{ forloop.parentloop.index }}"
-                  value="{{ value | escape }}"
+                  for variant in product.variants
+                    assign variant_opt = variant.options[option_index] | escape
+                    if variant_opt == value_string
+                      if variant.available
+                        assign value_available = true
+                      endif
+                      if variant.featured_image and variant_image == null
+                        assign variant_image = variant.featured_image
+                        assign variant_image_url = variant.featured_image | image_url: width: 800
+                      endif
+                    endif
+                  endfor
+                %}
+                <button
+                  type="button"
+                  class="cascading-picker__swatch{% unless value_available %} cascading-picker__swatch--unavailable{% endunless %}"
                   data-option-index="{{ option_index }}"
-                  {% unless value_available %}disabled{% endunless %}
+                  data-value="{{ value | escape }}"
+                  {% if variant_image_url %}data-image-url="{{ variant_image_url }}"{% endif %}
+                  {% unless value_available %}disabled data-unavailable="true"{% endunless %}
+                  title="{{ value }}"
                 >
+                  {% if variant_image %}
+                    <img
+                      src="{{ variant_image | image_url: width: 100 }}"
+                      alt="{{ value }}"
+                      loading="lazy"
+                      width="50"
+                      height="50"
+                    >
+                  {% else %}
+                    <span class="cascading-picker__swatch-text">{{ value }}</span>
+                  {% endif %}
+                </button>
+              {%- endfor -%}
+            </div>
+            <input type="hidden" name="option{{ forloop.index }}" data-option-index="{{ option_index }}" value="">
 
-                {% if use_swatches %}
-                  {%- comment -%} Use same rendering as standard picker {%- endcomment -%}
-                  {% render 'swatch',
-                    swatch: value.swatch,
-                    variant_image: featured_media,
-                    mode: 'unscaled'
+          {% else %}
+            {%- comment -%} SIZE/OTHER: Render dropdown {%- endcomment -%}
+            <div class="cascading-picker__select-wrapper">
+              <select
+                name="option{{ forloop.index }}"
+                data-option-index="{{ option_index }}"
+                {% if option_index > 0 %}disabled{% endif %}
+              >
+                <option value="" selected disabled>Select {{ option.name }}</option>
+                {%- for value in option.values -%}
+                  {% liquid
+                    assign value_string = value | escape
+
+                    # Check if this value leads to any available variant
+                    assign value_available = false
+                    for variant in product.variants
+                      assign variant_opt = variant.options[option_index] | escape
+                      if variant.available and variant_opt == value_string
+                        assign value_available = true
+                        break
+                      endif
+                    endfor
                   %}
-                  <span class="cascading-picker__value-name visually-hidden">{{ value }}</span>
-                {% else %}
-                  <span class="cascading-picker__value-text">{{ value }}</span>
-                {% endif %}
-              </label>
-            {%- endfor -%}
-          </div>
-        </fieldset>
+                  {% if value_available %}
+                    <option value="{{ value | escape }}">{{ value }}</option>
+                  {% endif %}
+                {%- endfor -%}
+              </select>
+              <svg class="cascading-picker__caret" viewBox="0 0 10 6" aria-hidden="true">
+                <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          {% endif %}
+        </div>
       {%- endfor -%}
 
       <input type="hidden" name="id" value="" data-selected-variant-id>
@@ -164,91 +168,169 @@
     connectedCallback() {
       const variantsScript = this.querySelector('script[data-variants]');
       if (variantsScript) {
-        this.variants = JSON.parse(variantsScript.textContent);
+        try {
+          this.variants = JSON.parse(variantsScript.textContent);
+        } catch (e) {
+          console.error('Failed to parse variants JSON:', e);
+          this.variants = [];
+        }
       }
 
-      const fieldsets = this.querySelectorAll('fieldset');
-      this.optionCount = fieldsets.length;
+      const options = this.querySelectorAll('.cascading-picker__option');
+      this.optionCount = options.length;
       this.selections = new Array(this.optionCount).fill(null);
 
-      // Bind radio changes
-      this.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', this.handleChange.bind(this));
+      // Bind dropdown changes
+      this.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', this.handleSelectChange.bind(this));
       });
 
-      // Initial prune - hide unavailable options for first fieldset
-      this.pruneOptions(0);
+      // Bind swatch clicks
+      this.querySelectorAll('.cascading-picker__swatch').forEach(swatch => {
+        swatch.addEventListener('click', this.handleSwatchClick.bind(this));
+      });
+
+      // Initial state - prune first option if it's a dropdown
+      const firstSelect = this.querySelector('select[data-option-index="0"]');
+      if (firstSelect) {
+        this.pruneSelect(0);
+      }
     }
 
-    handleChange(event) {
-      const radio = event.target;
-      const optionIndex = parseInt(radio.dataset.optionIndex);
-      const value = radio.value;
+    handleSelectChange(event) {
+      const select = event.target;
+      const optionIndex = parseInt(select.dataset.optionIndex);
+      const value = select.value;
 
       this.selections[optionIndex] = value;
-
-      // Clear selections after this one and re-disable fieldsets beyond the next one
-      for (let i = optionIndex + 1; i < this.optionCount; i++) {
-        this.selections[i] = null;
-        const fieldset = this.querySelector(`fieldset[data-option-index="${i}"]`);
-        if (fieldset) {
-          fieldset.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-          // Only keep the immediate next fieldset enabled, disable the rest
-          if (i > optionIndex + 1) {
-            fieldset.setAttribute('disabled', '');
-          }
-        }
-      }
-
-      // Update labels
+      this.clearSubsequentSelections(optionIndex);
       this.updateLabels();
-
-      // Enable only the immediate next fieldset and prune its options
-      const nextIndex = optionIndex + 1;
-      if (nextIndex < this.optionCount) {
-        const nextFieldset = this.querySelector(`fieldset[data-option-index="${nextIndex}"]`);
-        if (nextFieldset) {
-          nextFieldset.removeAttribute('disabled');
-          this.pruneOptions(nextIndex);
-        }
-      }
-
-      // Update main image if variant has one
-      this.updateMainImage();
-
-      // Check if complete
+      this.enableNextOption(optionIndex);
       this.checkComplete();
     }
 
-    pruneOptions(optionIndex) {
+    handleSwatchClick(event) {
+      const swatch = event.currentTarget;
+      if (swatch.disabled) return;
+
+      const optionIndex = parseInt(swatch.dataset.optionIndex);
+      const value = swatch.dataset.value;
+      const imageUrl = swatch.dataset.imageUrl;
+
+      // Update selection
+      this.selections[optionIndex] = value;
+
+      // Update hidden input
+      const hiddenInput = this.querySelector(`input[type="hidden"][data-option-index="${optionIndex}"]`);
+      if (hiddenInput) hiddenInput.value = value;
+
+      // Update active state
+      const container = swatch.closest('.cascading-picker__swatches');
+      container.querySelectorAll('.cascading-picker__swatch').forEach(s => {
+        s.classList.remove('cascading-picker__swatch--active');
+      });
+      swatch.classList.add('cascading-picker__swatch--active');
+
+      // Update main product image
+      if (imageUrl) {
+        this.updateMainImage(imageUrl);
+      }
+
+      this.clearSubsequentSelections(optionIndex);
+      this.updateLabels();
+      this.enableNextOption(optionIndex);
+      this.checkComplete();
+    }
+
+    clearSubsequentSelections(fromIndex) {
+      for (let i = fromIndex + 1; i < this.optionCount; i++) {
+        this.selections[i] = null;
+
+        // Reset select dropdowns
+        const select = this.querySelector(`select[data-option-index="${i}"]`);
+        if (select) {
+          select.selectedIndex = 0;
+          select.disabled = true;
+        }
+
+        // Reset swatch containers
+        const swatchContainer = this.querySelector(`.cascading-picker__swatches[data-option-index="${i}"]`);
+        if (swatchContainer) {
+          swatchContainer.dataset.disabled = 'true';
+          swatchContainer.querySelectorAll('.cascading-picker__swatch').forEach(s => {
+            s.classList.remove('cascading-picker__swatch--active');
+          });
+        }
+
+        // Reset hidden inputs
+        const hiddenInput = this.querySelector(`input[type="hidden"][data-option-index="${i}"]`);
+        if (hiddenInput) hiddenInput.value = '';
+      }
+    }
+
+    enableNextOption(currentIndex) {
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= this.optionCount) return;
+
+      // Enable and prune next select
+      const nextSelect = this.querySelector(`select[data-option-index="${nextIndex}"]`);
+      if (nextSelect) {
+        nextSelect.disabled = false;
+        this.pruneSelect(nextIndex);
+      }
+
+      // Enable and prune next swatch container
+      const nextSwatches = this.querySelector(`.cascading-picker__swatches[data-option-index="${nextIndex}"]`);
+      if (nextSwatches) {
+        nextSwatches.dataset.disabled = 'false';
+        this.pruneSwatches(nextIndex);
+      }
+    }
+
+    pruneSelect(optionIndex) {
+      const select = this.querySelector(`select[data-option-index="${optionIndex}"]`);
+      if (!select) return;
+
       const availableValues = this.getAvailableValues(optionIndex);
-      const fieldset = this.querySelector(`fieldset[data-option-index="${optionIndex}"]`);
-      if (!fieldset) return;
 
-      const labels = fieldset.querySelectorAll('.cascading-picker__label');
-      labels.forEach(label => {
-        const value = label.dataset.optionValue;
-        const radio = label.querySelector('input[type="radio"]');
+      // Show/hide options
+      Array.from(select.options).forEach(option => {
+        if (option.value === '') return; // Keep placeholder
+        option.style.display = availableValues.includes(option.value) ? '' : 'none';
+        option.disabled = !availableValues.includes(option.value);
+      });
 
+      // Auto-select if only one available
+      const visibleOptions = Array.from(select.options).filter(o => o.value && !o.disabled);
+      if (visibleOptions.length === 1) {
+        select.value = visibleOptions[0].value;
+        select.dispatchEvent(new Event('change'));
+      }
+    }
+
+    pruneSwatches(optionIndex) {
+      const container = this.querySelector(`.cascading-picker__swatches[data-option-index="${optionIndex}"]`);
+      if (!container) return;
+
+      const availableValues = this.getAvailableValues(optionIndex);
+
+      container.querySelectorAll('.cascading-picker__swatch').forEach(swatch => {
+        const value = swatch.dataset.value;
         if (availableValues.includes(value)) {
-          label.style.display = '';
-          label.classList.remove('cascading-picker__label--unavailable');
-          if (radio) radio.disabled = false;
+          swatch.style.display = '';
+          swatch.disabled = false;
+          swatch.classList.remove('cascading-picker__swatch--unavailable');
         } else {
-          label.style.display = 'none';
-          label.classList.add('cascading-picker__label--unavailable');
-          if (radio) radio.disabled = true;
+          swatch.style.display = 'none';
+          swatch.disabled = true;
+          swatch.classList.add('cascading-picker__swatch--unavailable');
         }
       });
 
-      // Auto-select if only one option available
-      if (availableValues.length === 1 && !fieldset.disabled) {
-        const onlyLabel = fieldset.querySelector(`.cascading-picker__label[data-option-value="${CSS.escape(availableValues[0])}"]`);
-        const radio = onlyLabel?.querySelector('input[type="radio"]');
-        if (radio && !radio.checked) {
-          radio.checked = true;
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+      // Auto-select if only one available
+      const visibleSwatches = container.querySelectorAll('.cascading-picker__swatch:not([disabled])');
+      if (visibleSwatches.length === 1) {
+        visibleSwatches[0].click();
       }
     }
 
@@ -262,7 +344,6 @@
         }
       }
 
-      // Get unique values at this option index
       return [...new Set(matchingVariants.map(v => v.options[optionIndex]))];
     }
 
@@ -272,23 +353,11 @@
       });
     }
 
-    updateMainImage() {
-      // Find matching variant based on current selections
-      const matchingVariant = this.variants.find(v => {
-        for (let i = 0; i < this.selections.length; i++) {
-          if (this.selections[i] !== null && v.options[i] !== this.selections[i]) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      if (matchingVariant?.featured_image) {
-        const mainImage = document.querySelector('.product-media__image');
-        if (mainImage) {
-          mainImage.src = matchingVariant.featured_image;
-          mainImage.srcset = '';
-        }
+    updateMainImage(imageUrl) {
+      const mainImage = document.querySelector('.product-media__image');
+      if (mainImage && imageUrl) {
+        mainImage.src = imageUrl;
+        mainImage.srcset = '';
       }
     }
 
@@ -304,7 +373,6 @@
         if (variant) {
           hiddenInput.value = variant.id;
 
-          // Dispatch events for add-to-cart button
           this.dispatchEvent(new CustomEvent('variant:selected', {
             bubbles: true,
             detail: { variant, sectionId: this.dataset.sectionId }
@@ -319,30 +387,21 @@
                 price: variant.price,
                 compare_at_price: variant.compare_at_price,
                 sku: variant.sku,
-                featured_media: variant.featured_image ? {
-                  preview_image: { src: variant.featured_image }
-                } : null
+                featured_media: variant.featured_image ? { preview_image: { src: variant.featured_image } } : null
               },
               sourceId: this.dataset.sectionId,
-              data: {
-                productId: this.dataset.productId,
-                html: document
-              }
+              data: { productId: this.dataset.productId, html: document }
             }
           }));
         }
       } else {
         hiddenInput.value = '';
-
         this.dispatchEvent(new CustomEvent('variant:update', {
           bubbles: true,
           detail: {
             resource: null,
             sourceId: this.dataset.sectionId,
-            data: {
-              productId: this.dataset.productId,
-              html: document
-            }
+            data: { productId: this.dataset.productId, html: document }
           }
         }));
       }
@@ -366,23 +425,12 @@
   }
 
   .cascading-picker__option {
-    border: none;
-    padding: 0;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xs, 4px);
   }
 
-  .cascading-picker__option[disabled] {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  .cascading-picker__option[disabled] .cascading-picker__values {
-    display: none;
-  }
-
-  .cascading-picker__option legend {
-    padding: 0;
-    margin-bottom: var(--margin-2xs, 4px);
+  .cascading-picker__label-text {
     font-weight: var(--font-weight-semibold, 600);
   }
 
@@ -391,85 +439,100 @@
     color: rgb(var(--color-foreground-rgb, 0 0 0) / 0.7);
   }
 
-  .cascading-picker__values {
+  /* Dropdown styles */
+  .cascading-picker__select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .cascading-picker__select-wrapper select {
+    width: 100%;
+    padding: var(--padding-sm, 8px) var(--padding-lg, 16px);
+    padding-right: 40px;
+    appearance: none;
+    border: var(--style-border-width-inputs, 1px) solid var(--color-border, #ccc);
+    border-radius: var(--style-border-radius-inputs, 4px);
+    background: var(--color-background, #fff);
+    cursor: pointer;
+    font-size: inherit;
+  }
+
+  .cascading-picker__select-wrapper select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgb(0 0 0 / 0.05);
+  }
+
+  .cascading-picker__caret {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+  }
+
+  /* Swatch container */
+  .cascading-picker__swatches {
     display: flex;
     flex-wrap: wrap;
     gap: var(--gap-sm, 8px);
   }
 
-  /* Text button style (non-swatch) */
-  .cascading-picker__label {
-    position: relative;
-    cursor: pointer;
+  .cascading-picker__swatches[data-disabled="true"] {
+    opacity: 0.4;
+    pointer-events: none;
   }
 
-  .cascading-picker__label input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-  }
-
-  .cascading-picker__value-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 3.25em;
-    min-height: 3.25em;
-    padding: var(--padding-sm, 8px) var(--padding-lg, 16px);
-    border: var(--style-border-width-inputs, 1px) solid var(--color-border, #ccc);
+  /* Swatch button with variant photo */
+  .cascading-picker__swatch {
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border: 2px solid var(--color-border, #ccc);
     border-radius: var(--style-border-radius-inputs, 4px);
     background: var(--color-background, #fff);
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
   }
 
-  .cascading-picker__label:hover .cascading-picker__value-text {
-    border-color: var(--color-foreground, #000);
-  }
-
-  .cascading-picker__label:has(input:checked) .cascading-picker__value-text {
-    border-color: var(--color-foreground, #000);
-    background-color: var(--color-foreground, #000);
-    color: var(--color-background, #fff);
-  }
-
-  /* Swatch style */
-  .cascading-picker__label--swatch {
-    width: var(--variant-picker-swatch-width, 44px);
-    height: var(--variant-picker-swatch-height, 44px);
-  }
-
-  .cascading-picker__label--swatch .swatch {
+  .cascading-picker__swatch img {
     width: 100%;
     height: 100%;
-    border-radius: var(--variant-picker-swatch-radius, 50%);
-    transition: outline 0.15s ease;
+    object-fit: cover;
+    display: block;
   }
 
-  .cascading-picker__label--swatch:hover .swatch {
-    outline: 2px solid rgb(var(--color-foreground-rgb, 0 0 0) / 0.35);
-    outline-offset: 2px;
+  .cascading-picker__swatch:hover:not(:disabled) {
+    border-color: var(--color-foreground, #000);
   }
 
-  .cascading-picker__label--swatch:has(input:checked) .swatch {
-    outline: 2px solid var(--color-foreground, #000);
-    outline-offset: 2px;
+  .cascading-picker__swatch--active {
+    border-color: var(--color-foreground, #000);
+    border-width: 2px;
   }
 
-  .cascading-picker__label--unavailable {
+  .cascading-picker__swatch--unavailable {
     display: none;
   }
 
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  .cascading-picker__swatch:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .cascading-picker__swatch-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 10px;
+    text-align: center;
+    padding: 4px;
+    word-break: break-word;
   }
 {% endstylesheet %}

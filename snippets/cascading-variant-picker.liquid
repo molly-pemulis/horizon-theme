@@ -48,23 +48,37 @@
     <form class="cascading-picker__form">
       {%- for option in product.options_with_values -%}
         {% assign option_index = forloop.index0 %}
+        {% assign option_name_lower = option.name | downcase %}
+
+        {%- comment -%} Check if this is a color-type option by name {%- endcomment -%}
+        {% assign is_color_option = false %}
+        {% if option_name_lower contains 'color' or option_name_lower contains 'colour' or option_name_lower contains 'finish' or option_name_lower contains 'shade' %}
+          {% assign is_color_option = true %}
+        {% endif %}
+
+        {%- comment -%} Check if this option has Shopify swatches defined {%- endcomment -%}
         {% assign swatch_count = option.values | map: 'swatch' | compact | size %}
         {% assign has_swatches = false %}
         {% if swatch_count > 0 %}
           {% assign has_swatches = true %}
         {% endif %}
 
-        {%- comment -%} Check if this option has variant images {%- endcomment -%}
+        {%- comment -%} Check if this option has variant images (only matters for color options) {%- endcomment -%}
         {% assign has_variant_images = false %}
-        {% for value in option.values %}
-          {% if value.variant.featured_media != blank %}
-            {% assign has_variant_images = true %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
+        {% if is_color_option %}
+          {% for value in option.values %}
+            {% if value.variant.featured_media != blank %}
+              {% assign has_variant_images = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
 
+        {%- comment -%} Use swatches only for color-type options that have swatches or variant images {%- endcomment -%}
         {% assign use_swatches = false %}
-        {% if has_swatches or has_variant_images %}
+        {% if is_color_option and has_swatches %}
+          {% assign use_swatches = true %}
+        {% elsif is_color_option and has_variant_images %}
           {% assign use_swatches = true %}
         {% endif %}
 
@@ -85,10 +99,14 @@
                 assign value_variant = value.variant
                 assign featured_media = value_variant.featured_media
 
+                # Convert value to string for comparison
+                assign value_string = value | escape
+
                 # Check if this value leads to any available variant
                 assign value_available = false
                 for variant in product.variants
-                  if variant.available and variant.options[option_index] == value
+                  assign variant_option_value = variant.options[option_index] | escape
+                  if variant.available and variant_option_value == value_string
                     assign value_available = true
                     break
                   endif
@@ -166,25 +184,29 @@
 
       this.selections[optionIndex] = value;
 
-      // Clear selections after this one
+      // Clear selections after this one and re-disable fieldsets beyond the next one
       for (let i = optionIndex + 1; i < this.optionCount; i++) {
         this.selections[i] = null;
-        // Uncheck radios in subsequent fieldsets
         const fieldset = this.querySelector(`fieldset[data-option-index="${i}"]`);
         if (fieldset) {
           fieldset.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+          // Only keep the immediate next fieldset enabled, disable the rest
+          if (i > optionIndex + 1) {
+            fieldset.setAttribute('disabled', '');
+          }
         }
       }
 
       // Update labels
       this.updateLabels();
 
-      // Enable and prune next fieldsets
-      for (let i = optionIndex + 1; i < this.optionCount; i++) {
-        const fieldset = this.querySelector(`fieldset[data-option-index="${i}"]`);
-        if (fieldset) {
-          fieldset.disabled = false;
-          this.pruneOptions(i);
+      // Enable only the immediate next fieldset and prune its options
+      const nextIndex = optionIndex + 1;
+      if (nextIndex < this.optionCount) {
+        const nextFieldset = this.querySelector(`fieldset[data-option-index="${nextIndex}"]`);
+        if (nextFieldset) {
+          nextFieldset.removeAttribute('disabled');
+          this.pruneOptions(nextIndex);
         }
       }
 
@@ -346,9 +368,13 @@
     margin: 0;
   }
 
-  .cascading-picker__option:disabled {
+  .cascading-picker__option[disabled] {
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  .cascading-picker__option[disabled] .cascading-picker__values {
+    display: none;
   }
 
   .cascading-picker__option legend {

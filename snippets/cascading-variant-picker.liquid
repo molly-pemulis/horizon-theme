@@ -285,6 +285,16 @@
         container.appendChild(swatch);
       });
       
+      // AUTO-SELECT: If only one color available after pruning, select it automatically.
+      // This makes the variant image show immediately when size is picked and only
+      // one color remains (e.g. Magenta 9.5" is the only C Fin in stock).
+      if (availableValues.length === 1) {
+        const onlySwatch = container.querySelector('.cascading-picker__swatch');
+        if (onlySwatch) {
+          onlySwatch.click();
+        }
+      }
+      
       // If no images at all, fall back to dropdown (replace swatches container)
       if (!hasAnyImages && availableValues.length > 0) {
         this.convertToDropdown(optionIndex, availableValues);
@@ -346,6 +356,14 @@
       
       select.disabled = this.selections[optionIndex - 1] === null;
       select.selectedIndex = 0;
+      
+      // AUTO-SELECT: If only one value available after pruning, select it and fire change.
+      // Cascades through remaining options so the variant resolves immediately
+      // when there's only one path (e.g. single size left for a color).
+      if (availableValues.length === 1 && !select.disabled) {
+        select.selectedIndex = 1; // index 0 is placeholder, 1 is the only real option
+        select.dispatchEvent(new Event('change'));
+      }
     }
 
     getAvailableValues(optionIndex) {

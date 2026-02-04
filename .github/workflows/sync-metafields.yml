@@ -28,16 +28,11 @@ jobs:
           SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
         run: python3 .github/scripts/generate_metafields.py
 
-      - name: Generate fin characteristics Liquid file
-        env:
-          SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
-        run: python3 .github/scripts/generate_fin_characteristics.py
-
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add blocks/product-metafields.liquid blocks/fin-characteristics.liquid
+          git add blocks/product-metafields.liquid
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

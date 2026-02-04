@@ -3,7 +3,10 @@
 Generate product-metafields.liquid from Shopify metafield definitions.
 Run by GitHub Action hourly, or manually.
 
-Also includes fin_characteristics metaobject visualization if it exists.
+Automatically includes visualizations for any metaobject references found on products.
+- Integer fields (0-100) render as progress bars
+- Text fields render as labeled descriptions
+- Scales to any metaobject type without code changes
 """
 import requests
 import os
@@ -15,13 +18,19 @@ ACCESS_TOKEN = os.environ.get('SHOPIFY_ADMIN_TOKEN')
 THEME_FILE = "blocks/product-metafields.liquid"
 
 INCLUDE_NAMESPACES = ['custom', 'gato_heroi', 'reviews', 'descriptors']
-EXCLUDE_KEYS = ['rating_value', 'review_count', 'rating', 'rating_count', 'availability', 'fin_characteristics']
+EXCLUDE_KEYS = ['rating_value', 'review_count', 'rating', 'rating_count', 'availability']
 
 if not ACCESS_TOKEN:
     print("No SHOPIFY_ADMIN_TOKEN set, skipping")
     exit(0)
 
 url = f"https://{SHOP_URL}/admin/api/{API_VERSION}/graphql.json"
+headers = {
+    "X-Shopify-Access-Token": ACCESS_TOKEN,
+    "Content-Type": "application/json"
+}
+
+# Get all product metafield definitions
 query = """
 {
   metafieldDefinitions(ownerType: PRODUCT, first: 100) {
@@ -37,13 +46,7 @@ query = """
 }
 """
 
-headers = {
-    "X-Shopify-Access-Token": ACCESS_TOKEN,
-    "Content-Type": "application/json"
-}
-
 response = requests.post(url, json={"query": query}, headers=headers)
-
 if response.status_code != 200:
     print(f"API error: {response.status_code}")
     exit(1)
@@ -51,53 +54,81 @@ if response.status_code != 200:
 data = response.json()
 edges = data.get('data', {}).get('metafieldDefinitions', {}).get('edges', [])
 
-if not edges:
-    print("No metafield definitions found")
-    exit(0)
+# Separate metaobject references from regular metafields
+metaobject_refs = []
+regular_fields = []
 
-fields = []
 for e in edges:
     node = e['node']
     ns = node['namespace']
     key = node['key']
-    if ns in INCLUDE_NAMESPACES and key not in EXCLUDE_KEYS:
-        fields.append({
+    ftype = node['type']['name']
+
+    if ftype == 'metaobject_reference':
+        metaobject_refs.append({
+            'namespace': ns,
+            'key': key,
+            'name': node['name']
+        })
+    elif ns in INCLUDE_NAMESPACES and key not in EXCLUDE_KEYS:
+        regular_fields.append({
             'namespace': ns,
             'key': key,
             'name': node['name'],
-            'type': node['type']['name']
+            'type': ftype
         })
 
-print(f"Found {len(fields)} metafield definitions to include")
+print(f"Found {len(regular_fields)} regular metafields")
+print(f"Found {len(metaobject_refs)} metaobject references")
 
-# Check if fin_characteristics metaobject exists
-fin_query = """
-{
-  metaobjectDefinitionByType(type: "fin_characteristics") {
-    id
-    type
-  }
-}
-"""
-fin_response = requests.post(url, json={"query": fin_query}, headers=headers)
-fin_data = fin_response.json()
-has_fin_characteristics = fin_data.get('data', {}).get('metaobjectDefinitionByType') is not None
-print(f"fin_characteristics metaobject: {'found' if has_fin_characteristics else 'not found'}")
+# Get field definitions for each metaobject type
+metaobject_definitions = {}
+for ref in metaobject_refs:
+    # Query the metaobject definition to get its fields
+    mo_query = """
+    query GetMetaobjectDef($type: String!) {
+      metaobjectDefinitionByType(type: $type) {
+        type
+        name
+        fieldDefinitions {
+          key
+          name
+          type { name }
+          validations { name value }
+        }
+      }
+    }
+    """
+    # The metaobject type is typically the key name
+    mo_type = ref['key']
+    mo_response = requests.post(url, json={"query": mo_query, "variables": {"type": mo_type}}, headers=headers)
+    mo_data = mo_response.json()
+    definition = mo_data.get('data', {}).get('metaobjectDefinitionByType')
 
+    if definition:
+        metaobject_definitions[mo_type] = {
+            'namespace': ref['namespace'],
+            'key': ref['key'],
+            'name': definition['name'],
+            'fields': definition['fieldDefinitions']
+        }
+        print(f"  - {mo_type}: {len(definition['fieldDefinitions'])} fields")
+
+# Generate Liquid for regular metafields
 field_blocks = []
-for f in fields:
+for f in regular_fields:
     ns = f['namespace']
     key = f['key']
     name = f['name']
     ftype = f['type']
-    
+
     if ftype == 'url':
         value_output = '<a href="{{ product.metafields.' + ns + '.' + key + '.value }}" target="_blank">View Guide</a>'
     elif ftype == 'multi_line_text_field':
         value_output = '{{ product.metafields.' + ns + '.' + key + '.value | newline_to_br }}'
     else:
         value_output = '{{ product.metafields.' + ns + '.' + key + '.value }}'
-    
+
     block = '    {% if product.metafields.' + ns + '.' + key + '.value != blank %}\n'
     block += '      <div class="product-metafields__item">\n'
     block += '        <dt class="product-metafields__label">' + name + '</dt>\n'
@@ -107,117 +138,108 @@ for f in fields:
     field_blocks.append(block)
 
 fields_html = '\n'.join(field_blocks)
-timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-namespaces_str = ', '.join(INCLUDE_NAMESPACES)
 
-# Build fin characteristics visualization (only if metaobject exists)
-fin_characteristics_html = ''
-if has_fin_characteristics:
-    fin_characteristics_html = '''
-  {% assign fin = product.metafields.custom.fin_characteristics.value %}
-  {% if fin != blank %}
-  <div class="fin-characteristics">
-    <h4 class="fin-characteristics__title">Form, Function & Feel</h4>
+# Generate Liquid for metaobject visualizations
+metaobject_visualizations = []
+for mo_type, mo_def in metaobject_definitions.items():
+    ns = mo_def['namespace']
+    key = mo_def['key']
+    name = mo_def['name']
+    fields = mo_def['fields']
 
-    <div class="fin-characteristics__chart">
-      {% if fin.rake.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.rake.value }}%;"></div>
-        </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Upright</strong> Tight Turns</span>
-          <span><strong>Raked</strong> Drawn-Out Turns</span>
-        </div>
-      </div>
-      {% endif %}
+    # Separate integer fields (for bars) from text fields (for descriptions)
+    bar_fields = []
+    text_fields = []
 
-      {% if fin.area.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.area.value }}%;"></div>
-        </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Less Area</strong> Loose</span>
-          <span><strong>More Area</strong> Stable</span>
-        </div>
-      </div>
-      {% endif %}
+    for field in fields:
+        field_type = field['type']['name']
+        field_key = field['key']
+        field_name = field['name']
 
-      {% if fin.speed.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.speed.value }}%;"></div>
-        </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Speed Control</strong></span>
-          <span><strong>Speed Generating</strong> Drive</span>
-        </div>
-      </div>
-      {% endif %}
+        # Check validations for min/max (indicates a bar-style field)
+        validations = {v['name']: v['value'] for v in field.get('validations', [])}
 
-      {% if fin.flex.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.flex.value }}%;"></div>
-        </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Less Flex</strong> Responsive</span>
-          <span><strong>More Flex</strong> Projection</span>
-        </div>
-      </div>
-      {% endif %}
-    </div>
+        if field_type == 'number_integer':
+            # Check if it has 0-100 range (bar visualization)
+            min_val = validations.get('min', '0')
+            max_val = validations.get('max', '100')
+            bar_fields.append({
+                'key': field_key,
+                'name': field_name,
+                'min': min_val,
+                'max': max_val
+            })
+        elif field_type in ['single_line_text_field', 'multi_line_text_field']:
+            text_fields.append({
+                'key': field_key,
+                'name': field_name,
+                'multiline': field_type == 'multi_line_text_field'
+            })
 
-    <div class="fin-characteristics__descriptions">
-      {% if fin.form_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Form |</strong> {{ fin.form_text.value }}
-        </div>
-      {% endif %}
-      {% if fin.function_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Function |</strong> {{ fin.function_text.value }}
-        </div>
-      {% endif %}
-      {% if fin.feel_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Feel |</strong> {{ fin.feel_text.value }}
-        </div>
-      {% endif %}
-      {% if fin.overall_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Overall |</strong> {{ fin.overall_text.value }}
-        </div>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
+    # Build visualization HTML for this metaobject
+    viz_var = f"mo_{key.replace('-', '_')}"
+
+    viz_html = f'''
+  {{% assign {viz_var} = product.metafields.{ns}.{key}.value %}}
+  {{% if {viz_var} != blank %}}
+  <div class="metaobject-viz metaobject-viz--{key}">
+    <h4 class="metaobject-viz__title">{name}</h4>
 '''
 
-fin_styles = ''
-if has_fin_characteristics:
-    fin_styles = '''
-  .fin-characteristics { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
-  .fin-characteristics__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
-  .fin-characteristics__chart { margin-bottom: var(--margin-md); }
-  .fin-characteristics__bar-group { margin-bottom: 0.75rem; }
-  .fin-characteristics__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
-  .fin-characteristics__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
-  .fin-characteristics__labels { display: flex; justify-content: space-between; margin-top: 0.25rem; font-size: 0.7rem; color: #898989; }
-  .fin-characteristics__labels strong { color: rgb(var(--color-foreground-rgb)); }
-  .fin-characteristics__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
-  .fin-characteristics__description strong { text-transform: uppercase; }'''
+    # Add bar visualizations
+    if bar_fields:
+        viz_html += '    <div class="metaobject-viz__bars">\n'
+        for bf in bar_fields:
+            viz_html += f'''      {{% if {viz_var}.{bf['key']}.value != blank %}}
+      <div class="metaobject-viz__bar-group">
+        <div class="metaobject-viz__bar">
+          <div class="metaobject-viz__marker" style="left: {{{{ {viz_var}.{bf['key']}.value }}}}%;"></div>
+        </div>
+        <div class="metaobject-viz__bar-label">{bf['name']}</div>
+      </div>
+      {{% endif %}}
+'''
+        viz_html += '    </div>\n'
+
+    # Add text descriptions
+    if text_fields:
+        viz_html += '    <div class="metaobject-viz__descriptions">\n'
+        for tf in text_fields:
+            # Convert key to label (e.g., form_text -> Form)
+            label = tf['name'].replace(' Text', '').replace('_text', '').replace('_', ' ').title()
+            value_filter = ' | newline_to_br' if tf['multiline'] else ''
+            viz_html += f'''      {{% if {viz_var}.{tf['key']}.value != blank %}}
+      <div class="metaobject-viz__description">
+        <strong>{label} |</strong> {{{{ {viz_var}.{tf['key']}.value{value_filter} }}}}
+      </div>
+      {{% endif %}}
+'''
+        viz_html += '    </div>\n'
+
+    viz_html += f'''  </div>
+  {{% endif %}}
+'''
+    metaobject_visualizations.append(viz_html)
+
+metaobject_html = '\n'.join(metaobject_visualizations)
+
+timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+namespaces_str = ', '.join(INCLUDE_NAMESPACES)
+mo_types_str = ', '.join(metaobject_definitions.keys()) if metaobject_definitions else 'none'
 
 liquid = '''{% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
   Generated: ''' + timestamp + '''
-  Fields: ''' + str(len(fields)) + '''
+  Regular fields: ''' + str(len(regular_fields)) + '''
+  Metaobject types: ''' + mo_types_str + '''
   Namespaces: ''' + namespaces_str + '''
-  Includes: fin_characteristics metaobject (''' + ('yes' if has_fin_characteristics else 'no') + ''')
 
   DO NOT EDIT - This file is auto-generated from Shopify metafield definitions.
+
+  Metaobject visualizations are automatically generated:
+  - Integer fields (0-100) render as progress bars
+  - Text fields render as labeled descriptions
 {% endcomment %}
 
 {% liquid
@@ -233,7 +255,7 @@ liquid = '''{% comment %}
       {{ block.settings.heading }}
     </h3>
   {% endif %}
-''' + fin_characteristics_html + '''
+''' + metaobject_html + '''
   <dl class="product-metafields__list">
 ''' + fields_html + '''
   </dl>
@@ -258,7 +280,18 @@ liquid = '''{% comment %}
     flex-shrink: 0;
   }
   .product-metafields__value { margin: 0; text-align: right; max-width: 65%; }
-  .product-metafields__value a { color: var(--color-primary); text-decoration: underline; }''' + fin_styles + '''
+  .product-metafields__value a { color: var(--color-primary); text-decoration: underline; }
+
+  /* Metaobject visualizations */
+  .metaobject-viz { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
+  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metaobject-viz__bars { margin-bottom: var(--margin-md); }
+  .metaobject-viz__bar-group { margin-bottom: 0.75rem; }
+  .metaobject-viz__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
+  .metaobject-viz__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
+  .metaobject-viz__bar-label { margin-top: 0.25rem; font-size: 0.7rem; color: rgb(var(--color-foreground-rgb) / var(--opacity-70)); }
+  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
+  .metaobject-viz__description strong { text-transform: uppercase; }
 {% endstylesheet %}
 
 {% schema %}
@@ -266,7 +299,7 @@ liquid = '''{% comment %}
   "name": "Product specs",
   "tag": null,
   "settings": [
-    { "type": "paragraph", "content": "Auto-generated from Shopify metafields." },
+    { "type": "paragraph", "content": "Auto-generated from Shopify metafields and metaobjects." },
     { "type": "checkbox", "id": "show_heading", "label": "Show heading", "default": true },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Specifications" },
     { "type": "select", "id": "heading_size", "label": "Heading size", "options": [

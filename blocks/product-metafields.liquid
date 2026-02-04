@@ -1,12 +1,16 @@
 {% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
-  Generated: 2026-02-04 00:01 UTC
-  Fields: 36
+  Generated: 2026-02-04 00:02 UTC
+  Regular fields: 34
+  Metaobject types: fin_characteristics
   Namespaces: custom, gato_heroi, reviews, descriptors
-  Includes: fin_characteristics metaobject (yes)
 
   DO NOT EDIT - This file is auto-generated from Shopify metafield definitions.
+
+  Metaobject visualizations are automatically generated:
+  - Integer fields (0-100) render as progress bars
+  - Text fields render as labeled descriptions
 {% endcomment %}
 
 {% liquid
@@ -23,81 +27,64 @@
     </h3>
   {% endif %}
 
-  {% assign fin = product.metafields.custom.fin_characteristics.value %}
-  {% if fin != blank %}
-  <div class="fin-characteristics">
-    <h4 class="fin-characteristics__title">Form, Function & Feel</h4>
-
-    <div class="fin-characteristics__chart">
-      {% if fin.rake.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.rake.value }}%;"></div>
+  {% assign mo_fin_characteristics = product.metafields.custom.fin_characteristics.value %}
+  {% if mo_fin_characteristics != blank %}
+  <div class="metaobject-viz metaobject-viz--fin_characteristics">
+    <h4 class="metaobject-viz__title">Fin Characteristics</h4>
+    <div class="metaobject-viz__bars">
+      {% if mo_fin_characteristics.rake.value != blank %}
+      <div class="metaobject-viz__bar-group">
+        <div class="metaobject-viz__bar">
+          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.rake.value }}%;"></div>
         </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Upright</strong> Tight Turns</span>
-          <span><strong>Raked</strong> Drawn-Out Turns</span>
-        </div>
+        <div class="metaobject-viz__bar-label">Rake</div>
       </div>
       {% endif %}
-
-      {% if fin.area.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.area.value }}%;"></div>
+      {% if mo_fin_characteristics.area.value != blank %}
+      <div class="metaobject-viz__bar-group">
+        <div class="metaobject-viz__bar">
+          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.area.value }}%;"></div>
         </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Less Area</strong> Loose</span>
-          <span><strong>More Area</strong> Stable</span>
-        </div>
+        <div class="metaobject-viz__bar-label">Area</div>
       </div>
       {% endif %}
-
-      {% if fin.speed.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.speed.value }}%;"></div>
+      {% if mo_fin_characteristics.speed.value != blank %}
+      <div class="metaobject-viz__bar-group">
+        <div class="metaobject-viz__bar">
+          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.speed.value }}%;"></div>
         </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Speed Control</strong></span>
-          <span><strong>Speed Generating</strong> Drive</span>
-        </div>
+        <div class="metaobject-viz__bar-label">Speed</div>
       </div>
       {% endif %}
-
-      {% if fin.flex.value != blank %}
-      <div class="fin-characteristics__bar-group">
-        <div class="fin-characteristics__bar">
-          <div class="fin-characteristics__marker" style="left: {{ fin.flex.value }}%;"></div>
+      {% if mo_fin_characteristics.flex.value != blank %}
+      <div class="metaobject-viz__bar-group">
+        <div class="metaobject-viz__bar">
+          <div class="metaobject-viz__marker" style="left: {{ mo_fin_characteristics.flex.value }}%;"></div>
         </div>
-        <div class="fin-characteristics__labels">
-          <span><strong>Less Flex</strong> Responsive</span>
-          <span><strong>More Flex</strong> Projection</span>
-        </div>
+        <div class="metaobject-viz__bar-label">Flex</div>
       </div>
       {% endif %}
     </div>
-
-    <div class="fin-characteristics__descriptions">
-      {% if fin.form_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Form |</strong> {{ fin.form_text.value }}
-        </div>
+    <div class="metaobject-viz__descriptions">
+      {% if mo_fin_characteristics.form_text.value != blank %}
+      <div class="metaobject-viz__description">
+        <strong>Form |</strong> {{ mo_fin_characteristics.form_text.value }}
+      </div>
       {% endif %}
-      {% if fin.function_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Function |</strong> {{ fin.function_text.value }}
-        </div>
+      {% if mo_fin_characteristics.function_text.value != blank %}
+      <div class="metaobject-viz__description">
+        <strong>Function |</strong> {{ mo_fin_characteristics.function_text.value }}
+      </div>
       {% endif %}
-      {% if fin.feel_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Feel |</strong> {{ fin.feel_text.value }}
-        </div>
+      {% if mo_fin_characteristics.feel_text.value != blank %}
+      <div class="metaobject-viz__description">
+        <strong>Feel |</strong> {{ mo_fin_characteristics.feel_text.value }}
+      </div>
       {% endif %}
-      {% if fin.overall_text.value != blank %}
-        <div class="fin-characteristics__description">
-          <strong>Overall |</strong> {{ fin.overall_text.value }}
-        </div>
+      {% if mo_fin_characteristics.overall_text.value != blank %}
+      <div class="metaobject-viz__description">
+        <strong>Overall |</strong> {{ mo_fin_characteristics.overall_text.value }}
+      </div>
       {% endif %}
     </div>
   </div>
@@ -116,22 +103,10 @@
         <dd class="product-metafields__value">{{ product.metafields.custom.designed_and_tested_in_los_angeles_by_crap_eyewear.value }}</dd>
       </div>
     {% endif %}
-    {% if product.metafields.custom.product_materials.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Product Materials</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.product_materials.value }}</dd>
-      </div>
-    {% endif %}
     {% if product.metafields.custom.surfboard_shipping.value != blank %}
       <div class="product-metafields__item">
         <dt class="product-metafields__label">surfboard shipping</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.surfboard_shipping.value }}</dd>
-      </div>
-    {% endif %}
-    {% if product.metafields.custom.country_of_origin.value != blank %}
-      <div class="product-metafields__item">
-        <dt class="product-metafields__label">Country of origin</dt>
-        <dd class="product-metafields__value">{{ product.metafields.custom.country_of_origin.value }}</dd>
       </div>
     {% endif %}
     {% if product.metafields.custom.brand_buying_guide.value != blank %}
@@ -343,16 +318,17 @@
   }
   .product-metafields__value { margin: 0; text-align: right; max-width: 65%; }
   .product-metafields__value a { color: var(--color-primary); text-decoration: underline; }
-  .fin-characteristics { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
-  .fin-characteristics__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
-  .fin-characteristics__chart { margin-bottom: var(--margin-md); }
-  .fin-characteristics__bar-group { margin-bottom: 0.75rem; }
-  .fin-characteristics__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
-  .fin-characteristics__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
-  .fin-characteristics__labels { display: flex; justify-content: space-between; margin-top: 0.25rem; font-size: 0.7rem; color: #898989; }
-  .fin-characteristics__labels strong { color: rgb(var(--color-foreground-rgb)); }
-  .fin-characteristics__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
-  .fin-characteristics__description strong { text-transform: uppercase; }
+
+  /* Metaobject visualizations */
+  .metaobject-viz { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
+  .metaobject-viz__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metaobject-viz__bars { margin-bottom: var(--margin-md); }
+  .metaobject-viz__bar-group { margin-bottom: 0.75rem; }
+  .metaobject-viz__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
+  .metaobject-viz__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
+  .metaobject-viz__bar-label { margin-top: 0.25rem; font-size: 0.7rem; color: rgb(var(--color-foreground-rgb) / var(--opacity-70)); }
+  .metaobject-viz__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
+  .metaobject-viz__description strong { text-transform: uppercase; }
 {% endstylesheet %}
 
 {% schema %}
@@ -360,7 +336,7 @@
   "name": "Product specs",
   "tag": null,
   "settings": [
-    { "type": "paragraph", "content": "Auto-generated from Shopify metafields." },
+    { "type": "paragraph", "content": "Auto-generated from Shopify metafields and metaobjects." },
     { "type": "checkbox", "id": "show_heading", "label": "Show heading", "default": true },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Specifications" },
     { "type": "select", "id": "heading_size", "label": "Heading size", "options": [

@@ -1,11 +1,12 @@
 {% comment %}
   CASCADING VARIANT PICKER
   ========================
-  - Size: dropdown select
-  - Color: swatches/variant photos (rendered server-side with swatch snippet)
-  - Prunes unavailable options via JavaScript
-  - Shows variant photos when selecting color
-
+  - Prunes unavailable variants
+  - First option: dropdown (forces selection)
+  - Color option: thumbnail swatches (detects by name or variant images)
+  - Clicking color thumbnail updates main product image
+  - Fallback to dropdown if no variant images
+  
   Usage: {% render 'cascading-variant-picker', product_resource: product %}
 {% endcomment %}
 
@@ -14,9 +15,36 @@
   if product == blank
     assign product = closest.product
   endif
-
+  
   if product == blank and request.visual_preview_mode
     assign product = collections.all.products.first
+  endif
+  
+  # Detect which option is "color" - check name or if variants have images
+  assign color_option_index = -1
+  for option in product.options_with_values
+    assign option_name_lower = option.name | downcase
+    if option_name_lower contains 'color' or option_name_lower contains 'colour'
+      assign color_option_index = forloop.index0
+      break
+    endif
+  endfor
+  
+  # If no color option found by name, check if any option's variants have unique images
+  if color_option_index == -1
+    for option in product.options_with_values
+      assign has_variant_images = false
+      for variant in product.variants
+        if variant.featured_image != blank
+          assign has_variant_images = true
+          break
+        endif
+      endfor
+      if has_variant_images
+        assign color_option_index = forloop.index0
+        break
+      endif
+    endfor
   endif
 %}
 
@@ -26,8 +54,8 @@
     data-product-id="{{ product.id }}"
     data-product-url="{{ product.url }}"
     data-section-id="{{ section.id }}"
+    data-color-option-index="{{ color_option_index }}"
   >
-    {%- comment -%} JSON data for JavaScript {%- endcomment -%}
     <script type="application/json" data-variants>
       [
         {%- assign first_available = true -%}
@@ -41,107 +69,64 @@
               "price": {{ variant.price }},
               "compare_at_price": {{ variant.compare_at_price | default: 'null' }},
               "sku": {{ variant.sku | json }},
-              "featured_image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 800 | json }}{% else %}null{% endif %}
+              "featured_image": {% if variant.featured_image %}{"url": {{ variant.featured_image | image_url: width: 800 | json }}, "thumb": {{ variant.featured_image | image_url: width: 100 | json }}, "alt": {{ variant.featured_image.alt | default: variant.title | json }}}{% else %}null{% endif %}
             }
           {%- endif -%}
         {%- endfor -%}
       ]
     </script>
+    
+    <script type="application/json" data-options>
+      {{ product.options_with_values | json }}
+    </script>
 
     <form class="cascading-picker__form">
       {%- for option in product.options_with_values -%}
         {% assign option_index = forloop.index0 %}
-        {% assign option_name_lower = option.name | downcase %}
-
-        {%- comment -%} Check if this is a color-type option {%- endcomment -%}
         {% assign is_color_option = false %}
-        {% if option_name_lower contains 'color' or option_name_lower contains 'colour' or option_name_lower contains 'finish' or option_name_lower contains 'shade' %}
+        {% if option_index == color_option_index %}
           {% assign is_color_option = true %}
         {% endif %}
-
-        <div class="cascading-picker__option" data-option-index="{{ option_index }}">
-          <label class="cascading-picker__label-text">
+        
+        <div class="cascading-picker__option" 
+             data-option-index="{{ option_index }}"
+             data-is-color="{{ is_color_option }}">
+          <label>
             {{ option.name }}
             <span class="cascading-picker__selected-value" data-selected-label></span>
           </label>
-
+          
           {% if is_color_option %}
-            {%- comment -%} COLOR: Render variant photos as swatches {%- endcomment -%}
-            <div class="cascading-picker__swatches" data-option-index="{{ option_index }}" {% if option_index > 0 %}data-disabled="true"{% endif %}>
-              {%- for value in option.values -%}
-                {% liquid
-                  assign value_string = value | escape
-
-                  # Find the first available variant with this color to get its image
-                  assign variant_image = null
-                  assign variant_image_url = null
-                  assign value_available = false
-
-                  for variant in product.variants
-                    assign variant_opt = variant.options[option_index] | escape
-                    if variant_opt == value_string
-                      if variant.available
-                        assign value_available = true
-                      endif
-                      if variant.featured_image and variant_image == null
-                        assign variant_image = variant.featured_image
-                        assign variant_image_url = variant.featured_image | image_url: width: 800
-                      endif
-                    endif
-                  endfor
-                %}
-                <button
-                  type="button"
-                  class="cascading-picker__swatch{% unless value_available %} cascading-picker__swatch--unavailable{% endunless %}"
-                  data-option-index="{{ option_index }}"
-                  data-value="{{ value | escape }}"
-                  {% if variant_image_url %}data-image-url="{{ variant_image_url }}"{% endif %}
-                  {% unless value_available %}disabled data-unavailable="true"{% endunless %}
-                  title="{{ value }}"
-                >
-                  {% if variant_image %}
-                    <img
-                      src="{{ variant_image | image_url: width: 100 }}"
-                      alt="{{ value }}"
-                      loading="lazy"
-                      width="50"
-                      height="50"
-                    >
-                  {% else %}
-                    <span class="cascading-picker__swatch-text">{{ value }}</span>
-                  {% endif %}
-                </button>
-              {%- endfor -%}
+            {%- comment -%} Color swatches - will be populated by JS {%- endcomment -%}
+            <div class="cascading-picker__swatches" 
+                 data-option-index="{{ option_index }}"
+                 {% if option_index > 0 %}data-disabled="true"{% endif %}>
+              {%- comment -%} JS populates these {%- endcomment -%}
             </div>
             <input type="hidden" name="option{{ forloop.index }}" data-option-index="{{ option_index }}" value="">
-
           {% else %}
-            {%- comment -%} SIZE/OTHER: Render dropdown {%- endcomment -%}
+            {%- comment -%} Regular dropdown {%- endcomment -%}
             <div class="cascading-picker__select-wrapper">
               <select
                 name="option{{ forloop.index }}"
                 data-option-index="{{ option_index }}"
                 {% if option_index > 0 %}disabled{% endif %}
               >
-                <option value="" selected disabled>Select {{ option.name }}</option>
-                {%- for value in option.values -%}
-                  {% liquid
-                    assign value_string = value | escape
-
-                    # Check if this value leads to any available variant
-                    assign value_available = false
-                    for variant in product.variants
-                      assign variant_opt = variant.options[option_index] | escape
-                      if variant.available and variant_opt == value_string
-                        assign value_available = true
-                        break
-                      endif
-                    endfor
-                  %}
-                  {% if value_available %}
-                    <option value="{{ value | escape }}">{{ value }}</option>
-                  {% endif %}
-                {%- endfor -%}
+                <option value="" selected disabled>
+                  Select {{ option.name }}
+                </option>
+                {%- if option_index == 0 -%}
+                  {%- assign shown_values = '' -%}
+                  {%- for variant in product.variants -%}
+                    {%- if variant.available -%}
+                      {%- assign option_value = variant.options[0] -%}
+                      {%- unless shown_values contains option_value -%}
+                        <option value="{{ option_value | escape }}">{{ option_value }}</option>
+                        {%- capture shown_values -%}{{ shown_values }}|{{ option_value }}{%- endcapture -%}
+                      {%- endunless -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endif -%}
               </select>
               <svg class="cascading-picker__caret" viewBox="0 0 10 6" aria-hidden="true">
                 <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -150,7 +135,7 @@
           {% endif %}
         </div>
       {%- endfor -%}
-
+      
       <input type="hidden" name="id" value="" data-selected-variant-id>
     </form>
   </cascading-variant-picker>
@@ -161,190 +146,252 @@
     constructor() {
       super();
       this.variants = [];
+      this.options = [];
       this.selections = [];
-      this.optionCount = 0;
+      this.colorOptionIndex = -1;
     }
 
     connectedCallback() {
       const variantsScript = this.querySelector('script[data-variants]');
-      if (variantsScript) {
-        try {
-          this.variants = JSON.parse(variantsScript.textContent);
-        } catch (e) {
-          console.error('Failed to parse variants JSON:', e);
-          this.variants = [];
-        }
-      }
-
-      const options = this.querySelectorAll('.cascading-picker__option');
-      this.optionCount = options.length;
-      this.selections = new Array(this.optionCount).fill(null);
-
+      const optionsScript = this.querySelector('script[data-options]');
+      
+      if (variantsScript) this.variants = JSON.parse(variantsScript.textContent);
+      if (optionsScript) this.options = JSON.parse(optionsScript.textContent);
+      
+      this.colorOptionIndex = parseInt(this.dataset.colorOptionIndex) || -1;
+      this.selections = new Array(this.options.length).fill(null);
+      
       // Bind dropdown changes
       this.querySelectorAll('select').forEach(select => {
-        select.addEventListener('change', this.handleSelectChange.bind(this));
+        select.addEventListener('change', this.handleChange.bind(this));
       });
-
-      // Bind swatch clicks
-      this.querySelectorAll('.cascading-picker__swatch').forEach(swatch => {
-        swatch.addEventListener('click', this.handleSwatchClick.bind(this));
-      });
-
-      // Initial state - prune first option if it's a dropdown
-      const firstSelect = this.querySelector('select[data-option-index="0"]');
-      if (firstSelect) {
-        this.pruneSelect(0);
+      
+      // Initialize color swatches if color is first option
+      if (this.colorOptionIndex === 0) {
+        this.renderColorSwatches(0);
       }
     }
 
-    handleSelectChange(event) {
+    handleChange(event) {
       const select = event.target;
       const optionIndex = parseInt(select.dataset.optionIndex);
       const value = select.value;
-
+      
       this.selections[optionIndex] = value;
-      this.clearSubsequentSelections(optionIndex);
+      
+      // Clear selections after this one
+      for (let i = optionIndex + 1; i < this.selections.length; i++) {
+        this.selections[i] = null;
+      }
+      
+      this.updateDropdowns(optionIndex);
       this.updateLabels();
-      this.enableNextOption(optionIndex);
       this.checkComplete();
     }
 
     handleSwatchClick(event) {
       const swatch = event.currentTarget;
-      if (swatch.disabled) return;
-
       const optionIndex = parseInt(swatch.dataset.optionIndex);
       const value = swatch.dataset.value;
       const imageUrl = swatch.dataset.imageUrl;
-
+      
       // Update selection
       this.selections[optionIndex] = value;
-
+      
       // Update hidden input
       const hiddenInput = this.querySelector(`input[type="hidden"][data-option-index="${optionIndex}"]`);
       if (hiddenInput) hiddenInput.value = value;
-
+      
       // Update active state
-      const container = swatch.closest('.cascading-picker__swatches');
-      container.querySelectorAll('.cascading-picker__swatch').forEach(s => {
+      const swatchContainer = swatch.closest('.cascading-picker__swatches');
+      swatchContainer.querySelectorAll('.cascading-picker__swatch').forEach(s => {
         s.classList.remove('cascading-picker__swatch--active');
       });
       swatch.classList.add('cascading-picker__swatch--active');
-
+      
+      // Clear selections after this one
+      for (let i = optionIndex + 1; i < this.selections.length; i++) {
+        this.selections[i] = null;
+      }
+      
       // Update main product image
       if (imageUrl) {
         this.updateMainImage(imageUrl);
       }
-
-      this.clearSubsequentSelections(optionIndex);
+      
+      this.updateDropdowns(optionIndex);
       this.updateLabels();
-      this.enableNextOption(optionIndex);
       this.checkComplete();
     }
 
-    clearSubsequentSelections(fromIndex) {
-      for (let i = fromIndex + 1; i < this.optionCount; i++) {
-        this.selections[i] = null;
+    updateMainImage(imageUrl) {
+      // Try multiple selectors for the main product image
+      const mainImage = document.querySelector(
+        '.product-media-gallery__image img, ' +
+        '.media-gallery img, ' +
+        '[data-product-media] img, ' +
+        '.product__media img'
+      );
+      
+      if (mainImage) {
+        mainImage.src = imageUrl;
+        mainImage.srcset = '';
+      }
+      
+      // Dispatch event for other components
+      this.dispatchEvent(new CustomEvent('variant:image-changed', {
+        bubbles: true,
+        detail: { imageUrl }
+      }));
+    }
 
-        // Reset select dropdowns
-        const select = this.querySelector(`select[data-option-index="${i}"]`);
-        if (select) {
-          select.selectedIndex = 0;
-          select.disabled = true;
+    updateDropdowns(fromIndex) {
+      for (let i = fromIndex + 1; i < this.options.length; i++) {
+        const isColorOption = i === this.colorOptionIndex;
+        
+        if (isColorOption) {
+          this.renderColorSwatches(i);
+        } else {
+          this.updateSelectDropdown(i);
         }
-
-        // Reset swatch containers
-        const swatchContainer = this.querySelector(`.cascading-picker__swatches[data-option-index="${i}"]`);
-        if (swatchContainer) {
-          swatchContainer.dataset.disabled = 'true';
-          swatchContainer.querySelectorAll('.cascading-picker__swatch').forEach(s => {
-            s.classList.remove('cascading-picker__swatch--active');
-          });
-        }
-
-        // Reset hidden inputs
-        const hiddenInput = this.querySelector(`input[type="hidden"][data-option-index="${i}"]`);
-        if (hiddenInput) hiddenInput.value = '';
       }
     }
 
-    enableNextOption(currentIndex) {
-      const nextIndex = currentIndex + 1;
-      if (nextIndex >= this.optionCount) return;
-
-      // Enable and prune next select
-      const nextSelect = this.querySelector(`select[data-option-index="${nextIndex}"]`);
-      if (nextSelect) {
-        nextSelect.disabled = false;
-        this.pruneSelect(nextIndex);
-      }
-
-      // Enable and prune next swatch container
-      const nextSwatches = this.querySelector(`.cascading-picker__swatches[data-option-index="${nextIndex}"]`);
-      if (nextSwatches) {
-        nextSwatches.dataset.disabled = 'false';
-        this.pruneSwatches(nextIndex);
-      }
-    }
-
-    pruneSelect(optionIndex) {
-      const select = this.querySelector(`select[data-option-index="${optionIndex}"]`);
-      if (!select) return;
-
-      const availableValues = this.getAvailableValues(optionIndex);
-
-      // Show/hide options
-      Array.from(select.options).forEach(option => {
-        if (option.value === '') return; // Keep placeholder
-        option.style.display = availableValues.includes(option.value) ? '' : 'none';
-        option.disabled = !availableValues.includes(option.value);
-      });
-
-      // Auto-select if only one available
-      const visibleOptions = Array.from(select.options).filter(o => o.value && !o.disabled);
-      if (visibleOptions.length === 1) {
-        select.value = visibleOptions[0].value;
-        select.dispatchEvent(new Event('change'));
-      }
-    }
-
-    pruneSwatches(optionIndex) {
+    renderColorSwatches(optionIndex) {
       const container = this.querySelector(`.cascading-picker__swatches[data-option-index="${optionIndex}"]`);
       if (!container) return;
-
-      const availableValues = this.getAvailableValues(optionIndex);
-
-      container.querySelectorAll('.cascading-picker__swatch').forEach(swatch => {
-        const value = swatch.dataset.value;
-        if (availableValues.includes(value)) {
-          swatch.style.display = '';
-          swatch.disabled = false;
-          swatch.classList.remove('cascading-picker__swatch--unavailable');
+      
+      const availableValues = this.getAvailableValuesWithImages(optionIndex);
+      const previousSelected = optionIndex === 0 || this.selections[optionIndex - 1] !== null;
+      
+      container.innerHTML = '';
+      container.dataset.disabled = !previousSelected;
+      
+      if (!previousSelected) return;
+      
+      // Check if ANY values have images
+      const hasAnyImages = availableValues.some(v => v.image);
+      
+      availableValues.forEach(({ value, image }) => {
+        const swatch = document.createElement('button');
+        swatch.type = 'button';
+        swatch.className = 'cascading-picker__swatch';
+        swatch.dataset.optionIndex = optionIndex;
+        swatch.dataset.value = value;
+        
+        if (image) {
+          swatch.dataset.imageUrl = image.url;
+          swatch.innerHTML = `<img src="${image.thumb}" alt="${image.alt || value}" loading="lazy">`;
         } else {
-          swatch.style.display = 'none';
-          swatch.disabled = true;
-          swatch.classList.add('cascading-picker__swatch--unavailable');
+          // No image - show color name in square
+          swatch.classList.add('cascading-picker__swatch--text');
+          swatch.innerHTML = `<span>${value}</span>`;
         }
+        
+        swatch.addEventListener('click', this.handleSwatchClick.bind(this));
+        container.appendChild(swatch);
       });
-
-      // Auto-select if only one available
-      const visibleSwatches = container.querySelectorAll('.cascading-picker__swatch:not([disabled])');
-      if (visibleSwatches.length === 1) {
-        visibleSwatches[0].click();
+      
+      // If no images at all, fall back to dropdown (replace swatches container)
+      if (!hasAnyImages && availableValues.length > 0) {
+        this.convertToDropdown(optionIndex, availableValues);
       }
+    }
+
+    convertToDropdown(optionIndex, availableValues) {
+      const optionContainer = this.querySelector(`.cascading-picker__option[data-option-index="${optionIndex}"]`);
+      const swatchContainer = optionContainer.querySelector('.cascading-picker__swatches');
+      const hiddenInput = optionContainer.querySelector('input[type="hidden"]');
+      
+      // Create select element
+      const wrapper = document.createElement('div');
+      wrapper.className = 'cascading-picker__select-wrapper';
+      
+      const select = document.createElement('select');
+      select.name = `option${optionIndex + 1}`;
+      select.dataset.optionIndex = optionIndex;
+      
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      placeholder.textContent = `Select ${this.options[optionIndex].name}`;
+      select.appendChild(placeholder);
+      
+      availableValues.forEach(({ value }) => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+      });
+      
+      select.addEventListener('change', this.handleChange.bind(this));
+      
+      wrapper.appendChild(select);
+      wrapper.innerHTML += `<svg class="cascading-picker__caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      
+      // Replace swatch container with dropdown
+      swatchContainer.replaceWith(wrapper);
+      if (hiddenInput) hiddenInput.remove();
+    }
+
+    updateSelectDropdown(optionIndex) {
+      const select = this.querySelector(`select[data-option-index="${optionIndex}"]`);
+      if (!select) return;
+      
+      const availableValues = this.getAvailableValues(optionIndex);
+      
+      // Clear options except placeholder
+      while (select.options.length > 1) select.remove(1);
+      
+      availableValues.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+      
+      select.disabled = this.selections[optionIndex - 1] === null;
+      select.selectedIndex = 0;
     }
 
     getAvailableValues(optionIndex) {
       let matchingVariants = this.variants;
-
-      // Filter by prior selections
+      
       for (let i = 0; i < optionIndex; i++) {
         if (this.selections[i] !== null) {
           matchingVariants = matchingVariants.filter(v => v.options[i] === this.selections[i]);
         }
       }
-
+      
       return [...new Set(matchingVariants.map(v => v.options[optionIndex]))];
+    }
+
+    getAvailableValuesWithImages(optionIndex) {
+      let matchingVariants = this.variants;
+      
+      for (let i = 0; i < optionIndex; i++) {
+        if (this.selections[i] !== null) {
+          matchingVariants = matchingVariants.filter(v => v.options[i] === this.selections[i]);
+        }
+      }
+      
+      // Get unique values with their images
+      const seen = new Set();
+      const result = [];
+      
+      matchingVariants.forEach(v => {
+        const value = v.options[optionIndex];
+        if (!seen.has(value)) {
+          seen.add(value);
+          result.push({
+            value,
+            image: v.featured_image
+          });
+        }
+      });
+      
+      return result;
     }
 
     updateLabels() {
@@ -353,57 +400,26 @@
       });
     }
 
-    updateMainImage(imageUrl) {
-      const mainImage = document.querySelector('.product-media__image');
-      if (mainImage && imageUrl) {
-        mainImage.src = imageUrl;
-        mainImage.srcset = '';
-      }
-    }
-
     checkComplete() {
       const hiddenInput = this.querySelector('[data-selected-variant-id]');
-      const allSelected = this.selections.every(s => s !== null);
-
-      if (allSelected) {
-        const variant = this.variants.find(v =>
+      const numOptions = this.options.length;
+      const numSelected = this.selections.filter(s => s !== null).length;
+      
+      if (numSelected === numOptions) {
+        const variant = this.variants.find(v => 
           v.options.every((opt, i) => opt === this.selections[i])
         );
-
+        
         if (variant) {
           hiddenInput.value = variant.id;
-
+          
           this.dispatchEvent(new CustomEvent('variant:selected', {
             bubbles: true,
             detail: { variant, sectionId: this.dataset.sectionId }
           }));
-
-          this.dispatchEvent(new CustomEvent('variant:update', {
-            bubbles: true,
-            detail: {
-              resource: {
-                id: variant.id,
-                available: true,
-                price: variant.price,
-                compare_at_price: variant.compare_at_price,
-                sku: variant.sku,
-                featured_media: variant.featured_image ? { preview_image: { src: variant.featured_image } } : null
-              },
-              sourceId: this.dataset.sectionId,
-              data: { productId: this.dataset.productId, html: document }
-            }
-          }));
         }
       } else {
         hiddenInput.value = '';
-        this.dispatchEvent(new CustomEvent('variant:update', {
-          bubbles: true,
-          detail: {
-            resource: null,
-            sourceId: this.dataset.sectionId,
-            data: { productId: this.dataset.productId, html: document }
-          }
-        }));
       }
     }
   }
@@ -417,35 +433,29 @@
   .cascading-picker {
     width: 100%;
   }
-
+  
   .cascading-picker__form {
     display: flex;
     flex-direction: column;
     gap: var(--gap-md, 16px);
   }
-
-  .cascading-picker__option {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-xs, 4px);
-  }
-
-  .cascading-picker__label-text {
+  
+  .cascading-picker__option > label {
+    display: block;
+    margin-bottom: var(--margin-2xs, 4px);
     font-weight: var(--font-weight-semibold, 600);
   }
-
+  
   .cascading-picker__selected-value {
     font-weight: normal;
     color: rgb(var(--color-foreground-rgb, 0 0 0) / 0.7);
   }
-
+  
   /* Dropdown styles */
   .cascading-picker__select-wrapper {
     position: relative;
-    display: inline-block;
-    width: 100%;
   }
-
+  
   .cascading-picker__select-wrapper select {
     width: 100%;
     padding: var(--padding-sm, 8px) var(--padding-lg, 16px);
@@ -457,13 +467,13 @@
     cursor: pointer;
     font-size: inherit;
   }
-
+  
   .cascading-picker__select-wrapper select:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background: rgb(0 0 0 / 0.05);
   }
-
+  
   .cascading-picker__caret {
     position: absolute;
     right: 16px;
@@ -473,20 +483,19 @@
     height: 10px;
     pointer-events: none;
   }
-
-  /* Swatch container */
+  
+  /* Swatch styles */
   .cascading-picker__swatches {
     display: flex;
     flex-wrap: wrap;
     gap: var(--gap-sm, 8px);
   }
-
+  
   .cascading-picker__swatches[data-disabled="true"] {
     opacity: 0.4;
     pointer-events: none;
   }
-
-  /* Swatch button with variant photo */
+  
   .cascading-picker__swatch {
     width: 60px;
     height: 60px;
@@ -498,41 +507,30 @@
     overflow: hidden;
     transition: border-color 0.15s ease;
   }
-
-  .cascading-picker__swatch img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .cascading-picker__swatch:hover:not(:disabled) {
+  
+  .cascading-picker__swatch:hover {
     border-color: var(--color-foreground, #000);
   }
-
+  
   .cascading-picker__swatch--active {
     border-color: var(--color-foreground, #000);
     border-width: 2px;
   }
-
-  .cascading-picker__swatch--unavailable {
-    display: none;
+  
+  .cascading-picker__swatch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-
-  .cascading-picker__swatch:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-
-  .cascading-picker__swatch-text {
+  
+  .cascading-picker__swatch--text {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
     font-size: 10px;
     text-align: center;
     padding: 4px;
     word-break: break-word;
+    line-height: 1.1;
   }
 {% endstylesheet %}

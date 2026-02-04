@@ -1,10 +1,11 @@
 {% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
-  Generated: 2026-02-03 23:26 UTC
+  Generated: 2026-02-04 00:01 UTC
   Fields: 36
   Namespaces: custom, gato_heroi, reviews, descriptors
-  
+  Includes: fin_characteristics metaobject (yes)
+
   DO NOT EDIT - This file is auto-generated from Shopify metafield definitions.
 {% endcomment %}
 
@@ -21,7 +22,87 @@
       {{ block.settings.heading }}
     </h3>
   {% endif %}
-  
+
+  {% assign fin = product.metafields.custom.fin_characteristics.value %}
+  {% if fin != blank %}
+  <div class="fin-characteristics">
+    <h4 class="fin-characteristics__title">Form, Function & Feel</h4>
+
+    <div class="fin-characteristics__chart">
+      {% if fin.rake.value != blank %}
+      <div class="fin-characteristics__bar-group">
+        <div class="fin-characteristics__bar">
+          <div class="fin-characteristics__marker" style="left: {{ fin.rake.value }}%;"></div>
+        </div>
+        <div class="fin-characteristics__labels">
+          <span><strong>Upright</strong> Tight Turns</span>
+          <span><strong>Raked</strong> Drawn-Out Turns</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if fin.area.value != blank %}
+      <div class="fin-characteristics__bar-group">
+        <div class="fin-characteristics__bar">
+          <div class="fin-characteristics__marker" style="left: {{ fin.area.value }}%;"></div>
+        </div>
+        <div class="fin-characteristics__labels">
+          <span><strong>Less Area</strong> Loose</span>
+          <span><strong>More Area</strong> Stable</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if fin.speed.value != blank %}
+      <div class="fin-characteristics__bar-group">
+        <div class="fin-characteristics__bar">
+          <div class="fin-characteristics__marker" style="left: {{ fin.speed.value }}%;"></div>
+        </div>
+        <div class="fin-characteristics__labels">
+          <span><strong>Speed Control</strong></span>
+          <span><strong>Speed Generating</strong> Drive</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if fin.flex.value != blank %}
+      <div class="fin-characteristics__bar-group">
+        <div class="fin-characteristics__bar">
+          <div class="fin-characteristics__marker" style="left: {{ fin.flex.value }}%;"></div>
+        </div>
+        <div class="fin-characteristics__labels">
+          <span><strong>Less Flex</strong> Responsive</span>
+          <span><strong>More Flex</strong> Projection</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="fin-characteristics__descriptions">
+      {% if fin.form_text.value != blank %}
+        <div class="fin-characteristics__description">
+          <strong>Form |</strong> {{ fin.form_text.value }}
+        </div>
+      {% endif %}
+      {% if fin.function_text.value != blank %}
+        <div class="fin-characteristics__description">
+          <strong>Function |</strong> {{ fin.function_text.value }}
+        </div>
+      {% endif %}
+      {% if fin.feel_text.value != blank %}
+        <div class="fin-characteristics__description">
+          <strong>Feel |</strong> {{ fin.feel_text.value }}
+        </div>
+      {% endif %}
+      {% if fin.overall_text.value != blank %}
+        <div class="fin-characteristics__description">
+          <strong>Overall |</strong> {{ fin.overall_text.value }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   <dl class="product-metafields__list">
     {% if product.metafields.descriptors.care_guide.value != blank %}
       <div class="product-metafields__item">
@@ -262,6 +343,16 @@
   }
   .product-metafields__value { margin: 0; text-align: right; max-width: 65%; }
   .product-metafields__value a { color: var(--color-primary); text-decoration: underline; }
+  .fin-characteristics { margin-bottom: var(--margin-lg); padding-bottom: var(--padding-md); border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10)); }
+  .fin-characteristics__title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin-bottom: var(--margin-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+  .fin-characteristics__chart { margin-bottom: var(--margin-md); }
+  .fin-characteristics__bar-group { margin-bottom: 0.75rem; }
+  .fin-characteristics__bar { position: relative; height: 12px; border: 1px solid #898989; background: transparent; }
+  .fin-characteristics__marker { position: absolute; top: 0; width: 5px; height: 100%; background: #A82E2D; transform: translateX(-50%); }
+  .fin-characteristics__labels { display: flex; justify-content: space-between; margin-top: 0.25rem; font-size: 0.7rem; color: #898989; }
+  .fin-characteristics__labels strong { color: rgb(var(--color-foreground-rgb)); }
+  .fin-characteristics__descriptions { display: flex; flex-direction: column; gap: 0.375rem; font-size: var(--font-size-sm); }
+  .fin-characteristics__description strong { text-transform: uppercase; }
 {% endstylesheet %}
 
 {% schema %}

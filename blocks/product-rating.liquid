@@ -20,9 +20,10 @@
     <div class="product-rating__stars" aria-label="Rated {{ rating }} out of 5 stars">
       {% comment %} Generate 5 stars, filled based on rating {% endcomment %}
       {% for i in (1..5) %}
+        {% assign half_threshold = i | minus: 0.5 %}
         {% if rating >= i %}
           <span class="product-rating__star product-rating__star--full">★</span>
-        {% elsif rating >= i | minus: 0.5 %}
+        {% elsif rating >= half_threshold %}
           <span class="product-rating__star product-rating__star--half">★</span>
         {% else %}
           <span class="product-rating__star product-rating__star--empty">☆</span>

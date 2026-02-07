@@ -1,0 +1,66 @@
+{% comment %}
+  LOCAL BUSINESS SCHEMA (JSON-LD)
+  ================================
+  Outputs LocalBusiness + Store structured data for Google.
+  Includes address, hours, geo coordinates, contact info,
+  and sameAs social links.
+
+  Include on the homepage and/or a dedicated "about" or "visit" page.
+{% endcomment %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Store", "SportsActivityLocation"],
+  "name": {{ shop.name | json }},
+  "description": "San Francisco's premium surf and motorsport boutique in the Outer Sunset near Ocean Beach. Curated surfboards, surf gear, and vintage moto apparel.",
+  "url": {{ shop.url | json }},
+  {%- if settings.logo -%}
+  "logo": "https:{{ settings.logo | image_url: width: 500 }}",
+  "image": "https:{{ settings.logo | image_url: width: 1200 }}",
+  {%- endif -%}
+  "telephone": "+15102216855",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "4051 Judah Street",
+    "addressLocality": "San Francisco",
+    "addressRegion": "CA",
+    "postalCode": "94122",
+    "addressCountry": "US"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 37.7599,
+    "longitude": -122.5098
+  },
+  "hasMap": "https://www.google.com/maps/place/Pemulis+Water+%26+Power/@37.7599,-122.5098",
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "opens": "13:00",
+      "closes": "18:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday", "Sunday"],
+      "opens": "11:00",
+      "closes": "16:00"
+    }
+  ],
+  "priceRange": "$$",
+  "currenciesAccepted": "USD",
+  "paymentAccepted": "Cash, Credit Card, Apple Pay",
+  "sameAs": [
+    "https://www.instagram.com/pemuliswaterandpower/"
+  ],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ shop.url }}/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>

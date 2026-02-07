@@ -263,13 +263,31 @@
 
 <script type="application/ld+json">
   {
-    "@context": "http://schema.org",
+    "@context": "https://schema.org",
     "@type": "Organization",
     "name": {{ shop.name | json }},
     {% if settings.logo %}
       "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
     {% endif %}
-    "url": {{ request.origin | append: page.url | json }}
+    "url": {{ shop.url | json }},
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+15102216855",
+      "email": "info@pemulis.cool",
+      "contactType": "Customer Service",
+      "availableLanguage": "en"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "4051 Judah Street",
+      "addressLocality": "San Francisco",
+      "addressRegion": "CA",
+      "postalCode": "94122",
+      "addressCountry": "US"
+    },
+    "sameAs": [
+      "https://www.instagram.com/pemuliswaterandpower/"
+    ]
   }
 </script>
 

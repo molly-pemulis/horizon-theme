@@ -1,0 +1,28 @@
+{% comment %}
+  WEBSITE SCHEMA (JSON-LD)
+  ========================
+  Outputs WebSite structured data with SearchAction for Google sitelinks.
+  This tells Google about your site's search functionality so it can
+  show a search box directly in search results.
+
+  Include in the <head> via theme.liquid (renders on all pages).
+{% endcomment %}
+
+{%- if request.page_type == 'index' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ shop.name | json }},
+  "url": {{ shop.url | json }},
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ shop.url }}/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{%- endif -%}

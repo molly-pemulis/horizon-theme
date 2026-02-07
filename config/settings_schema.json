@@ -159,22 +159,19 @@
             "alpha": true
           },
           {
-            "type": "checkbox",
-            "id": "primary_button_gradient",
-            "label": "Use gradient background",
-            "default": false
+            "type": "header",
+            "content": "Gradient (optional)"
           },
           {
             "type": "color",
             "id": "primary_button_gradient_start",
             "label": "Gradient top color",
-            "default": "#32b6b6"
+            "info": "Leave blank to disable gradient"
           },
           {
             "type": "color",
             "id": "primary_button_gradient_end",
-            "label": "Gradient bottom color",
-            "default": "#237f7f"
+            "label": "Gradient bottom color"
           },
           {
             "type": "header",

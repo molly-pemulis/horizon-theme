@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didot Font Laboratory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f5f5f5;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 320px;
+            background: #111;
+            color: #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 1px solid #333;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        .section-title::before {
+            content: '▼';
+            display: inline-block;
+            margin-right: 8px;
+            transition: transform 0.2s;
+            font-size: 10px;
+        }
+
+        .section.collapsed .section-title::before {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            display: grid;
+            gap: 12px;
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.2s;
+        }
+
+        .section.collapsed .section-content {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-value {
+            font-size: 10px;
+            color: #888;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #0088ff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #00aaff;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #0088ff;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #00aaff;
+        }
+
+        input[type="range"]::-moz-range-track {
+            background: transparent;
+            border: none;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0088ff;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-label {
+            flex: 1;
+            font-size: 11px;
+            font-weight: 600;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* PRESETS */
+        .presets-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+
+        .presets-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .presets-row::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 2px;
+        }
+
+        .preset-chip {
+            flex-shrink: 0;
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: #222;
+            border: 1px solid #444;
+            color: #bbb;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .preset-chip:hover {
+            border-color: #0088ff;
+            background: #1a1a1a;
+        }
+
+        .preset-chip.active {
+            background: #0088ff;
+            border-color: #0088ff;
+            color: white;
+        }
+
+        /* MAIN AREA */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+
+        .main::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        .main::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        /* WORDMARK PREVIEW */
+        .preview-section {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .wordmark-container {
+            text-align: center;
+        }
+
+        .wordmark {
+            font-size: 120px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .wordmark-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: #999;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        /* TYPE TESTER */
+        .tester-section {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .tester-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .tester-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            background: white;
+            margin-bottom: 12px;
+        }
+
+        .tester-preview {
+            font-size: 48px;
+            line-height: 1.6;
+            min-height: 80px;
+            word-wrap: break-word;
+            letter-spacing: 2px;
+        }
+
+        /* SIZE SCALE */
+        .size-scale {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+            background: white;
+        }
+
+        .size-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .size-label {
+            width: 50px;
+            font-size: 11px;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .size-sample {
+            flex: 1;
+            line-height: 1.2;
+            letter-spacing: 2px;
+        }
+
+        /* GLYPH MAP */
+        .glyph-map-section {
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .glyph-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px;
+        }
+
+        .glyph {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 36px;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        /* CONTEXT MOCKUPS */
+        .mockups-section {
+            padding: 40px;
+        }
+
+        .mockup {
+            margin-bottom: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .mockup-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        /* Hero Banner */
+        .mockup-hero {
+            background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .mockup-hero-text {
+            font-size: 64px;
+            line-height: 1.2;
+            letter-spacing: 3px;
+            margin-bottom: 16px;
+        }
+
+        .mockup-hero-sub {
+            font-size: 16px;
+            color: #aaa;
+            letter-spacing: 2px;
+        }
+
+        /* Product Card */
+        .mockup-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .mockup-card-img {
+            height: 200px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .mockup-card-content {
+            padding: 24px;
+        }
+
+        .mockup-card-title {
+            font-size: 28px;
+            line-height: 1.2;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .mockup-card-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Editorial */
+        .mockup-editorial {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            background: white;
+            padding: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .mockup-editorial-image {
+            height: 300px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 4px;
+        }
+
+        .mockup-editorial-title {
+            font-size: 40px;
+            line-height: 1.2;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
+        }
+
+        .mockup-editorial-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Navigation */
+        .mockup-nav {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px 40px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .mockup-nav-item {
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .mockup-nav-item:hover {
+            opacity: 0.6;
+        }
+
+        .mockup-nav-logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <!-- Typography -->
+            <div class="section">
+                <div class="section-title">Typography</div>
+                <div class="section-content">
+                    <div class="control-group">
+                        <label class="control-label">Size</label>
+                        <input type="range" id="fontSize" min="24" max="200" value="72">
+                        <div class="control-value"><span id="fontSizeVal">72</span>px</div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Tracking</label>
+                        <input type="range" id="tracking" min="-4" max="20" value="2">
+                        <div class="control-value"><span id="trackingVal">2</span>px</div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Slant</label>
+                        <input type="range" id="slant" min="-15" max="15" value="0">
+                        <div class="control-value"><span id="slantVal">0</span>°</div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Line Height</label>
+                        <input type="range" id="lineHeight" min="0.8" max="2.0" step="0.1" value="1.2">
+                        <div class="control-value"><span id="lineHeightVal">1.2</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color & Fill -->
+            <div class="section">
+                <div class="section-title">Color & Fill</div>
+                <div class="section-content">
+                    <div class="control-group">
+                        <label class="control-label">Text Color</label>
+                        <input type="color" id="textColor" value="#1a1a1a">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Background Color</label>
+                        <input type="color" id="bgColor" value="#ffffff">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Fill Mode</label>
+                        <select id="fillMode" style="width: 100%; padding: 8px; border: 1px solid #444; background: #222; color: #e0e0e0; border-radius: 4px; font-size: 12px;">
+                            <option value="solid">Solid</option>
+                            <option value="gradient">Gradient</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="gradientControls" style="display: none;">
+                        <label class="control-label">Gradient Direction</label>
+                        <input type="range" id="gradientDir" min="0" max="360" value="0">
+                        <div class="control-value"><span id="gradientDirVal">0</span>°</div>
+                    </div>
+                    <div class="control-group" id="gradientColor2Controls" style="display: none;">
+                        <label class="control-label">Gradient Color 2</label>
+                        <input type="color" id="gradientColor2" value="#ffaa00">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drop Shadow -->
+            <div class="section">
+                <div class="section-title">Drop Shadow</div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="shadowEnabled">
+                        <label class="checkbox-label" for="shadowEnabled">Enable</label>
+                    </div>
+                    <div id="shadowControls" style="display: none;">
+                        <div class="control-group">
+                            <label class="control-label">X Offset</label>
+                            <input type="range" id="shadowX" min="-20" max="20" value="2">
+                            <div class="control-value"><span id="shadowXVal">2</span>px</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Y Offset</label>
+                            <input type="range" id="shadowY" min="-20" max="20" value="4">
+                            <div class="control-value"><span id="shadowYVal">4</span>px</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Blur</label>
+                            <input type="range" id="shadowBlur" min="0" max="30" value="6">
+                            <div class="control-value"><span id="shadowBlurVal">6</span>px</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Color</label>
+                            <input type="color" id="shadowColor" value="#000000">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Opacity</label>
+                            <input type="range" id="shadowOpacity" min="0" max="100" value="30">
+                            <div class="control-value"><span id="shadowOpacityVal">30</span>%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inner Glow -->
+            <div class="section">
+                <div class="section-title">Inner Glow</div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="glowEnabled">
+                        <label class="checkbox-label" for="glowEnabled">Enable</label>
+                    </div>
+                    <div id="glowControls" style="display: none;">
+                        <div class="control-group">
+                            <label class="control-label">Color</label>
+                            <input type="color" id="glowColor" value="#ffffff">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Intensity</label>
+                            <input type="range" id="glowIntensity" min="0" max="20" value="3">
+                            <div class="control-value"><span id="glowIntensityVal">3</span>px</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Opacity</label>
+                            <input type="range" id="glowOpacity" min="0" max="100" value="50">
+                            <div class="control-value"><span id="glowOpacityVal">50</span>%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outline / Stroke -->
+            <div class="section">
+                <div class="section-title">Outline / Stroke</div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="strokeEnabled">
+                        <label class="checkbox-label" for="strokeEnabled">Enable</label>
+                    </div>
+                    <div id="strokeControls" style="display: none;">
+                        <div class="control-group">
+                            <label class="control-label">Width</label>
+                            <input type="range" id="strokeWidth" min="0" max="5" step="0.5" value="1">
+                            <div class="control-value"><span id="strokeWidthVal">1</span>px</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Color</label>
+                            <input type="color" id="strokeColor" value="#000000">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Opacity</label>
+                            <input type="range" id="strokeOpacity" min="0" max="100" value="100">
+                            <div class="control-value"><span id="strokeOpacityVal">100</span>%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Effects -->
+            <div class="section">
+                <div class="section-title">Text Effects</div>
+                <div class="section-content">
+                    <div class="control-group">
+                        <label class="control-label">Opacity</label>
+                        <input type="range" id="textOpacity" min="0" max="100" value="100">
+                        <div class="control-value"><span id="textOpacityVal">100</span>%</div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Blur</label>
+                        <input type="range" id="textBlur" min="0" max="10" value="0">
+                        <div class="control-value"><span id="textBlurVal">0</span>px</div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="embossEnabled">
+                        <label class="checkbox-label" for="embossEnabled">3D/Emboss</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="section" style="margin-bottom: 0;">
+                <div class="section-title">Quick Presets</div>
+                <div class="section-content">
+                    <div class="presets-row">
+                        <div class="preset-chip active" data-preset="clean">Clean</div>
+                        <div class="preset-chip" data-preset="luxury">Luxury Gold</div>
+                        <div class="preset-chip" data-preset="editorial">Editorial</div>
+                        <div class="preset-chip" data-preset="neon">Neon Glow</div>
+                        <div class="preset-chip" data-preset="embossed">Embossed</div>
+                        <div class="preset-chip" data-preset="inverted">Inverted</div>
+                        <div class="preset-chip" data-preset="vintage">Vintage</div>
+                        <div class="preset-chip" data-preset="chrome">Chrome</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN AREA -->
+        <div class="main">
+            <!-- Wordmark Preview -->
+            <div class="preview-section">
+                <div class="wordmark-container">
+                    <div class="wordmark" id="wordmark">PEMULIS</div>
+                    <div class="wordmark-subtitle">Water & Power</div>
+                </div>
+            </div>
+
+            <!-- Type Tester -->
+            <div class="tester-section">
+                <div class="tester-label">Type Tester</div>
+                <input type="text" class="tester-input" id="testerInput" value="DIDOT" placeholder="Enter text to preview">
+                <div class="tester-preview" id="testerPreview">DIDOT</div>
+            </div>
+
+            <!-- Size Scale -->
+            <div class="size-scale">
+                <div class="tester-label" style="margin-bottom: 24px;">Size Scale</div>
+                <div class="size-row">
+                    <div class="size-label">120px</div>
+                    <div class="size-sample" style="font-size: 120px;">TYPOGRAPHY</div>
+                </div>
+                <div class="size-row">
+                    <div class="size-label">80px</div>
+                    <div class="size-sample" style="font-size: 80px;">TYPOGRAPHY</div>
+                </div>
+                <div class="size-row">
+                    <div class="size-label">56px</div>
+                    <div class="size-sample" style="font-size: 56px;">TYPOGRAPHY</div>
+                </div>
+                <div class="size-row">
+                    <div class="size-label">40px</div>
+                    <div class="size-sample" style="font-size: 40px;">TYPOGRAPHY</div>
+                </div>
+                <div class="size-row">
+                    <div class="size-label">28px</div>
+                    <div class="size-sample" style="font-size: 28px;">TYPOGRAPHY</div>
+                </div>
+                <div class="size-row">
+                    <div class="size-label">20px</div>
+                    <div class="size-sample" style="font-size: 20px;">TYPOGRAPHY</div>
+                </div>
+            </div>
+
+            <!-- Glyph Map -->
+            <div class="glyph-map-section">
+                <div class="tester-label" style="margin-bottom: 24px;">Glyph Map</div>
+                <div class="glyph-map" id="glyphMap"></div>
+            </div>
+
+            <!-- Context Mockups -->
+            <div class="mockups-section">
+                <div class="tester-label" style="margin-bottom: 24px;">Context Mockups</div>
+
+                <!-- Hero Banner -->
+                <div class="mockup">
+                    <div class="mockup-label">Dark Hero Banner</div>
+                    <div class="mockup-hero">
+                        <div class="mockup-hero-text" id="mockupHero">ELEVATE</div>
+                        <div class="mockup-hero-sub">LUXURY EDITORIAL</div>
+                    </div>
+                </div>
+
+                <!-- Product Card -->
+                <div class="mockup">
+                    <div class="mockup-label">Product Card Overlay</div>
+                    <div class="mockup-card">
+                        <div class="mockup-card-img">image placeholder</div>
+                        <div class="mockup-card-content">
+                            <div class="mockup-card-title" id="mockupCard">EXCELLENCE</div>
+                            <div class="mockup-card-text">Crafted with meticulous attention to detail and refined elegance.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editorial -->
+                <div class="mockup">
+                    <div class="mockup-label">Editorial Layout</div>
+                    <div class="mockup-editorial">
+                        <div class="mockup-editorial-image"></div>
+                        <div>
+                            <div class="mockup-editorial-title" id="mockupEditorial">THE FINE ARTS</div>
+                            <div class="mockup-editorial-text">
+                                A curated collection celebrating the intersection of design, culture, and aesthetic refinement. Each piece speaks to the enduring power of thoughtful composition and uncompromising quality.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="mockup">
+                    <div class="mockup-label">Navigation Bar</div>
+                    <div class="mockup-nav">
+                        <div class="mockup-nav-logo" id="mockupNav">ATELIER</div>
+                        <div class="mockup-nav-item">Collections</div>
+                        <div class="mockup-nav-item">About</div>
+                        <div class="mockup-nav-item">Contact</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DIDOT FONT GLYPH DEFINITIONS
+        // ============================================
+
+        const didotGlyphs = {
+            // Uppercase Letters
+            'A': 'M50,140 L10,20 L90,20 Z M30,80 L70,80',
+            'B': 'M20,20 L20,140 L75,140 Q90,130 90,120 Q75,115 55,115 L20,115 L20,80 L75,80 Q90,75 90,65 Q75,55 55,55 L20,55 Z',
+            'C': 'M85,25 Q70,20 55,20 Q30,20 30,70 L30,100 Q30,135 55,135 Q70,135 85,130',
+            'D': 'M20,20 L20,140 L60,140 Q90,140 90,80 Q90,20 60,20 Z M20,80 L75,80 Q85,80 85,50 Q85,30 75,30 L20,30 Z',
+            'E': 'M80,25 L25,25 L25,140 L80,140 M25,80 L75,80',
+            'F': 'M25,25 L25,140 M25,25 L80,25 M25,80 L75,80',
+            'G': 'M85,25 Q70,20 50,20 Q25,20 25,70 L25,100 Q25,135 50,135 Q70,135 85,130 L85,85 L55,85',
+            'H': 'M20,25 L20,140 M80,25 L80,140 M20,80 L80,80',
+            'I': 'M30,25 L30,140 M20,25 L40,25 M20,140 L40,140',
+            'J': 'M75,25 L75,110 Q75,135 50,135 Q30,135 25,125',
+            'K': 'M20,25 L20,140 M80,25 L25,75 L80,140',
+            'L': 'M75,140 L20,140 L20,25',
+            'M': 'M20,140 L20,25 L50,60 L80,25 L80,140',
+            'N': 'M20,140 L20,25 L80,140 L80,25',
+            'O': 'M30,20 Q20,35 20,70 Q20,135 50,135 Q80,135 80,70 Q80,35 70,20 Z',
+            'P': 'M20,140 L20,25 L60,25 Q80,25 80,45 Q80,60 60,65 L20,65',
+            'Q': 'M30,20 Q20,35 20,70 Q20,135 50,135 Q80,135 80,70 Q80,35 70,20 Z M65,120 L85,150',
+            'R': 'M20,140 L20,25 L60,25 Q80,25 80,45 Q80,60 60,65 L20,65 L80,140',
+            'S': 'M75,30 Q85,35 85,50 Q85,65 60,72 Q35,80 35,100 Q35,120 60,130 Q75,135 80,128',
+            'T': 'M20,25 L80,25 M50,25 L50,140',
+            'U': 'M20,25 L20,100 Q20,135 50,135 L80,135 L80,25',
+            'V': 'M20,25 L50,140 L80,25',
+            'W': 'M20,25 L30,140 L50,80 L70,140 L80,25',
+            'X': 'M20,25 L80,140 M80,25 L20,140',
+            'Y': 'M20,25 L50,80 L80,25 M50,80 L50,140',
+            'Z': 'M80,25 L25,140 L80,140 L20,25 L80,25',
+
+            // Digits
+            '0': 'M30,20 Q20,40 20,70 Q20,120 50,135 Q80,120 80,70 Q80,40 70,20 Z M30,65 L70,65',
+            '1': 'M30,25 L50,25 L50,140 M35,140 L65,140',
+            '2': 'M20,35 Q20,20 50,20 Q75,20 75,35 Q75,50 30,100 L75,100 L20,140 L75,140',
+            '3': 'M75,25 L35,25 Q20,25 20,40 Q35,55 55,55 Q75,55 75,75 Q75,130 35,135 L75,135',
+            '4': 'M70,25 L20,100 L75,100 L75,25 L75,140',
+            '5': 'M75,25 L25,25 L25,65 L60,65 Q80,65 80,85 Q80,130 40,135 L75,135',
+            '6': 'M75,30 Q65,20 45,20 Q25,20 25,65 L25,110 Q25,135 50,135 Q75,135 75,115 Q75,90 50,90 Q30,90 30,70',
+            '7': 'M20,25 L75,25 L35,140',
+            '8': 'M30,20 Q20,30 20,45 Q20,60 40,70 Q60,80 60,90 Q60,115 50,130 Q80,130 80,110 Q80,85 60,75 Q40,65 40,55 Q40,40 50,30 Q80,20 30,20 Z',
+            '9': 'M25,70 Q25,45 50,45 Q75,45 75,65 L75,110 Q75,135 55,135 Q35,135 25,125',
+
+            // Punctuation & Symbols
+            '.': 'M40,130 L50,130 L50,140 L40,140 Z',
+            ',': 'M40,125 L50,130 L45,145',
+            '!': 'M45,25 L50,100 M40,130 L50,140',
+            '?': 'M25,30 Q25,20 50,20 Q70,20 70,35 Q70,50 50,60 L50,75 M50,105 L50,115',
+            '&': 'M70,140 L40,75 Q60,60 60,45 Q60,30 45,25 Q30,25 30,40 Q30,55 45,65 Q35,75 20,100 L40,140 Z',
+            "'": 'M45,25 L45,45',
+            '-': 'M20,75 L80,75',
+            ':': 'M45,50 L50,60 M45,100 L50,110',
+            ';': 'M45,50 L50,60 M45,95 L50,110 L45,125',
+            ' ': 'M0,0 L0,0'
+        };
+
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+
+        let state = {
+            fontSize: 72,
+            tracking: 2,
+            slant: 0,
+            lineHeight: 1.2,
+            textColor: '#1a1a1a',
+            bgColor: '#ffffff',
+            fillMode: 'solid',
+            gradientDir: 0,
+            gradientColor2: '#ffaa00',
+            shadowEnabled: false,
+            shadowX: 2,
+            shadowY: 4,
+            shadowBlur: 6,
+            shadowColor: '#000000',
+            shadowOpacity: 30,
+            glowEnabled: false,
+            glowColor: '#ffffff',
+            glowIntensity: 3,
+            glowOpacity: 50,
+            strokeEnabled: false,
+            strokeWidth: 1,
+            strokeColor: '#000000',
+            strokeOpacity: 100,
+            textOpacity: 100,
+            textBlur: 0,
+            embossEnabled: false
+        };
+
+        const presets = {
+            clean: {
+                textColor: '#1a1a1a',
+                bgColor: '#ffffff',
+                fillMode: 'solid',
+                shadowEnabled: false,
+                glowEnabled: false,
+                strokeEnabled: false,
+                textOpacity: 100,
+                textBlur: 0,
+                embossEnabled: false,
+                tracking: 2
+            },
+            luxury: {
+                textColor: '#d4a574',
+                bgColor: '#f5f5f0',
+                fillMode: 'gradient',
+                gradientDir: 45,
+                gradientColor2: '#e8c16f',
+                shadowEnabled: true,
+                shadowX: 2,
+                shadowY: 4,
+                shadowBlur: 12,
+                shadowOpacity: 15,
+                glowEnabled: false,
+                strokeEnabled: false,
+                embossEnabled: false,
+                tracking: 3
+            },
+            editorial: {
+                textColor: '#000000',
+                bgColor: '#ffffff',
+                fillMode: 'solid',
+                shadowEnabled: false,
+                glowEnabled: false,
+                strokeEnabled: false,
+                textOpacity: 100,
+                textBlur: 0,
+                embossEnabled: false,
+                tracking: 1
+            },
+            neon: {
+                textColor: '#ff00ff',
+                bgColor: '#000000',
+                fillMode: 'solid',
+                shadowEnabled: true,
+                shadowX: 0,
+                shadowY: 0,
+                shadowBlur: 20,
+                shadowColor: '#ff00ff',
+                shadowOpacity: 80,
+                glowEnabled: true,
+                glowColor: '#ff00ff',
+                glowIntensity: 8,
+                glowOpacity: 80,
+                strokeEnabled: false,
+                embossEnabled: false
+            },
+            embossed: {
+                textColor: '#e8dcc4',
+                bgColor: '#f5f0e8',
+                fillMode: 'solid',
+                shadowEnabled: true,
+                shadowX: 2,
+                shadowY: 2,
+                shadowBlur: 4,
+                shadowOpacity: 20,
+                glowEnabled: false,
+                strokeEnabled: true,
+                strokeWidth: 0.5,
+                strokeColor: '#d4c4ac',
+                strokeOpacity: 50,
+                embossEnabled: true,
+                tracking: 2
+            },
+            inverted: {
+                textColor: '#ffffff',
+                bgColor: '#1a1a1a',
+                fillMode: 'solid',
+                shadowEnabled: false,
+                glowEnabled: false,
+                strokeEnabled: false,
+                embossEnabled: false,
+                tracking: 2
+            },
+            vintage: {
+                textColor: '#6b4423',
+                bgColor: '#e8dcc4',
+                fillMode: 'solid',
+                shadowEnabled: true,
+                shadowX: 1,
+                shadowY: 2,
+                shadowBlur: 4,
+                shadowColor: '#8b6f47',
+                shadowOpacity: 25,
+                glowEnabled: false,
+                strokeEnabled: false,
+                textBlur: 1,
+                embossEnabled: false
+            },
+            chrome: {
+                textColor: '#e0e0e0',
+                bgColor: '#333333',
+                fillMode: 'gradient',
+                gradientDir: 90,
+                gradientColor2: '#a0a0a0',
+                shadowEnabled: true,
+                shadowX: 3,
+                shadowY: 3,
+                shadowBlur: 15,
+                shadowOpacity: 50,
+                glowEnabled: false,
+                strokeEnabled: true,
+                strokeWidth: 1,
+                strokeColor: '#606060',
+                embossEnabled: false
+            }
+        };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 0, g: 0, b: 0 };
+        }
+
+        function renderText(text, fontSize, fillId = null) {
+            const svgWidth = text.length * (fontSize * 0.5) + 100;
+            const svgHeight = fontSize * 1.8;
+            let svg = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">`;
+
+            // Add gradients if needed
+            if (state.fillMode === 'gradient') {
+                const rad = (state.gradientDir * Math.PI) / 180;
+                const x2 = Math.cos(rad);
+                const y2 = Math.sin(rad);
+                svg += `
+                    <defs>
+                        <linearGradient id="grad${fillId}" x1="0%" y1="0%" x2="${x2 * 100}%" y2="${y2 * 100}%">
+                            <stop offset="0%" style="stop-color:${state.textColor};stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:${state.gradientColor2};stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                `;
+            }
+
+            let x = 50;
+            let y = fontSize * 1.2;
+
+            for (let char of text) {
+                if (didotGlyphs[char]) {
+                    const scale = fontSize / 140;
+                    const skewAngle = state.slant;
+
+                    svg += `
+                        <g transform="translate(${x}, ${y}) scale(${scale}) skewY(${skewAngle})">
+                            <path d="${didotGlyphs[char]}"
+                                fill="${state.fillMode === 'gradient' ? `url(#grad${fillId})` : state.textColor}"
+                                stroke="${state.strokeEnabled ? state.strokeColor : 'none'}"
+                                stroke-width="${state.strokeEnabled ? state.strokeWidth : 0}"
+                                stroke-opacity="${state.strokeOpacity / 100}"
+                                opacity="${state.textOpacity / 100}"
+                            />
+                        </g>
+                    `;
+                    x += (fontSize * 0.5) + state.tracking;
+                } else if (char === ' ') {
+                    x += fontSize * 0.3 + state.tracking;
+                }
+            }
+
+            svg += '</svg>';
+            return svg;
+        }
+
+        function applyFilters() {
+            let filters = [];
+
+            if (state.shadowEnabled) {
+                const rgb = hexToRgb(state.shadowColor);
+                filters.push(`drop-shadow(${state.shadowX}px ${state.shadowY}px ${state.shadowBlur}px rgba(${rgb.r},${rgb.g},${rgb.b},${state.shadowOpacity / 100}))`);
+            }
+
+            if (state.glowEnabled) {
+                const rgb = hexToRgb(state.glowColor);
+                filters.push(`drop-shadow(0 0 ${state.glowIntensity}px rgba(${rgb.r},${rgb.g},${rgb.b},${state.glowOpacity / 100}))`);
+            }
+
+            if (state.embossEnabled) {
+                filters.push(`drop-shadow(1px 1px 2px rgba(0,0,0,0.3))`);
+                filters.push(`drop-shadow(-1px -1px 1px rgba(255,255,255,0.5))`);
+            }
+
+            if (state.textBlur > 0) {
+                filters.push(`blur(${state.textBlur}px)`);
+            }
+
+            return filters.length > 0 ? filters.join(' ') : 'none';
+        }
+
+        function updateUI() {
+            // Update all display values
+            document.getElementById('fontSizeVal').textContent = state.fontSize;
+            document.getElementById('trackingVal').textContent = state.tracking;
+            document.getElementById('slantVal').textContent = state.slant;
+            document.getElementById('lineHeightVal').textContent = state.lineHeight.toFixed(1);
+            document.getElementById('shadowXVal').textContent = state.shadowX;
+            document.getElementById('shadowYVal').textContent = state.shadowY;
+            document.getElementById('shadowBlurVal').textContent = state.shadowBlur;
+            document.getElementById('shadowOpacityVal').textContent = state.shadowOpacity;
+            document.getElementById('glowIntensityVal').textContent = state.glowIntensity;
+            document.getElementById('glowOpacityVal').textContent = state.glowOpacity;
+            document.getElementById('strokeWidthVal').textContent = state.strokeWidth;
+            document.getElementById('strokeOpacityVal').textContent = state.strokeOpacity;
+            document.getElementById('textOpacityVal').textContent = state.textOpacity;
+            document.getElementById('textBlurVal').textContent = state.textBlur;
+            document.getElementById('gradientDirVal').textContent = state.gradientDir;
+
+            // Update controls visibility
+            document.getElementById('gradientControls').style.display = state.fillMode === 'gradient' ? 'grid' : 'none';
+            document.getElementById('gradientColor2Controls').style.display = state.fillMode === 'gradient' ? 'grid' : 'none';
+            document.getElementById('shadowControls').style.display = state.shadowEnabled ? 'grid' : 'none';
+            document.getElementById('glowControls').style.display = state.glowEnabled ? 'grid' : 'none';
+            document.getElementById('strokeControls').style.display = state.strokeEnabled ? 'grid' : 'none';
+
+            // Update preview areas
+            updatePreviews();
+        }
+
+        function updatePreviews() {
+            const filters = applyFilters();
+
+            // Wordmark
+            const wordmark = document.getElementById('wordmark');
+            wordmark.innerHTML = renderText('PEMULIS', state.fontSize * 1.2);
+            wordmark.style.filter = filters;
+            wordmark.style.color = state.textColor;
+            wordmark.style.backgroundColor = state.bgColor;
+            wordmark.style.letterSpacing = state.tracking + 'px';
+            wordmark.style.lineHeight = state.lineHeight;
+            wordmark.style.fontStyle = `skewY(${state.slant}deg)`;
+
+            // Type Tester
+            const testerPreview = document.getElementById('testerPreview');
+            const testerText = document.getElementById('testerInput').value || 'DIDOT';
+            testerPreview.innerHTML = renderText(testerText, state.fontSize);
+            testerPreview.style.filter = filters;
+            testerPreview.style.color = state.textColor;
+            testerPreview.style.backgroundColor = state.bgColor;
+            testerPreview.style.letterSpacing = state.tracking + 'px';
+            testerPreview.style.lineHeight = state.lineHeight;
+            testerPreview.style.fontStyle = `skewY(${state.slant}deg)`;
+            testerPreview.style.padding = '20px';
+            testerPreview.style.borderRadius = '4px';
+
+            // Size Scale
+            const sizes = [120, 80, 56, 40, 28, 20];
+            document.querySelectorAll('.size-sample').forEach((el, idx) => {
+                el.innerHTML = renderText('TYPOGRAPHY', sizes[idx]);
+                el.style.filter = filters;
+                el.style.color = state.textColor;
+                el.style.letterSpacing = state.tracking + 'px';
+                el.style.fontStyle = `skewY(${state.slant}deg)`;
+            });
+
+            // Glyph Map
+            const glyphMap = document.getElementById('glyphMap');
+            glyphMap.innerHTML = '';
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?&\'-:;';
+            for (let char of chars) {
+                const glyph = document.createElement('div');
+                glyph.className = 'glyph';
+                glyph.innerHTML = renderText(char, 48);
+                glyph.style.filter = filters;
+                glyph.style.color = state.textColor;
+                glyph.style.fontStyle = `skewY(${state.slant}deg)`;
+                glyphMap.appendChild(glyph);
+            }
+
+            // Mockups
+            document.getElementById('mockupHero').innerHTML = renderText('ELEVATE', 64);
+            document.getElementById('mockupHero').style.filter = filters;
+            document.getElementById('mockupHero').style.color = state.textColor;
+            document.getElementById('mockupHero').style.letterSpacing = state.tracking + 'px';
+            document.getElementById('mockupHero').style.fontStyle = `skewY(${state.slant}deg)`;
+
+            document.getElementById('mockupCard').innerHTML = renderText('EXCELLENCE', 28);
+            document.getElementById('mockupCard').style.filter = filters;
+            document.getElementById('mockupCard').style.color = state.textColor;
+            document.getElementById('mockupCard').style.letterSpacing = state.tracking + 'px';
+            document.getElementById('mockupCard').style.fontStyle = `skewY(${state.slant}deg)`;
+
+            document.getElementById('mockupEditorial').innerHTML = renderText('THE FINE ARTS', 40);
+            document.getElementById('mockupEditorial').style.filter = filters;
+            document.getElementById('mockupEditorial').style.color = state.textColor;
+            document.getElementById('mockupEditorial').style.letterSpacing = state.tracking + 'px';
+            document.getElementById('mockupEditorial').style.fontStyle = `skewY(${state.slant}deg)`;
+
+            document.getElementById('mockupNav').innerHTML = renderText('ATELIER', 24);
+            document.getElementById('mockupNav').style.filter = filters;
+            document.getElementById('mockupNav').style.color = state.textColor;
+            document.getElementById('mockupNav').style.letterSpacing = state.tracking + 'px';
+            document.getElementById('mockupNav').style.fontStyle = `skewY(${state.slant}deg)`;
+
+            // Update background
+            document.querySelector('.preview-section').style.backgroundColor = state.bgColor;
+            document.querySelector('.tester-section').style.backgroundColor = state.bgColor;
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        document.getElementById('fontSize').addEventListener('input', (e) => {
+            state.fontSize = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('tracking').addEventListener('input', (e) => {
+            state.tracking = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('slant').addEventListener('input', (e) => {
+            state.slant = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('lineHeight').addEventListener('input', (e) => {
+            state.lineHeight = parseFloat(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('textColor').addEventListener('input', (e) => {
+            state.textColor = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('bgColor').addEventListener('input', (e) => {
+            state.bgColor = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('fillMode').addEventListener('change', (e) => {
+            state.fillMode = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('gradientDir').addEventListener('input', (e) => {
+            state.gradientDir = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('gradientColor2').addEventListener('input', (e) => {
+            state.gradientColor2 = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('shadowEnabled').addEventListener('change', (e) => {
+            state.shadowEnabled = e.target.checked;
+            updateUI();
+        });
+
+        document.getElementById('shadowX').addEventListener('input', (e) => {
+            state.shadowX = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('shadowY').addEventListener('input', (e) => {
+            state.shadowY = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('shadowBlur').addEventListener('input', (e) => {
+            state.shadowBlur = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('shadowColor').addEventListener('input', (e) => {
+            state.shadowColor = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('shadowOpacity').addEventListener('input', (e) => {
+            state.shadowOpacity = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('glowEnabled').addEventListener('change', (e) => {
+            state.glowEnabled = e.target.checked;
+            updateUI();
+        });
+
+        document.getElementById('glowColor').addEventListener('input', (e) => {
+            state.glowColor = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('glowIntensity').addEventListener('input', (e) => {
+            state.glowIntensity = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('glowOpacity').addEventListener('input', (e) => {
+            state.glowOpacity = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('strokeEnabled').addEventListener('change', (e) => {
+            state.strokeEnabled = e.target.checked;
+            updateUI();
+        });
+
+        document.getElementById('strokeWidth').addEventListener('input', (e) => {
+            state.strokeWidth = parseFloat(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('strokeColor').addEventListener('input', (e) => {
+            state.strokeColor = e.target.value;
+            updateUI();
+        });
+
+        document.getElementById('strokeOpacity').addEventListener('input', (e) => {
+            state.strokeOpacity = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('textOpacity').addEventListener('input', (e) => {
+            state.textOpacity = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('textBlur').addEventListener('input', (e) => {
+            state.textBlur = parseInt(e.target.value);
+            updateUI();
+        });
+
+        document.getElementById('embossEnabled').addEventListener('change', (e) => {
+            state.embossEnabled = e.target.checked;
+            updateUI();
+        });
+
+        document.getElementById('testerInput').addEventListener('input', () => {
+            updatePreviews();
+        });
+
+        // Preset chips
+        document.querySelectorAll('.preset-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                const presetName = e.target.dataset.preset;
+                const preset = presets[presetName];
+
+                // Update state with preset values
+                Object.assign(state, preset);
+
+                // Update all input elements to match new state
+                document.getElementById('fontSize').value = state.fontSize;
+                document.getElementById('tracking').value = state.tracking;
+                document.getElementById('slant').value = state.slant;
+                document.getElementById('lineHeight').value = state.lineHeight;
+                document.getElementById('textColor').value = state.textColor;
+                document.getElementById('bgColor').value = state.bgColor;
+                document.getElementById('fillMode').value = state.fillMode;
+                document.getElementById('gradientDir').value = state.gradientDir;
+                document.getElementById('gradientColor2').value = state.gradientColor2;
+                document.getElementById('shadowEnabled').checked = state.shadowEnabled;
+                document.getElementById('shadowX').value = state.shadowX;
+                document.getElementById('shadowY').value = state.shadowY;
+                document.getElementById('shadowBlur').value = state.shadowBlur;
+                document.getElementById('shadowColor').value = state.shadowColor;
+                document.getElementById('shadowOpacity').value = state.shadowOpacity;
+                document.getElementById('glowEnabled').checked = state.glowEnabled;
+                document.getElementById('glowColor').value = state.glowColor;
+                document.getElementById('glowIntensity').value = state.glowIntensity;
+                document.getElementById('glowOpacity').value = state.glowOpacity;
+                document.getElementById('strokeEnabled').checked = state.strokeEnabled;
+                document.getElementById('strokeWidth').value = state.strokeWidth;
+                document.getElementById('strokeColor').value = state.strokeColor;
+                document.getElementById('strokeOpacity').value = state.strokeOpacity;
+                document.getElementById('textOpacity').value = state.textOpacity;
+                document.getElementById('textBlur').value = state.textBlur;
+                document.getElementById('embossEnabled').checked = state.embossEnabled;
+
+                // Update active chip
+                document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+
+                updateUI();
+            });
+        });
+
+        // Section collapse/expand
+        document.querySelectorAll('.section-title').forEach(title => {
+            title.addEventListener('click', () => {
+                title.parentElement.classList.toggle('collapsed');
+            });
+        });
+
+        // Initial render
+        updateUI();
+    </script>
+</body>
+</html>

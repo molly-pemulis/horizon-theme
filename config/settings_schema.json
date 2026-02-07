@@ -159,6 +159,24 @@
             "alpha": true
           },
           {
+            "type": "checkbox",
+            "id": "primary_button_gradient",
+            "label": "Use gradient background",
+            "default": false
+          },
+          {
+            "type": "color",
+            "id": "primary_button_gradient_start",
+            "label": "Gradient top color",
+            "default": "#32b6b6"
+          },
+          {
+            "type": "color",
+            "id": "primary_button_gradient_end",
+            "label": "Gradient bottom color",
+            "default": "#237f7f"
+          },
+          {
             "type": "header",
             "content": "t:names.secondary_button"
           },

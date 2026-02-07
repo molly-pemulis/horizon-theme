@@ -40,7 +40,11 @@
         --color-shadow: rgb({{ scheme.settings.shadow.rgba }});
         --color-shadow-rgb: {{ scheme.settings.shadow.rgb }};
         --color-primary-button-text: rgb({{ scheme.settings.primary_button_text.rgba }});
-        --color-primary-button-background: rgb({{ scheme.settings.primary_button_background.rgba }});
+        {% if scheme.settings.primary_button_gradient %}
+          --color-primary-button-background: linear-gradient(180deg, {{ scheme.settings.primary_button_gradient_start }}, {{ scheme.settings.primary_button_gradient_end }});
+        {% else %}
+          --color-primary-button-background: rgb({{ scheme.settings.primary_button_background.rgba }});
+        {% endif %}
         --color-primary-button-border: rgb({{ scheme.settings.primary_button_border.rgba }});
         --color-primary-button-hover-text: rgb({{ scheme.settings.primary_button_hover_text.rgba }});
         --color-primary-button-hover-background: rgb({{ scheme.settings.primary_button_hover_background.rgba }});

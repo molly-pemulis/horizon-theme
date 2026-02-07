@@ -293,16 +293,3 @@
    pw-overflow-visible    | (section only)  | Allow imgs to overflow
 
    ============================================================ */
-
-/* ── Gradient buttons ── */
-.button--primary {
-  background: linear-gradient(180deg, #32b6b6, #237f7f) !important;
-  border: none !important;
-  box-shadow: 0px 4px 4px rgba(0,0,0,0.20),
-              0px 16px 20px -20px rgba(50,182,182,0.27);
-  transition: opacity 0.3s ease;
-}
-
-.button--primary:hover {
-  opacity: 0.9;
-}

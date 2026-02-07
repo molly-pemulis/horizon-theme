@@ -1,1411 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Didot Font Laboratory</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f5f5f5;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 320px;
-            background: #111;
-            color: #e0e0e0;
-            overflow-y: auto;
-            padding: 20px;
-            border-right: 1px solid #333;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 4px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-
-        .section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #999;
-            margin-bottom: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            user-select: none;
-        }
-
-        .section-title::before {
-            content: '▼';
-            display: inline-block;
-            margin-right: 8px;
-            transition: transform 0.2s;
-            font-size: 10px;
-        }
-
-        .section.collapsed .section-title::before {
-            transform: rotate(-90deg);
-        }
-
-        .section-content {
-            display: grid;
-            gap: 12px;
-            max-height: 1000px;
-            overflow: hidden;
-            transition: max-height 0.2s;
-        }
-
-        .section.collapsed .section-content {
-            max-height: 0;
-            opacity: 0;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .control-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #bbb;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .control-value {
-            font-size: 10px;
-            color: #888;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: #333;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            cursor: pointer;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #0088ff;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #00aaff;
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #0088ff;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-        }
-
-        input[type="range"]::-moz-range-thumb:hover {
-            background: #00aaff;
-        }
-
-        input[type="range"]::-moz-range-track {
-            background: transparent;
-            border: none;
-        }
-
-        input[type="color"] {
-            width: 100%;
-            height: 32px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #0088ff;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .checkbox-label {
-            flex: 1;
-            font-size: 11px;
-            font-weight: 600;
-            color: #bbb;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* PRESETS */
-        .presets-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            margin-bottom: 12px;
-        }
-
-        .presets-row::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .presets-row::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 2px;
-        }
-
-        .preset-chip {
-            flex-shrink: 0;
-            padding: 6px 12px;
-            border-radius: 16px;
-            background: #222;
-            border: 1px solid #444;
-            color: #bbb;
-            font-size: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .preset-chip:hover {
-            border-color: #0088ff;
-            background: #1a1a1a;
-        }
-
-        .preset-chip.active {
-            background: #0088ff;
-            border-color: #0088ff;
-            color: white;
-        }
-
-        /* MAIN AREA */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            overflow-y: auto;
-        }
-
-        .main::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .main::-webkit-scrollbar-track {
-            background: #f5f5f5;
-        }
-
-        .main::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 4px;
-        }
-
-        .main::-webkit-scrollbar-thumb:hover {
-            background: #999;
-        }
-
-        /* WORDMARK PREVIEW */
-        .preview-section {
-            padding: 40px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .wordmark-container {
-            text-align: center;
-        }
-
-        .wordmark {
-            font-size: 120px;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            font-weight: 400;
-        }
-
-        .wordmark-subtitle {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            color: #999;
-            letter-spacing: 2px;
-            font-weight: 400;
-        }
-
-        /* TYPE TESTER */
-        .tester-section {
-            padding: 40px;
-            border-bottom: 1px solid #eee;
-            background: #fafafa;
-        }
-
-        .tester-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .tester-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-            background: white;
-            margin-bottom: 12px;
-        }
-
-        .tester-preview {
-            font-size: 48px;
-            line-height: 1.6;
-            min-height: 80px;
-            word-wrap: break-word;
-            letter-spacing: 2px;
-        }
-
-        /* SIZE SCALE */
-        .size-scale {
-            padding: 40px;
-            border-bottom: 1px solid #eee;
-            background: white;
-        }
-
-        .size-row {
-            display: flex;
-            align-items: baseline;
-            margin-bottom: 20px;
-            gap: 20px;
-        }
-
-        .size-label {
-            width: 50px;
-            font-size: 11px;
-            color: #999;
-            font-weight: 600;
-        }
-
-        .size-sample {
-            flex: 1;
-            line-height: 1.2;
-            letter-spacing: 2px;
-        }
-
-        /* GLYPH MAP */
-        .glyph-map-section {
-            padding: 40px;
-            border-bottom: 1px solid #eee;
-            background: #fafafa;
-        }
-
-        .glyph-map {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 12px;
-        }
-
-        .glyph {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 60px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 36px;
-            line-height: 1;
-            letter-spacing: 0;
-        }
-
-        /* CONTEXT MOCKUPS */
-        .mockups-section {
-            padding: 40px;
-        }
-
-        .mockup {
-            margin-bottom: 40px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .mockup-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        /* Hero Banner */
-        .mockup-hero {
-            background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-            padding: 60px 40px;
-            text-align: center;
-            color: white;
-        }
-
-        .mockup-hero-text {
-            font-size: 64px;
-            line-height: 1.2;
-            letter-spacing: 3px;
-            margin-bottom: 16px;
-        }
-
-        .mockup-hero-sub {
-            font-size: 16px;
-            color: #aaa;
-            letter-spacing: 2px;
-        }
-
-        /* Product Card */
-        .mockup-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .mockup-card-img {
-            height: 200px;
-            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-        }
-
-        .mockup-card-content {
-            padding: 24px;
-        }
-
-        .mockup-card-title {
-            font-size: 28px;
-            line-height: 1.2;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .mockup-card-text {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        /* Editorial */
-        .mockup-editorial {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-            background: white;
-            padding: 40px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .mockup-editorial-image {
-            height: 300px;
-            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-            border-radius: 4px;
-        }
-
-        .mockup-editorial-title {
-            font-size: 40px;
-            line-height: 1.2;
-            letter-spacing: 1.5px;
-            margin-bottom: 16px;
-        }
-
-        .mockup-editorial-text {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.8;
-        }
-
-        /* Navigation */
-        .mockup-nav {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px 40px;
-            display: flex;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .mockup-nav-item {
-            font-size: 14px;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .mockup-nav-item:hover {
-            opacity: 0.6;
-        }
-
-        .mockup-nav-logo {
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-right: auto;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Didot Font Laboratory — Pemulis</title>
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;overflow:hidden;height:100vh}
+.wrap{display:flex;height:100vh}
+
+/* ── SIDEBAR ── */
+.sb{width:340px;background:#111;color:#ddd;overflow-y:auto;padding:20px;flex-shrink:0}
+.sb::-webkit-scrollbar{width:6px}
+.sb::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+.sec{margin-bottom:18px}
+.sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.sec-t::before{content:'▾';font-size:9px;transition:transform .2s}
+.sec.shut .sec-t::before{transform:rotate(-90deg)}
+.sec.shut .sec-c{display:none}
+.sec-c{display:grid;gap:10px}
+.cg{display:flex;flex-direction:column;gap:4px}
+.cl{font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
+.cv{font-size:10px;color:#666}
+.row{display:flex;gap:8px;align-items:center}
+.row .cg{flex:1}
+input[type=range]{width:100%;height:4px;border-radius:2px;background:#333;-webkit-appearance:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#08f;cursor:pointer}
+input[type=color]{width:100%;height:28px;border:none;border-radius:3px;cursor:pointer;background:#222}
+.chk{display:flex;align-items:center;gap:8px}
+.chk input{accent-color:#08f;width:16px;height:16px}
+.chk label{font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+select{width:100%;padding:6px;border:1px solid #333;background:#222;color:#ddd;border-radius:3px;font-size:11px}
+
+/* Presets */
+.pr{display:flex;gap:6px;flex-wrap:wrap}
+.pc{padding:5px 10px;border-radius:14px;background:#222;border:1px solid #444;color:#aaa;font-size:9px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;white-space:nowrap}
+.pc:hover{border-color:#08f;color:#fff}
+.pc.on{background:#08f;border-color:#08f;color:#fff}
+
+/* ── MAIN ── */
+.mn{flex:1;overflow-y:auto;background:#fff}
+.mn::-webkit-scrollbar{width:6px}
+.mn::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+.pane{padding:40px;border-bottom:1px solid #eee}
+.pane-t{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+
+/* The styled text class — all effects applied here */
+.dt{
+  font-family:'GFS Didot',serif;
+  transition: all 0.15s ease;
+  display:inline-block;
+}
+
+.wm-box{text-align:center;padding:30px 20px;transition:background .2s;border-radius:8px}
+.wm-sub{font-family:'Playfair Display',serif;font-size:24px;color:#999;letter-spacing:3px;margin-top:12px;font-weight:400}
+.ti{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:13px;margin-bottom:16px}
+.gm{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px}
+.gc{display:flex;align-items:center;justify-content:center;height:64px;background:#fff;border:1px solid #e8e8e8;border-radius:4px}
+.sr{display:flex;align-items:baseline;gap:16px;margin-bottom:20px}
+.sl-label{width:50px;font-size:10px;color:#999;font-weight:600;flex-shrink:0}
+.ss{flex:1;overflow:hidden}
+
+/* Mockups */
+.mk{margin-bottom:32px;border-radius:8px;overflow:hidden}
+.mk-l{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.mk-hero{background:linear-gradient(135deg,#0a0a0a,#222);padding:56px 40px;text-align:center}
+.mk-hero-sub{font-size:14px;color:#666;letter-spacing:3px;margin-top:16px;font-family:system-ui}
+.mk-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden}
+.mk-card-img{height:200px;background:linear-gradient(135deg,#f0f0f0,#e0e0e0);display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px}
+.mk-card-body{padding:24px}
+.mk-card-txt{font-size:13px;color:#888;line-height:1.6;margin-top:10px}
+.mk-ed{display:grid;grid-template-columns:1fr 1fr;gap:28px;background:#fff;padding:36px;border:1px solid #e0e0e0;border-radius:8px}
+.mk-ed-img{height:280px;background:linear-gradient(135deg,#f0f0f0,#e0e0e0);border-radius:4px}
+.mk-ed-txt{font-size:13px;color:#888;line-height:1.7;margin-top:14px}
+.mk-nav{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 36px;display:flex;gap:36px;align-items:center}
+.mk-nav-links{font-size:13px;letter-spacing:1px;color:#666}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-            <!-- Typography -->
-            <div class="section">
-                <div class="section-title">Typography</div>
-                <div class="section-content">
-                    <div class="control-group">
-                        <label class="control-label">Size</label>
-                        <input type="range" id="fontSize" min="24" max="200" value="72">
-                        <div class="control-value"><span id="fontSizeVal">72</span>px</div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Tracking</label>
-                        <input type="range" id="tracking" min="-4" max="20" value="2">
-                        <div class="control-value"><span id="trackingVal">2</span>px</div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Slant</label>
-                        <input type="range" id="slant" min="-15" max="15" value="0">
-                        <div class="control-value"><span id="slantVal">0</span>°</div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Line Height</label>
-                        <input type="range" id="lineHeight" min="0.8" max="2.0" step="0.1" value="1.2">
-                        <div class="control-value"><span id="lineHeightVal">1.2</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Color & Fill -->
-            <div class="section">
-                <div class="section-title">Color & Fill</div>
-                <div class="section-content">
-                    <div class="control-group">
-                        <label class="control-label">Text Color</label>
-                        <input type="color" id="textColor" value="#1a1a1a">
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Background Color</label>
-                        <input type="color" id="bgColor" value="#ffffff">
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Fill Mode</label>
-                        <select id="fillMode" style="width: 100%; padding: 8px; border: 1px solid #444; background: #222; color: #e0e0e0; border-radius: 4px; font-size: 12px;">
-                            <option value="solid">Solid</option>
-                            <option value="gradient">Gradient</option>
-                        </select>
-                    </div>
-                    <div class="control-group" id="gradientControls" style="display: none;">
-                        <label class="control-label">Gradient Direction</label>
-                        <input type="range" id="gradientDir" min="0" max="360" value="0">
-                        <div class="control-value"><span id="gradientDirVal">0</span>°</div>
-                    </div>
-                    <div class="control-group" id="gradientColor2Controls" style="display: none;">
-                        <label class="control-label">Gradient Color 2</label>
-                        <input type="color" id="gradientColor2" value="#ffaa00">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Drop Shadow -->
-            <div class="section">
-                <div class="section-title">Drop Shadow</div>
-                <div class="section-content">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="shadowEnabled">
-                        <label class="checkbox-label" for="shadowEnabled">Enable</label>
-                    </div>
-                    <div id="shadowControls" style="display: none;">
-                        <div class="control-group">
-                            <label class="control-label">X Offset</label>
-                            <input type="range" id="shadowX" min="-20" max="20" value="2">
-                            <div class="control-value"><span id="shadowXVal">2</span>px</div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Y Offset</label>
-                            <input type="range" id="shadowY" min="-20" max="20" value="4">
-                            <div class="control-value"><span id="shadowYVal">4</span>px</div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Blur</label>
-                            <input type="range" id="shadowBlur" min="0" max="30" value="6">
-                            <div class="control-value"><span id="shadowBlurVal">6</span>px</div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Color</label>
-                            <input type="color" id="shadowColor" value="#000000">
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Opacity</label>
-                            <input type="range" id="shadowOpacity" min="0" max="100" value="30">
-                            <div class="control-value"><span id="shadowOpacityVal">30</span>%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Inner Glow -->
-            <div class="section">
-                <div class="section-title">Inner Glow</div>
-                <div class="section-content">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="glowEnabled">
-                        <label class="checkbox-label" for="glowEnabled">Enable</label>
-                    </div>
-                    <div id="glowControls" style="display: none;">
-                        <div class="control-group">
-                            <label class="control-label">Color</label>
-                            <input type="color" id="glowColor" value="#ffffff">
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Intensity</label>
-                            <input type="range" id="glowIntensity" min="0" max="20" value="3">
-                            <div class="control-value"><span id="glowIntensityVal">3</span>px</div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Opacity</label>
-                            <input type="range" id="glowOpacity" min="0" max="100" value="50">
-                            <div class="control-value"><span id="glowOpacityVal">50</span>%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Outline / Stroke -->
-            <div class="section">
-                <div class="section-title">Outline / Stroke</div>
-                <div class="section-content">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="strokeEnabled">
-                        <label class="checkbox-label" for="strokeEnabled">Enable</label>
-                    </div>
-                    <div id="strokeControls" style="display: none;">
-                        <div class="control-group">
-                            <label class="control-label">Width</label>
-                            <input type="range" id="strokeWidth" min="0" max="5" step="0.5" value="1">
-                            <div class="control-value"><span id="strokeWidthVal">1</span>px</div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Color</label>
-                            <input type="color" id="strokeColor" value="#000000">
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Opacity</label>
-                            <input type="range" id="strokeOpacity" min="0" max="100" value="100">
-                            <div class="control-value"><span id="strokeOpacityVal">100</span>%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Text Effects -->
-            <div class="section">
-                <div class="section-title">Text Effects</div>
-                <div class="section-content">
-                    <div class="control-group">
-                        <label class="control-label">Opacity</label>
-                        <input type="range" id="textOpacity" min="0" max="100" value="100">
-                        <div class="control-value"><span id="textOpacityVal">100</span>%</div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Blur</label>
-                        <input type="range" id="textBlur" min="0" max="10" value="0">
-                        <div class="control-value"><span id="textBlurVal">0</span>px</div>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="embossEnabled">
-                        <label class="checkbox-label" for="embossEnabled">3D/Emboss</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Presets -->
-            <div class="section" style="margin-bottom: 0;">
-                <div class="section-title">Quick Presets</div>
-                <div class="section-content">
-                    <div class="presets-row">
-                        <div class="preset-chip active" data-preset="clean">Clean</div>
-                        <div class="preset-chip" data-preset="luxury">Luxury Gold</div>
-                        <div class="preset-chip" data-preset="editorial">Editorial</div>
-                        <div class="preset-chip" data-preset="neon">Neon Glow</div>
-                        <div class="preset-chip" data-preset="embossed">Embossed</div>
-                        <div class="preset-chip" data-preset="inverted">Inverted</div>
-                        <div class="preset-chip" data-preset="vintage">Vintage</div>
-                        <div class="preset-chip" data-preset="chrome">Chrome</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MAIN AREA -->
-        <div class="main">
-            <!-- Wordmark Preview -->
-            <div class="preview-section">
-                <div class="wordmark-container">
-                    <div class="wordmark" id="wordmark">PEMULIS</div>
-                    <div class="wordmark-subtitle">Water & Power</div>
-                </div>
-            </div>
-
-            <!-- Type Tester -->
-            <div class="tester-section">
-                <div class="tester-label">Type Tester</div>
-                <input type="text" class="tester-input" id="testerInput" value="DIDOT" placeholder="Enter text to preview">
-                <div class="tester-preview" id="testerPreview">DIDOT</div>
-            </div>
-
-            <!-- Size Scale -->
-            <div class="size-scale">
-                <div class="tester-label" style="margin-bottom: 24px;">Size Scale</div>
-                <div class="size-row">
-                    <div class="size-label">120px</div>
-                    <div class="size-sample" style="font-size: 120px;">TYPOGRAPHY</div>
-                </div>
-                <div class="size-row">
-                    <div class="size-label">80px</div>
-                    <div class="size-sample" style="font-size: 80px;">TYPOGRAPHY</div>
-                </div>
-                <div class="size-row">
-                    <div class="size-label">56px</div>
-                    <div class="size-sample" style="font-size: 56px;">TYPOGRAPHY</div>
-                </div>
-                <div class="size-row">
-                    <div class="size-label">40px</div>
-                    <div class="size-sample" style="font-size: 40px;">TYPOGRAPHY</div>
-                </div>
-                <div class="size-row">
-                    <div class="size-label">28px</div>
-                    <div class="size-sample" style="font-size: 28px;">TYPOGRAPHY</div>
-                </div>
-                <div class="size-row">
-                    <div class="size-label">20px</div>
-                    <div class="size-sample" style="font-size: 20px;">TYPOGRAPHY</div>
-                </div>
-            </div>
-
-            <!-- Glyph Map -->
-            <div class="glyph-map-section">
-                <div class="tester-label" style="margin-bottom: 24px;">Glyph Map</div>
-                <div class="glyph-map" id="glyphMap"></div>
-            </div>
-
-            <!-- Context Mockups -->
-            <div class="mockups-section">
-                <div class="tester-label" style="margin-bottom: 24px;">Context Mockups</div>
-
-                <!-- Hero Banner -->
-                <div class="mockup">
-                    <div class="mockup-label">Dark Hero Banner</div>
-                    <div class="mockup-hero">
-                        <div class="mockup-hero-text" id="mockupHero">ELEVATE</div>
-                        <div class="mockup-hero-sub">LUXURY EDITORIAL</div>
-                    </div>
-                </div>
-
-                <!-- Product Card -->
-                <div class="mockup">
-                    <div class="mockup-label">Product Card Overlay</div>
-                    <div class="mockup-card">
-                        <div class="mockup-card-img">image placeholder</div>
-                        <div class="mockup-card-content">
-                            <div class="mockup-card-title" id="mockupCard">EXCELLENCE</div>
-                            <div class="mockup-card-text">Crafted with meticulous attention to detail and refined elegance.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Editorial -->
-                <div class="mockup">
-                    <div class="mockup-label">Editorial Layout</div>
-                    <div class="mockup-editorial">
-                        <div class="mockup-editorial-image"></div>
-                        <div>
-                            <div class="mockup-editorial-title" id="mockupEditorial">THE FINE ARTS</div>
-                            <div class="mockup-editorial-text">
-                                A curated collection celebrating the intersection of design, culture, and aesthetic refinement. Each piece speaks to the enduring power of thoughtful composition and uncompromising quality.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation -->
-                <div class="mockup">
-                    <div class="mockup-label">Navigation Bar</div>
-                    <div class="mockup-nav">
-                        <div class="mockup-nav-logo" id="mockupNav">ATELIER</div>
-                        <div class="mockup-nav-item">Collections</div>
-                        <div class="mockup-nav-item">About</div>
-                        <div class="mockup-nav-item">Contact</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ============================================
-        // DIDOT FONT GLYPH DEFINITIONS
-        // ============================================
-
-        const didotGlyphs = {
-            // Uppercase Letters
-            'A': 'M50,140 L10,20 L90,20 Z M30,80 L70,80',
-            'B': 'M20,20 L20,140 L75,140 Q90,130 90,120 Q75,115 55,115 L20,115 L20,80 L75,80 Q90,75 90,65 Q75,55 55,55 L20,55 Z',
-            'C': 'M85,25 Q70,20 55,20 Q30,20 30,70 L30,100 Q30,135 55,135 Q70,135 85,130',
-            'D': 'M20,20 L20,140 L60,140 Q90,140 90,80 Q90,20 60,20 Z M20,80 L75,80 Q85,80 85,50 Q85,30 75,30 L20,30 Z',
-            'E': 'M80,25 L25,25 L25,140 L80,140 M25,80 L75,80',
-            'F': 'M25,25 L25,140 M25,25 L80,25 M25,80 L75,80',
-            'G': 'M85,25 Q70,20 50,20 Q25,20 25,70 L25,100 Q25,135 50,135 Q70,135 85,130 L85,85 L55,85',
-            'H': 'M20,25 L20,140 M80,25 L80,140 M20,80 L80,80',
-            'I': 'M30,25 L30,140 M20,25 L40,25 M20,140 L40,140',
-            'J': 'M75,25 L75,110 Q75,135 50,135 Q30,135 25,125',
-            'K': 'M20,25 L20,140 M80,25 L25,75 L80,140',
-            'L': 'M75,140 L20,140 L20,25',
-            'M': 'M20,140 L20,25 L50,60 L80,25 L80,140',
-            'N': 'M20,140 L20,25 L80,140 L80,25',
-            'O': 'M30,20 Q20,35 20,70 Q20,135 50,135 Q80,135 80,70 Q80,35 70,20 Z',
-            'P': 'M20,140 L20,25 L60,25 Q80,25 80,45 Q80,60 60,65 L20,65',
-            'Q': 'M30,20 Q20,35 20,70 Q20,135 50,135 Q80,135 80,70 Q80,35 70,20 Z M65,120 L85,150',
-            'R': 'M20,140 L20,25 L60,25 Q80,25 80,45 Q80,60 60,65 L20,65 L80,140',
-            'S': 'M75,30 Q85,35 85,50 Q85,65 60,72 Q35,80 35,100 Q35,120 60,130 Q75,135 80,128',
-            'T': 'M20,25 L80,25 M50,25 L50,140',
-            'U': 'M20,25 L20,100 Q20,135 50,135 L80,135 L80,25',
-            'V': 'M20,25 L50,140 L80,25',
-            'W': 'M20,25 L30,140 L50,80 L70,140 L80,25',
-            'X': 'M20,25 L80,140 M80,25 L20,140',
-            'Y': 'M20,25 L50,80 L80,25 M50,80 L50,140',
-            'Z': 'M80,25 L25,140 L80,140 L20,25 L80,25',
-
-            // Digits
-            '0': 'M30,20 Q20,40 20,70 Q20,120 50,135 Q80,120 80,70 Q80,40 70,20 Z M30,65 L70,65',
-            '1': 'M30,25 L50,25 L50,140 M35,140 L65,140',
-            '2': 'M20,35 Q20,20 50,20 Q75,20 75,35 Q75,50 30,100 L75,100 L20,140 L75,140',
-            '3': 'M75,25 L35,25 Q20,25 20,40 Q35,55 55,55 Q75,55 75,75 Q75,130 35,135 L75,135',
-            '4': 'M70,25 L20,100 L75,100 L75,25 L75,140',
-            '5': 'M75,25 L25,25 L25,65 L60,65 Q80,65 80,85 Q80,130 40,135 L75,135',
-            '6': 'M75,30 Q65,20 45,20 Q25,20 25,65 L25,110 Q25,135 50,135 Q75,135 75,115 Q75,90 50,90 Q30,90 30,70',
-            '7': 'M20,25 L75,25 L35,140',
-            '8': 'M30,20 Q20,30 20,45 Q20,60 40,70 Q60,80 60,90 Q60,115 50,130 Q80,130 80,110 Q80,85 60,75 Q40,65 40,55 Q40,40 50,30 Q80,20 30,20 Z',
-            '9': 'M25,70 Q25,45 50,45 Q75,45 75,65 L75,110 Q75,135 55,135 Q35,135 25,125',
-
-            // Punctuation & Symbols
-            '.': 'M40,130 L50,130 L50,140 L40,140 Z',
-            ',': 'M40,125 L50,130 L45,145',
-            '!': 'M45,25 L50,100 M40,130 L50,140',
-            '?': 'M25,30 Q25,20 50,20 Q70,20 70,35 Q70,50 50,60 L50,75 M50,105 L50,115',
-            '&': 'M70,140 L40,75 Q60,60 60,45 Q60,30 45,25 Q30,25 30,40 Q30,55 45,65 Q35,75 20,100 L40,140 Z',
-            "'": 'M45,25 L45,45',
-            '-': 'M20,75 L80,75',
-            ':': 'M45,50 L50,60 M45,100 L50,110',
-            ';': 'M45,50 L50,60 M45,95 L50,110 L45,125',
-            ' ': 'M0,0 L0,0'
-        };
-
-        // ============================================
-        // STATE MANAGEMENT
-        // ============================================
-
-        let state = {
-            fontSize: 72,
-            tracking: 2,
-            slant: 0,
-            lineHeight: 1.2,
-            textColor: '#1a1a1a',
-            bgColor: '#ffffff',
-            fillMode: 'solid',
-            gradientDir: 0,
-            gradientColor2: '#ffaa00',
-            shadowEnabled: false,
-            shadowX: 2,
-            shadowY: 4,
-            shadowBlur: 6,
-            shadowColor: '#000000',
-            shadowOpacity: 30,
-            glowEnabled: false,
-            glowColor: '#ffffff',
-            glowIntensity: 3,
-            glowOpacity: 50,
-            strokeEnabled: false,
-            strokeWidth: 1,
-            strokeColor: '#000000',
-            strokeOpacity: 100,
-            textOpacity: 100,
-            textBlur: 0,
-            embossEnabled: false
-        };
-
-        const presets = {
-            clean: {
-                textColor: '#1a1a1a',
-                bgColor: '#ffffff',
-                fillMode: 'solid',
-                shadowEnabled: false,
-                glowEnabled: false,
-                strokeEnabled: false,
-                textOpacity: 100,
-                textBlur: 0,
-                embossEnabled: false,
-                tracking: 2
-            },
-            luxury: {
-                textColor: '#d4a574',
-                bgColor: '#f5f5f0',
-                fillMode: 'gradient',
-                gradientDir: 45,
-                gradientColor2: '#e8c16f',
-                shadowEnabled: true,
-                shadowX: 2,
-                shadowY: 4,
-                shadowBlur: 12,
-                shadowOpacity: 15,
-                glowEnabled: false,
-                strokeEnabled: false,
-                embossEnabled: false,
-                tracking: 3
-            },
-            editorial: {
-                textColor: '#000000',
-                bgColor: '#ffffff',
-                fillMode: 'solid',
-                shadowEnabled: false,
-                glowEnabled: false,
-                strokeEnabled: false,
-                textOpacity: 100,
-                textBlur: 0,
-                embossEnabled: false,
-                tracking: 1
-            },
-            neon: {
-                textColor: '#ff00ff',
-                bgColor: '#000000',
-                fillMode: 'solid',
-                shadowEnabled: true,
-                shadowX: 0,
-                shadowY: 0,
-                shadowBlur: 20,
-                shadowColor: '#ff00ff',
-                shadowOpacity: 80,
-                glowEnabled: true,
-                glowColor: '#ff00ff',
-                glowIntensity: 8,
-                glowOpacity: 80,
-                strokeEnabled: false,
-                embossEnabled: false
-            },
-            embossed: {
-                textColor: '#e8dcc4',
-                bgColor: '#f5f0e8',
-                fillMode: 'solid',
-                shadowEnabled: true,
-                shadowX: 2,
-                shadowY: 2,
-                shadowBlur: 4,
-                shadowOpacity: 20,
-                glowEnabled: false,
-                strokeEnabled: true,
-                strokeWidth: 0.5,
-                strokeColor: '#d4c4ac',
-                strokeOpacity: 50,
-                embossEnabled: true,
-                tracking: 2
-            },
-            inverted: {
-                textColor: '#ffffff',
-                bgColor: '#1a1a1a',
-                fillMode: 'solid',
-                shadowEnabled: false,
-                glowEnabled: false,
-                strokeEnabled: false,
-                embossEnabled: false,
-                tracking: 2
-            },
-            vintage: {
-                textColor: '#6b4423',
-                bgColor: '#e8dcc4',
-                fillMode: 'solid',
-                shadowEnabled: true,
-                shadowX: 1,
-                shadowY: 2,
-                shadowBlur: 4,
-                shadowColor: '#8b6f47',
-                shadowOpacity: 25,
-                glowEnabled: false,
-                strokeEnabled: false,
-                textBlur: 1,
-                embossEnabled: false
-            },
-            chrome: {
-                textColor: '#e0e0e0',
-                bgColor: '#333333',
-                fillMode: 'gradient',
-                gradientDir: 90,
-                gradientColor2: '#a0a0a0',
-                shadowEnabled: true,
-                shadowX: 3,
-                shadowY: 3,
-                shadowBlur: 15,
-                shadowOpacity: 50,
-                glowEnabled: false,
-                strokeEnabled: true,
-                strokeWidth: 1,
-                strokeColor: '#606060',
-                embossEnabled: false
-            }
-        };
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : { r: 0, g: 0, b: 0 };
-        }
-
-        function renderText(text, fontSize, fillId = null) {
-            const svgWidth = text.length * (fontSize * 0.5) + 100;
-            const svgHeight = fontSize * 1.8;
-            let svg = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">`;
-
-            // Add gradients if needed
-            if (state.fillMode === 'gradient') {
-                const rad = (state.gradientDir * Math.PI) / 180;
-                const x2 = Math.cos(rad);
-                const y2 = Math.sin(rad);
-                svg += `
-                    <defs>
-                        <linearGradient id="grad${fillId}" x1="0%" y1="0%" x2="${x2 * 100}%" y2="${y2 * 100}%">
-                            <stop offset="0%" style="stop-color:${state.textColor};stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:${state.gradientColor2};stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                `;
-            }
-
-            let x = 50;
-            let y = fontSize * 1.2;
-
-            for (let char of text) {
-                if (didotGlyphs[char]) {
-                    const scale = fontSize / 140;
-                    const skewAngle = state.slant;
-
-                    svg += `
-                        <g transform="translate(${x}, ${y}) scale(${scale}) skewY(${skewAngle})">
-                            <path d="${didotGlyphs[char]}"
-                                fill="${state.fillMode === 'gradient' ? `url(#grad${fillId})` : state.textColor}"
-                                stroke="${state.strokeEnabled ? state.strokeColor : 'none'}"
-                                stroke-width="${state.strokeEnabled ? state.strokeWidth : 0}"
-                                stroke-opacity="${state.strokeOpacity / 100}"
-                                opacity="${state.textOpacity / 100}"
-                            />
-                        </g>
-                    `;
-                    x += (fontSize * 0.5) + state.tracking;
-                } else if (char === ' ') {
-                    x += fontSize * 0.3 + state.tracking;
-                }
-            }
-
-            svg += '</svg>';
-            return svg;
-        }
-
-        function applyFilters() {
-            let filters = [];
-
-            if (state.shadowEnabled) {
-                const rgb = hexToRgb(state.shadowColor);
-                filters.push(`drop-shadow(${state.shadowX}px ${state.shadowY}px ${state.shadowBlur}px rgba(${rgb.r},${rgb.g},${rgb.b},${state.shadowOpacity / 100}))`);
-            }
-
-            if (state.glowEnabled) {
-                const rgb = hexToRgb(state.glowColor);
-                filters.push(`drop-shadow(0 0 ${state.glowIntensity}px rgba(${rgb.r},${rgb.g},${rgb.b},${state.glowOpacity / 100}))`);
-            }
-
-            if (state.embossEnabled) {
-                filters.push(`drop-shadow(1px 1px 2px rgba(0,0,0,0.3))`);
-                filters.push(`drop-shadow(-1px -1px 1px rgba(255,255,255,0.5))`);
-            }
-
-            if (state.textBlur > 0) {
-                filters.push(`blur(${state.textBlur}px)`);
-            }
-
-            return filters.length > 0 ? filters.join(' ') : 'none';
-        }
-
-        function updateUI() {
-            // Update all display values
-            document.getElementById('fontSizeVal').textContent = state.fontSize;
-            document.getElementById('trackingVal').textContent = state.tracking;
-            document.getElementById('slantVal').textContent = state.slant;
-            document.getElementById('lineHeightVal').textContent = state.lineHeight.toFixed(1);
-            document.getElementById('shadowXVal').textContent = state.shadowX;
-            document.getElementById('shadowYVal').textContent = state.shadowY;
-            document.getElementById('shadowBlurVal').textContent = state.shadowBlur;
-            document.getElementById('shadowOpacityVal').textContent = state.shadowOpacity;
-            document.getElementById('glowIntensityVal').textContent = state.glowIntensity;
-            document.getElementById('glowOpacityVal').textContent = state.glowOpacity;
-            document.getElementById('strokeWidthVal').textContent = state.strokeWidth;
-            document.getElementById('strokeOpacityVal').textContent = state.strokeOpacity;
-            document.getElementById('textOpacityVal').textContent = state.textOpacity;
-            document.getElementById('textBlurVal').textContent = state.textBlur;
-            document.getElementById('gradientDirVal').textContent = state.gradientDir;
-
-            // Update controls visibility
-            document.getElementById('gradientControls').style.display = state.fillMode === 'gradient' ? 'grid' : 'none';
-            document.getElementById('gradientColor2Controls').style.display = state.fillMode === 'gradient' ? 'grid' : 'none';
-            document.getElementById('shadowControls').style.display = state.shadowEnabled ? 'grid' : 'none';
-            document.getElementById('glowControls').style.display = state.glowEnabled ? 'grid' : 'none';
-            document.getElementById('strokeControls').style.display = state.strokeEnabled ? 'grid' : 'none';
-
-            // Update preview areas
-            updatePreviews();
-        }
-
-        function updatePreviews() {
-            const filters = applyFilters();
-
-            // Wordmark
-            const wordmark = document.getElementById('wordmark');
-            wordmark.innerHTML = renderText('PEMULIS', state.fontSize * 1.2);
-            wordmark.style.filter = filters;
-            wordmark.style.color = state.textColor;
-            wordmark.style.backgroundColor = state.bgColor;
-            wordmark.style.letterSpacing = state.tracking + 'px';
-            wordmark.style.lineHeight = state.lineHeight;
-            wordmark.style.fontStyle = `skewY(${state.slant}deg)`;
-
-            // Type Tester
-            const testerPreview = document.getElementById('testerPreview');
-            const testerText = document.getElementById('testerInput').value || 'DIDOT';
-            testerPreview.innerHTML = renderText(testerText, state.fontSize);
-            testerPreview.style.filter = filters;
-            testerPreview.style.color = state.textColor;
-            testerPreview.style.backgroundColor = state.bgColor;
-            testerPreview.style.letterSpacing = state.tracking + 'px';
-            testerPreview.style.lineHeight = state.lineHeight;
-            testerPreview.style.fontStyle = `skewY(${state.slant}deg)`;
-            testerPreview.style.padding = '20px';
-            testerPreview.style.borderRadius = '4px';
-
-            // Size Scale
-            const sizes = [120, 80, 56, 40, 28, 20];
-            document.querySelectorAll('.size-sample').forEach((el, idx) => {
-                el.innerHTML = renderText('TYPOGRAPHY', sizes[idx]);
-                el.style.filter = filters;
-                el.style.color = state.textColor;
-                el.style.letterSpacing = state.tracking + 'px';
-                el.style.fontStyle = `skewY(${state.slant}deg)`;
-            });
-
-            // Glyph Map
-            const glyphMap = document.getElementById('glyphMap');
-            glyphMap.innerHTML = '';
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?&\'-:;';
-            for (let char of chars) {
-                const glyph = document.createElement('div');
-                glyph.className = 'glyph';
-                glyph.innerHTML = renderText(char, 48);
-                glyph.style.filter = filters;
-                glyph.style.color = state.textColor;
-                glyph.style.fontStyle = `skewY(${state.slant}deg)`;
-                glyphMap.appendChild(glyph);
-            }
-
-            // Mockups
-            document.getElementById('mockupHero').innerHTML = renderText('ELEVATE', 64);
-            document.getElementById('mockupHero').style.filter = filters;
-            document.getElementById('mockupHero').style.color = state.textColor;
-            document.getElementById('mockupHero').style.letterSpacing = state.tracking + 'px';
-            document.getElementById('mockupHero').style.fontStyle = `skewY(${state.slant}deg)`;
-
-            document.getElementById('mockupCard').innerHTML = renderText('EXCELLENCE', 28);
-            document.getElementById('mockupCard').style.filter = filters;
-            document.getElementById('mockupCard').style.color = state.textColor;
-            document.getElementById('mockupCard').style.letterSpacing = state.tracking + 'px';
-            document.getElementById('mockupCard').style.fontStyle = `skewY(${state.slant}deg)`;
-
-            document.getElementById('mockupEditorial').innerHTML = renderText('THE FINE ARTS', 40);
-            document.getElementById('mockupEditorial').style.filter = filters;
-            document.getElementById('mockupEditorial').style.color = state.textColor;
-            document.getElementById('mockupEditorial').style.letterSpacing = state.tracking + 'px';
-            document.getElementById('mockupEditorial').style.fontStyle = `skewY(${state.slant}deg)`;
-
-            document.getElementById('mockupNav').innerHTML = renderText('ATELIER', 24);
-            document.getElementById('mockupNav').style.filter = filters;
-            document.getElementById('mockupNav').style.color = state.textColor;
-            document.getElementById('mockupNav').style.letterSpacing = state.tracking + 'px';
-            document.getElementById('mockupNav').style.fontStyle = `skewY(${state.slant}deg)`;
-
-            // Update background
-            document.querySelector('.preview-section').style.backgroundColor = state.bgColor;
-            document.querySelector('.tester-section').style.backgroundColor = state.bgColor;
-        }
-
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-
-        document.getElementById('fontSize').addEventListener('input', (e) => {
-            state.fontSize = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('tracking').addEventListener('input', (e) => {
-            state.tracking = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('slant').addEventListener('input', (e) => {
-            state.slant = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('lineHeight').addEventListener('input', (e) => {
-            state.lineHeight = parseFloat(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('textColor').addEventListener('input', (e) => {
-            state.textColor = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('bgColor').addEventListener('input', (e) => {
-            state.bgColor = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('fillMode').addEventListener('change', (e) => {
-            state.fillMode = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('gradientDir').addEventListener('input', (e) => {
-            state.gradientDir = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('gradientColor2').addEventListener('input', (e) => {
-            state.gradientColor2 = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('shadowEnabled').addEventListener('change', (e) => {
-            state.shadowEnabled = e.target.checked;
-            updateUI();
-        });
-
-        document.getElementById('shadowX').addEventListener('input', (e) => {
-            state.shadowX = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('shadowY').addEventListener('input', (e) => {
-            state.shadowY = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('shadowBlur').addEventListener('input', (e) => {
-            state.shadowBlur = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('shadowColor').addEventListener('input', (e) => {
-            state.shadowColor = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('shadowOpacity').addEventListener('input', (e) => {
-            state.shadowOpacity = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('glowEnabled').addEventListener('change', (e) => {
-            state.glowEnabled = e.target.checked;
-            updateUI();
-        });
-
-        document.getElementById('glowColor').addEventListener('input', (e) => {
-            state.glowColor = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('glowIntensity').addEventListener('input', (e) => {
-            state.glowIntensity = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('glowOpacity').addEventListener('input', (e) => {
-            state.glowOpacity = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('strokeEnabled').addEventListener('change', (e) => {
-            state.strokeEnabled = e.target.checked;
-            updateUI();
-        });
-
-        document.getElementById('strokeWidth').addEventListener('input', (e) => {
-            state.strokeWidth = parseFloat(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('strokeColor').addEventListener('input', (e) => {
-            state.strokeColor = e.target.value;
-            updateUI();
-        });
-
-        document.getElementById('strokeOpacity').addEventListener('input', (e) => {
-            state.strokeOpacity = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('textOpacity').addEventListener('input', (e) => {
-            state.textOpacity = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('textBlur').addEventListener('input', (e) => {
-            state.textBlur = parseInt(e.target.value);
-            updateUI();
-        });
-
-        document.getElementById('embossEnabled').addEventListener('change', (e) => {
-            state.embossEnabled = e.target.checked;
-            updateUI();
-        });
-
-        document.getElementById('testerInput').addEventListener('input', () => {
-            updatePreviews();
-        });
-
-        // Preset chips
-        document.querySelectorAll('.preset-chip').forEach(chip => {
-            chip.addEventListener('click', (e) => {
-                const presetName = e.target.dataset.preset;
-                const preset = presets[presetName];
-
-                // Update state with preset values
-                Object.assign(state, preset);
-
-                // Update all input elements to match new state
-                document.getElementById('fontSize').value = state.fontSize;
-                document.getElementById('tracking').value = state.tracking;
-                document.getElementById('slant').value = state.slant;
-                document.getElementById('lineHeight').value = state.lineHeight;
-                document.getElementById('textColor').value = state.textColor;
-                document.getElementById('bgColor').value = state.bgColor;
-                document.getElementById('fillMode').value = state.fillMode;
-                document.getElementById('gradientDir').value = state.gradientDir;
-                document.getElementById('gradientColor2').value = state.gradientColor2;
-                document.getElementById('shadowEnabled').checked = state.shadowEnabled;
-                document.getElementById('shadowX').value = state.shadowX;
-                document.getElementById('shadowY').value = state.shadowY;
-                document.getElementById('shadowBlur').value = state.shadowBlur;
-                document.getElementById('shadowColor').value = state.shadowColor;
-                document.getElementById('shadowOpacity').value = state.shadowOpacity;
-                document.getElementById('glowEnabled').checked = state.glowEnabled;
-                document.getElementById('glowColor').value = state.glowColor;
-                document.getElementById('glowIntensity').value = state.glowIntensity;
-                document.getElementById('glowOpacity').value = state.glowOpacity;
-                document.getElementById('strokeEnabled').checked = state.strokeEnabled;
-                document.getElementById('strokeWidth').value = state.strokeWidth;
-                document.getElementById('strokeColor').value = state.strokeColor;
-                document.getElementById('strokeOpacity').value = state.strokeOpacity;
-                document.getElementById('textOpacity').value = state.textOpacity;
-                document.getElementById('textBlur').value = state.textBlur;
-                document.getElementById('embossEnabled').checked = state.embossEnabled;
-
-                // Update active chip
-                document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-                e.target.classList.add('active');
-
-                updateUI();
-            });
-        });
-
-        // Section collapse/expand
-        document.querySelectorAll('.section-title').forEach(title => {
-            title.addEventListener('click', () => {
-                title.parentElement.classList.toggle('collapsed');
-            });
-        });
-
-        // Initial render
-        updateUI();
-    </script>
+<div class="wrap">
+<div class="sb">
+
+<!-- Font -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Font Family</div><div class="sec-c">
+<div class="cg"><select id="rFont" onchange="S.font=this.value;U()">
+<option value="'GFS Didot',serif" selected>GFS Didot</option>
+<option value="'Bodoni Moda',serif">Bodoni Moda</option>
+<option value="'Playfair Display',serif">Playfair Display</option>
+<option value="'Cormorant Garamond',serif">Cormorant Garamond</option>
+<option value="Didot,serif">Didot (system)</option>
+<option value="Georgia,serif">Georgia</option>
+</select></div>
+</div></div>
+
+<!-- Typography -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Typography</div><div class="sec-c">
+<div class="cg"><span class="cl">Size <span id="vSize">80</span>px</span><input type="range" id="rSize" min="16" max="200" value="80" oninput="S.sz=+this.value;U()"></div>
+<div class="cg"><span class="cl">Weight <span id="vWeight">400</span></span><input type="range" id="rWeight" min="100" max="900" step="100" value="400" oninput="S.wt=+this.value;U()"></div>
+<div class="cg"><span class="cl">Letter Spacing <span id="vTrack">4</span>px</span><input type="range" id="rTrack" min="-2" max="30" value="4" oninput="S.tr=+this.value;U()"></div>
+<div class="cg"><span class="cl">Word Spacing <span id="vWord">0</span>px</span><input type="range" id="rWord" min="-10" max="40" value="0" oninput="S.ws=+this.value;U()"></div>
+<div class="cg"><span class="cl">Slant <span id="vSlant">0</span>°</span><input type="range" id="rSlant" min="-15" max="15" value="0" oninput="S.sl=+this.value;U()"></div>
+<div class="cg"><span class="cl">Line Height <span id="vLH">1.1</span></span><input type="range" id="rLH" min="0.7" max="2.0" step="0.05" value="1.1" oninput="S.lh=+this.value;U()"></div>
+<div class="row">
+<div class="chk"><input type="checkbox" id="rUpper" checked onchange="S.upper=this.checked;U()"><label for="rUpper">Uppercase</label></div>
+<div class="chk"><input type="checkbox" id="rItalic" onchange="S.italic=this.checked;U()"><label for="rItalic">Italic</label></div>
+</div>
+</div></div>
+
+<!-- Color & Fill -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Color &amp; Fill</div><div class="sec-c">
+<div class="row">
+<div class="cg"><span class="cl">Text</span><input type="color" id="rColor" value="#1a1a1a" oninput="S.fg=this.value;U()"></div>
+<div class="cg"><span class="cl">Background</span><input type="color" id="rBg" value="#ffffff" oninput="S.bg=this.value;U()"></div>
+</div>
+<div class="chk"><input type="checkbox" id="rGrad" onchange="S.grad=this.checked;document.getElementById('gradC').style.display=this.checked?'grid':'none';U()"><label for="rGrad">Gradient Text</label></div>
+<div id="gradC" style="display:none;gap:10px">
+<div class="cg"><span class="cl">Angle <span id="vGdir">180</span>°</span><input type="range" id="rGdir" min="0" max="360" value="180" oninput="S.gdir=+this.value;U()"></div>
+<div class="cg"><span class="cl">Color 2</span><input type="color" id="rG2" value="#c8a04a" oninput="S.g2=this.value;U()"></div>
+</div>
+</div></div>
+
+<!-- Drop Shadow -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Drop Shadow</div><div class="sec-c">
+<div class="chk"><input type="checkbox" id="rShad" onchange="S.shad=this.checked;document.getElementById('shadC').style.display=this.checked?'grid':'none';U()"><label for="rShad">Enable</label></div>
+<div id="shadC" style="display:none;gap:10px">
+<div class="row">
+<div class="cg"><span class="cl">X <span id="vSx">2</span></span><input type="range" id="rSx" min="-20" max="20" value="2" oninput="S.sx=+this.value;U()"></div>
+<div class="cg"><span class="cl">Y <span id="vSy">4</span></span><input type="range" id="rSy" min="-20" max="20" value="4" oninput="S.sy=+this.value;U()"></div>
+</div>
+<div class="cg"><span class="cl">Blur <span id="vSb">6</span>px</span><input type="range" id="rSb" min="0" max="40" value="6" oninput="S.sb=+this.value;U()"></div>
+<div class="row">
+<div class="cg"><span class="cl">Color</span><input type="color" id="rSc" value="#000000" oninput="S.sc=this.value;U()"></div>
+<div class="cg"><span class="cl">Opacity <span id="vSo">30</span>%</span><input type="range" id="rSo" min="0" max="100" value="30" oninput="S.so=+this.value;U()"></div>
+</div>
+</div>
+</div></div>
+
+<!-- Outer Glow -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Outer Glow</div><div class="sec-c">
+<div class="chk"><input type="checkbox" id="rGlow" onchange="S.glow=this.checked;document.getElementById('glowC').style.display=this.checked?'grid':'none';U()"><label for="rGlow">Enable</label></div>
+<div id="glowC" style="display:none;gap:10px">
+<div class="cg"><span class="cl">Color</span><input type="color" id="rGlc" value="#ffffff" oninput="S.glc=this.value;U()"></div>
+<div class="cg"><span class="cl">Spread <span id="vGls">10</span>px</span><input type="range" id="rGls" min="1" max="40" value="10" oninput="S.gls=+this.value;U()"></div>
+<div class="cg"><span class="cl">Opacity <span id="vGlo">60</span>%</span><input type="range" id="rGlo" min="0" max="100" value="60" oninput="S.glo=+this.value;U()"></div>
+</div>
+</div></div>
+
+<!-- Text Stroke -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Text Stroke</div><div class="sec-c">
+<div class="chk"><input type="checkbox" id="rStk" onchange="S.stk=this.checked;document.getElementById('stkC').style.display=this.checked?'grid':'none';U()"><label for="rStk">Enable</label></div>
+<div id="stkC" style="display:none;gap:10px">
+<div class="cg"><span class="cl">Width <span id="vStw">1</span>px</span><input type="range" id="rStw" min="0.5" max="5" step="0.5" value="1" oninput="S.stw=+this.value;U()"></div>
+<div class="cg"><span class="cl">Color</span><input type="color" id="rStc" value="#000000" oninput="S.stc=this.value;U()"></div>
+</div>
+</div></div>
+
+<!-- Effects -->
+<div class="sec"><div class="sec-t" onclick="this.parentElement.classList.toggle('shut')">Effects</div><div class="sec-c">
+<div class="cg"><span class="cl">Opacity <span id="vOp">100</span>%</span><input type="range" id="rOp" min="0" max="100" value="100" oninput="S.op=+this.value;U()"></div>
+<div class="cg"><span class="cl">Blur <span id="vBl">0</span>px</span><input type="range" id="rBl" min="0" max="10" step="0.5" value="0" oninput="S.bl=+this.value;U()"></div>
+<div class="chk"><input type="checkbox" id="rEmb" onchange="S.emb=this.checked;U()"><label for="rEmb">3D / Emboss</label></div>
+</div></div>
+
+<!-- Presets -->
+<div class="sec"><div class="sec-t">Presets</div><div class="sec-c">
+<div class="pr">
+<div class="pc on" onclick="P('clean')">Clean</div>
+<div class="pc" onclick="P('gold')">Luxury Gold</div>
+<div class="pc" onclick="P('editorial')">Editorial</div>
+<div class="pc" onclick="P('neon')">Neon</div>
+<div class="pc" onclick="P('embossed')">Embossed</div>
+<div class="pc" onclick="P('invert')">Inverted</div>
+<div class="pc" onclick="P('vintage')">Vintage</div>
+<div class="pc" onclick="P('chrome')">Chrome</div>
+<div class="pc" onclick="P('vogue')">Vogue</div>
+<div class="pc" onclick="P('fire')">Fire</div>
+</div>
+</div></div>
+
+</div>
+
+<!-- ── MAIN ── -->
+<div class="mn">
+
+<!-- Wordmark -->
+<div class="pane" id="wmPane">
+<div class="wm-box" id="wmBox">
+<div class="dt" id="wordmark">PEMULIS</div>
+<div class="wm-sub">Water &amp; Power</div>
+</div>
+</div>
+
+<!-- Type Tester -->
+<div class="pane" style="background:#fafafa">
+<div class="pane-t">Type Tester</div>
+<input class="ti" id="tInput" value="The Quick Brown Fox" oninput="U()">
+<div class="dt" id="tPreview"></div>
+</div>
+
+<!-- Size Scale -->
+<div class="pane">
+<div class="pane-t">Size Scale</div>
+<div id="sizeScale"></div>
+</div>
+
+<!-- Glyph Map -->
+<div class="pane" style="background:#fafafa">
+<div class="pane-t">Glyph Map</div>
+<div class="gm" id="glyphMap"></div>
+</div>
+
+<!-- Font Comparison -->
+<div class="pane">
+<div class="pane-t">Font Comparison</div>
+<div id="fontCompare"></div>
+</div>
+
+<!-- Mockups -->
+<div class="pane">
+<div class="pane-t">Context Mockups</div>
+
+<div class="mk"><div class="mk-l">Dark Hero Banner</div>
+<div class="mk-hero">
+<div class="dt" id="mkHero"></div>
+<div class="mk-hero-sub">PEMULIS WATER &amp; POWER</div>
+</div></div>
+
+<div class="mk"><div class="mk-l">Product Card</div>
+<div class="mk-card">
+<div class="mk-card-img">image placeholder</div>
+<div class="mk-card-body">
+<div class="dt" id="mkCard"></div>
+<div class="mk-card-txt">Crafted with meticulous attention to detail and refined elegance.</div>
+</div></div></div>
+
+<div class="mk"><div class="mk-l">Editorial Layout</div>
+<div class="mk-ed">
+<div class="mk-ed-img"></div>
+<div>
+<div class="dt" id="mkEd"></div>
+<div class="mk-ed-txt">A curated collection celebrating the intersection of design, culture, and aesthetic refinement.</div>
+</div></div></div>
+
+<div class="mk"><div class="mk-l">Navigation Bar</div>
+<div class="mk-nav">
+<div class="dt" id="mkNav" style="margin-right:auto"></div>
+<span class="mk-nav-links">Collections</span>
+<span class="mk-nav-links">About</span>
+<span class="mk-nav-links">Contact</span>
+</div></div>
+
+</div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let S = {
+  font:"'GFS Didot',serif",
+  sz:80, wt:400, tr:4, ws:0, sl:0, lh:1.1,
+  upper:true, italic:false,
+  fg:'#1a1a1a', bg:'#ffffff',
+  grad:false, gdir:180, g2:'#c8a04a',
+  shad:false, sx:2, sy:4, sb:6, sc:'#000000', so:30,
+  glow:false, glc:'#ffffff', gls:10, glo:60,
+  stk:false, stw:1, stc:'#000000',
+  op:100, bl:0, emb:false
+};
+
+function hex2rgb(h){
+  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+  return r?`${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}`:'0,0,0';
+}
+
+// Apply all current styles to an element
+function applyStyle(el, overrides={}){
+  const o = {...S, ...overrides};
+  const s = el.style;
+  s.fontFamily = o.font;
+  s.fontSize = o.sz+'px';
+  s.fontWeight = o.wt;
+  s.letterSpacing = o.tr+'px';
+  s.wordSpacing = o.ws+'px';
+  s.lineHeight = o.lh;
+  s.fontStyle = o.italic ? 'italic' : 'normal';
+  s.textTransform = o.upper ? 'uppercase' : 'none';
+  s.transform = o.sl ? `skewX(${-o.sl}deg)` : 'none';
+  s.opacity = o.op/100;
+
+  // Color or gradient
+  if(o.grad){
+    s.background = `linear-gradient(${o.gdir}deg, ${o.fg}, ${o.g2})`;
+    s.webkitBackgroundClip = 'text';
+    s.webkitTextFillColor = 'transparent';
+    s.backgroundClip = 'text';
+  } else {
+    s.background = 'none';
+    s.webkitBackgroundClip = 'unset';
+    s.webkitTextFillColor = o.fg;
+    s.backgroundClip = 'unset';
+    s.color = o.fg;
+  }
+
+  // Text stroke
+  if(o.stk){
+    s.webkitTextStroke = `${o.stw}px ${o.stc}`;
+  } else {
+    s.webkitTextStroke = 'none';
+  }
+
+  // Filters
+  let filters = [];
+  if(o.shad) filters.push(`drop-shadow(${o.sx}px ${o.sy}px ${o.sb}px rgba(${hex2rgb(o.sc)},${o.so/100}))`);
+  if(o.glow) filters.push(`drop-shadow(0 0 ${o.gls}px rgba(${hex2rgb(o.glc)},${o.glo/100}))`);
+  if(o.emb){
+    filters.push(`drop-shadow(1px 1px 0px rgba(255,255,255,0.5))`);
+    filters.push(`drop-shadow(-1px -1px 1px rgba(0,0,0,0.3))`);
+  }
+  if(o.bl>0) filters.push(`blur(${o.bl}px)`);
+  s.filter = filters.length ? filters.join(' ') : 'none';
+}
+
+// ═══════════════════════════════════════
+// UPDATE
+// ═══════════════════════════════════════
+function U(){
+  // Value labels
+  document.getElementById('vSize').textContent = S.sz;
+  document.getElementById('vWeight').textContent = S.wt;
+  document.getElementById('vTrack').textContent = S.tr;
+  document.getElementById('vWord').textContent = S.ws;
+  document.getElementById('vSlant').textContent = S.sl;
+  document.getElementById('vLH').textContent = S.lh;
+  const ids = {vGdir:'gdir',vSx:'sx',vSy:'sy',vSb:'sb',vSo:'so',vGls:'gls',vGlo:'glo',vStw:'stw',vOp:'op',vBl:'bl'};
+  for(const[id,key] of Object.entries(ids)){
+    const el=document.getElementById(id);
+    if(el) el.textContent = S[key] + (['vSo','vGlo','vOp'].includes(id)?'%':['vGdir'].includes(id)?'°':'');
+  }
+
+  // Background
+  document.getElementById('wmBox').style.background = S.bg;
+  document.getElementById('wmPane').style.background = S.bg;
+
+  // Wordmark
+  const wm = document.getElementById('wordmark');
+  wm.textContent = 'PEMULIS';
+  applyStyle(wm);
+
+  // Type tester
+  const txt = document.getElementById('tInput').value || 'Type here...';
+  const tp = document.getElementById('tPreview');
+  tp.textContent = S.upper ? txt.toUpperCase() : txt;
+  applyStyle(tp, {sz:56});
+
+  // Size scale
+  const sizes = [100,72,56,40,28,18];
+  const scaleEl = document.getElementById('sizeScale');
+  scaleEl.innerHTML = '';
+  sizes.forEach(sz => {
+    const row = document.createElement('div');
+    row.className = 'sr';
+    row.innerHTML = `<div class="sl-label">${sz}px</div><div class="ss"><span class="dt"></span></div>`;
+    scaleEl.appendChild(row);
+    const span = row.querySelector('.dt');
+    span.textContent = S.upper ? 'PEMULIS' : 'Pemulis';
+    applyStyle(span, {sz});
+  });
+
+  // Glyph map
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.!?,&:;\'"–-';
+  const gm = document.getElementById('glyphMap');
+  gm.innerHTML = '';
+  for(const c of chars){
+    const gc = document.createElement('div');
+    gc.className = 'gc';
+    const span = document.createElement('span');
+    span.className = 'dt';
+    span.textContent = c;
+    applyStyle(span, {sz:32, upper:false, tr:0});
+    gc.appendChild(span);
+    gm.appendChild(gc);
+  }
+
+  // Font comparison
+  const fonts = [
+    ["GFS Didot","'GFS Didot',serif"],
+    ["Bodoni Moda","'Bodoni Moda',serif"],
+    ["Playfair Display","'Playfair Display',serif"],
+    ["Cormorant Garamond","'Cormorant Garamond',serif"],
+    ["Didot (system)","Didot,serif"],
+    ["Georgia","Georgia,serif"]
+  ];
+  const fc = document.getElementById('fontCompare');
+  fc.innerHTML = '';
+  fonts.forEach(([name,fam])=>{
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:baseline;gap:16px;margin-bottom:16px;cursor:pointer;padding:8px;border-radius:6px;transition:background .15s';
+    row.onmouseenter = ()=> row.style.background = '#f5f5f5';
+    row.onmouseleave = ()=> row.style.background = 'transparent';
+    row.onclick = ()=>{ S.font=fam; document.getElementById('rFont').value=fam; U(); };
+    const label = document.createElement('div');
+    label.style.cssText = 'width:140px;font-size:11px;color:#999;flex-shrink:0';
+    label.textContent = name;
+    if(fam === S.font) label.style.color = '#08f';
+    const sample = document.createElement('span');
+    sample.className = 'dt';
+    sample.textContent = S.upper ? 'PEMULIS WATER & POWER' : 'Pemulis Water & Power';
+    applyStyle(sample, {sz:28, font:fam});
+    row.appendChild(label);
+    row.appendChild(sample);
+    fc.appendChild(row);
+  });
+
+  // Mockups
+  const mkHero = document.getElementById('mkHero');
+  mkHero.textContent = 'THE PRIZES';
+  applyStyle(mkHero, {sz:64, fg:'#ffffff'});
+
+  const mkCard = document.getElementById('mkCard');
+  mkCard.textContent = S.upper ? 'NEW ARRIVALS' : 'New Arrivals';
+  applyStyle(mkCard, {sz:28});
+
+  const mkEd = document.getElementById('mkEd');
+  mkEd.textContent = S.upper ? 'THE FINE ARTS' : 'The Fine Arts';
+  applyStyle(mkEd, {sz:38});
+
+  const mkNav = document.getElementById('mkNav');
+  mkNav.textContent = S.upper ? 'PEMULIS' : 'Pemulis';
+  applyStyle(mkNav, {sz:22});
+}
+
+// ═══════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════
+const presets = {
+  clean:{fg:'#1a1a1a',bg:'#ffffff',grad:false,shad:false,glow:false,stk:false,emb:false,op:100,bl:0,sz:80,wt:400,tr:4,ws:0,sl:0,italic:false},
+  gold:{fg:'#c8a04a',bg:'#111',grad:true,gdir:180,g2:'#8b6914',shad:true,sx:0,sy:4,sb:14,sc:'#c8a04a',so:25,glow:false,stk:false,emb:false,op:100,bl:0,sz:80,wt:400,tr:6,sl:0},
+  editorial:{fg:'#000',bg:'#f5f0eb',grad:false,shad:false,glow:false,stk:false,emb:false,op:100,bl:0,sz:80,wt:400,tr:8,sl:0,italic:false},
+  neon:{fg:'#00ffaa',bg:'#0a0a0a',grad:false,shad:false,glow:true,glc:'#00ffaa',gls:18,glo:70,stk:false,emb:false,op:100,bl:0,sz:80,tr:4,sl:0},
+  embossed:{fg:'#b0a896',bg:'#e8e0d4',grad:false,shad:true,sx:1,sy:2,sb:1,sc:'#000',so:15,glow:false,stk:false,emb:true,op:100,bl:0,sz:80,tr:4,sl:0},
+  invert:{fg:'#fff',bg:'#000',grad:false,shad:false,glow:false,stk:false,emb:false,op:100,bl:0,sz:80,wt:400,tr:4,sl:0},
+  vintage:{fg:'#6b4423',bg:'#f0e6d3',grad:false,shad:true,sx:1,sy:1,sb:2,sc:'#000',so:10,glow:false,stk:false,emb:false,op:88,bl:0.5,sz:80,tr:3,sl:0},
+  chrome:{fg:'#ddd',bg:'#1a1a1a',grad:true,gdir:90,g2:'#666',shad:true,sx:2,sy:3,sb:10,sc:'#000',so:50,glow:false,stk:true,stw:0.5,stc:'#888',emb:false,op:100,bl:0,sz:80,tr:4,sl:0},
+  vogue:{fg:'#000',bg:'#fff',grad:false,shad:false,glow:false,stk:false,emb:false,op:100,bl:0,sz:80,wt:400,tr:12,ws:4,sl:0,upper:true,italic:false},
+  fire:{fg:'#ff4400',bg:'#0a0a0a',grad:true,gdir:180,g2:'#ffaa00',shad:true,sx:0,sy:0,sb:20,sc:'#ff4400',so:40,glow:true,glc:'#ff6600',gls:12,glo:40,stk:false,emb:false,op:100,bl:0,sz:80,tr:4,sl:0}
+};
+
+function P(name){
+  const p = presets[name]; if(!p) return;
+  Object.assign(S, p);
+  // Sync all inputs
+  document.getElementById('rFont').value = S.font || "'GFS Didot',serif";
+  document.getElementById('rSize').value = S.sz;
+  document.getElementById('rWeight').value = S.wt||400;
+  document.getElementById('rTrack').value = S.tr;
+  document.getElementById('rWord').value = S.ws||0;
+  document.getElementById('rSlant').value = S.sl;
+  document.getElementById('rLH').value = S.lh||1.1;
+  document.getElementById('rUpper').checked = S.upper!==false;
+  document.getElementById('rItalic').checked = !!S.italic;
+  document.getElementById('rColor').value = S.fg.length===4 ? S.fg+S.fg.slice(1) : S.fg;
+  document.getElementById('rBg').value = S.bg.length===4 ? S.bg+S.bg.slice(1) : S.bg;
+  document.getElementById('rGrad').checked = !!S.grad;
+  document.getElementById('gradC').style.display = S.grad?'grid':'none';
+  document.getElementById('rGdir').value = S.gdir||180;
+  document.getElementById('rG2').value = S.g2||'#c8a04a';
+  document.getElementById('rShad').checked = !!S.shad;
+  document.getElementById('shadC').style.display = S.shad?'grid':'none';
+  document.getElementById('rSx').value = S.sx||0;
+  document.getElementById('rSy').value = S.sy||0;
+  document.getElementById('rSb').value = S.sb||0;
+  document.getElementById('rSc').value = (S.sc||'#000000').length===4?(S.sc+S.sc.slice(1)):S.sc||'#000000';
+  document.getElementById('rSo').value = S.so||30;
+  document.getElementById('rGlow').checked = !!S.glow;
+  document.getElementById('glowC').style.display = S.glow?'grid':'none';
+  document.getElementById('rGlc').value = S.glc||'#ffffff';
+  document.getElementById('rGls').value = S.gls||10;
+  document.getElementById('rGlo').value = S.glo||60;
+  document.getElementById('rStk').checked = !!S.stk;
+  document.getElementById('stkC').style.display = S.stk?'grid':'none';
+  document.getElementById('rStw').value = S.stw||1;
+  document.getElementById('rStc').value = S.stc||'#000000';
+  document.getElementById('rOp').value = S.op||100;
+  document.getElementById('rBl').value = S.bl||0;
+  document.getElementById('rEmb').checked = !!S.emb;
+  // Active chip
+  document.querySelectorAll('.pc').forEach(c=>c.classList.remove('on'));
+  event.target.classList.add('on');
+  U();
+}
+
+// Init
+U();
+</script>
 </body>
 </html>

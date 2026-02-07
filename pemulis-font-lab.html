@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PEMULIS DISPLAY — Font Lab</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  .header {
+    padding: 32px 48px;
+    border-bottom: 1px solid #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; }
+  .header .version { font-size: 12px; color: #555; }
+
+  .controls {
+    padding: 24px 48px;
+    border-bottom: 1px solid #222;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #666; }
+  .control-group input[type="range"] { width: 160px; accent-color: #ff4400; }
+  .control-group select, .control-group input[type="color"] {
+    background: #1a1a1a; border: 1px solid #333; color: #ccc;
+    padding: 6px 10px; border-radius: 4px; font-size: 13px;
+  }
+  .val { font-size: 12px; color: #ff4400; font-variant-numeric: tabular-nums; }
+
+  .preview-section {
+    padding: 48px;
+  }
+  .section-label {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #444; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a;
+  }
+
+  .wordmark-preview {
+    padding: 64px 48px;
+    text-align: center;
+    border-bottom: 1px solid #222;
+  }
+
+  .type-tester {
+    padding: 48px;
+    border-bottom: 1px solid #222;
+  }
+  .type-tester-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 72px;
+    caret-color: #ff4400;
+  }
+
+  .glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 4px;
+  }
+  .glyph-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    border-radius: 4px;
+    transition: background 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .glyph-cell:hover { background: #1a1a1a; }
+  .glyph-char { font-size: 36px; }
+  .glyph-label { font-size: 9px; color: #555; margin-top: 4px; letter-spacing: 0.1em; }
+
+  .size-samples { display: flex; flex-direction: column; gap: 24px; }
+  .size-sample { display: flex; align-items: baseline; gap: 24px; }
+  .size-label { font-size: 11px; color: #555; min-width: 60px; text-align: right; }
+
+  .theme-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .theme-card {
+    padding: 32px 40px;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 280px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .theme-card:hover { transform: scale(1.02); }
+
+  /* Toggle buttons */
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-btn {
+    padding: 6px 14px; border-radius: 4px;
+    background: #1a1a1a; border: 1px solid #333;
+    color: #888; font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle-btn.active { background: #ff4400; border-color: #ff4400; color: #fff; }
+
+  /* Font style variants */
+  .font-pemulis {
+    font-family: 'PemulisDisplay', sans-serif;
+  }
+
+  @font-face {
+    font-family: 'PemulisDisplay';
+    src: url(data:font/truetype;charset=utf-8;base64,placeholder) format('truetype');
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ============================================================
+// PEMULIS DISPLAY — Custom SVG Font Engine
+// Pit Viper-inspired aggressive display typeface
+// ============================================================
+
+// Each glyph is defined as SVG path data on a 100x120 unit grid
+// Design principles:
+// - Heavy weight, condensed proportions
+// - Sharp angular cuts (no curves where angles work)
+// - Aggressive diagonal slices on terminals
+// - Monumental, industrial feel
+// - Slight italicization on select glyphs for speed/energy
+
+const GLYPHS = {
+  // Width, SVG path (on 100w x 120h grid, baseline at y=100)
+  'A': { w: 80, d: 'M0 100 L32 10 L48 10 L80 100 L62 100 L55 78 L25 78 L18 100 Z M30 62 L50 62 L40 30 Z' },
+  'B': { w: 72, d: 'M8 10 L50 10 Q70 10 70 30 Q70 48 52 52 Q72 56 72 74 Q72 100 50 100 L8 100 Z M26 26 L26 46 L46 46 Q52 46 52 36 Q52 26 46 26 Z M26 60 L26 84 L48 84 Q56 84 56 72 Q56 60 48 60 Z' },
+  'C': { w: 72, d: 'M72 30 L56 30 Q52 16 40 16 Q22 16 22 55 Q22 84 40 84 Q52 84 56 72 L72 72 Q66 100 40 100 Q4 100 4 55 Q4 10 40 10 Q66 10 72 30 Z' },
+  'D': { w: 76, d: 'M8 10 L42 10 Q76 10 76 55 Q76 100 42 100 L8 100 Z M26 26 L26 84 L40 84 Q58 84 58 55 Q58 26 40 26 Z' },
+  'E': { w: 64, d: 'M8 10 L60 10 L60 26 L26 26 L26 48 L56 48 L56 64 L26 64 L26 84 L64 84 L64 100 L8 100 Z' },
+  'F': { w: 60, d: 'M8 10 L58 10 L58 26 L26 26 L26 50 L52 50 L52 66 L26 66 L26 100 L8 100 Z' },
+  'G': { w: 76, d: 'M72 30 L56 30 Q52 16 40 16 Q22 16 22 55 Q22 84 40 84 Q56 84 56 64 L42 64 L42 50 L74 50 L74 100 L42 100 Q4 100 4 55 Q4 10 40 10 Q66 10 72 30 Z' },
+  'H': { w: 76, d: 'M8 10 L26 10 L26 48 L52 48 L52 10 L70 10 L70 100 L52 100 L52 64 L26 64 L26 100 L8 100 Z' },
+  'I': { w: 40, d: 'M10 10 L30 10 L30 100 L10 100 Z' },
+  'J': { w: 56, d: 'M32 10 L50 10 L50 76 Q50 100 30 100 Q10 100 6 82 L22 82 Q24 90 30 90 Q34 90 34 76 L34 10 Z' },
+  'K': { w: 74, d: 'M8 10 L26 10 L26 46 L52 10 L74 10 L44 50 L76 100 L54 100 L30 58 L26 64 L26 100 L8 100 Z' },
+  'L': { w: 62, d: 'M8 10 L26 10 L26 84 L62 84 L62 100 L8 100 Z' },
+  'M': { w: 88, d: 'M4 10 L26 10 L44 50 L62 10 L84 10 L84 100 L68 100 L68 38 L50 74 L38 74 L20 38 L20 100 L4 100 Z' },
+  'N': { w: 76, d: 'M8 10 L26 10 L56 68 L56 10 L72 10 L72 100 L56 100 L24 38 L24 100 L8 100 Z' },
+  'O': { w: 80, d: 'M40 10 Q76 10 76 55 Q76 100 40 100 Q4 100 4 55 Q4 10 40 10 Z M40 26 Q22 26 22 55 Q22 84 40 84 Q58 84 58 55 Q58 26 40 26 Z' },
+  'P': { w: 70, d: 'M8 10 L48 10 Q70 10 70 34 Q70 58 48 58 L26 58 L26 100 L8 100 Z M26 26 L26 44 L44 44 Q52 44 52 34 Q52 26 44 26 Z' },
+  'Q': { w: 80, d: 'M40 10 Q76 10 76 55 Q76 86 60 96 L76 108 L64 116 L46 102 Q44 102 40 100 Q4 100 4 55 Q4 10 40 10 Z M40 26 Q22 26 22 55 Q22 84 40 84 Q58 84 58 55 Q58 26 40 26 Z' },
+  'R': { w: 74, d: 'M8 10 L48 10 Q70 10 70 32 Q70 52 54 56 L74 100 L54 100 L36 58 L26 58 L26 100 L8 100 Z M26 26 L26 44 L44 44 Q52 44 52 34 Q52 26 44 26 Z' },
+  'S': { w: 68, d: 'M60 28 L44 28 Q42 18 34 18 Q22 18 22 30 Q22 40 38 44 L50 48 Q68 54 68 76 Q68 100 36 100 Q6 100 4 78 L22 78 Q24 90 36 90 Q50 90 50 78 Q50 68 36 64 L24 58 Q4 52 4 30 Q4 10 34 10 Q64 10 60 28 Z' },
+  'T': { w: 68, d: 'M2 10 L66 10 L66 26 L42 26 L42 100 L26 100 L26 26 L2 26 Z' },
+  'U': { w: 76, d: 'M8 10 L26 10 L26 74 Q26 86 38 86 Q50 86 50 74 L50 10 L68 10 L68 76 Q68 100 38 100 Q8 100 8 76 Z' },
+  'V': { w: 76, d: 'M0 10 L18 10 L38 78 L58 10 L76 10 L46 100 L30 100 Z' },
+  'W': { w: 100, d: 'M0 10 L16 10 L26 68 L40 10 L54 10 L68 68 L80 10 L96 10 L74 100 L58 100 L46 46 L34 100 L18 100 Z' },
+  'X': { w: 74, d: 'M2 10 L22 10 L38 42 L54 10 L74 10 L50 54 L76 100 L56 100 L38 66 L20 100 L0 100 L26 54 Z' },
+  'Y': { w: 72, d: 'M0 10 L18 10 L36 48 L54 10 L72 10 L44 62 L44 100 L28 100 L28 62 Z' },
+  'Z': { w: 70, d: 'M4 10 L66 10 L66 24 L24 84 L70 84 L70 100 L4 100 L4 86 L48 26 L4 26 Z' },
+
+  // Numbers
+  '0': { w: 74, d: 'M37 10 Q72 10 72 55 Q72 100 37 100 Q2 100 2 55 Q2 10 37 10 Z M37 26 Q20 26 20 55 Q20 84 37 84 Q54 84 54 55 Q54 26 37 26 Z' },
+  '1': { w: 48, d: 'M8 30 L24 10 L36 10 L36 84 L48 84 L48 100 L8 100 L8 84 L20 84 L20 34 L8 34 Z' },
+  '2': { w: 68, d: 'M4 30 Q4 10 34 10 Q64 10 64 32 Q64 52 34 66 L18 78 L18 84 L64 84 L64 100 L4 100 L4 72 L40 52 Q46 48 46 36 Q46 26 34 26 Q22 26 20 36 L4 36 Z' },
+  '3': { w: 68, d: 'M4 28 L20 28 Q22 18 34 18 Q48 18 48 32 Q48 46 36 48 L28 48 L28 60 L38 60 Q50 60 50 74 Q50 88 34 88 Q20 88 18 76 L4 76 Q6 100 34 100 Q68 100 68 74 Q68 56 52 52 Q66 46 66 30 Q66 10 34 10 Q6 10 4 28 Z' },
+  '4': { w: 72, d: 'M44 10 L62 10 L62 60 L72 60 L72 76 L62 76 L62 100 L44 100 L44 76 L4 76 L4 60 Z M44 32 L22 60 L44 60 Z' },
+  '5': { w: 68, d: 'M8 10 L60 10 L60 26 L24 26 L22 46 Q28 42 38 42 Q64 42 64 72 Q64 100 36 100 Q8 100 6 80 L22 80 Q24 90 36 90 Q46 90 46 74 Q46 58 36 58 Q26 58 22 64 L8 64 Z' },
+  '6': { w: 70, d: 'M60 26 L44 26 Q40 18 34 18 Q20 18 20 40 L20 46 Q26 40 38 40 Q66 40 66 72 Q66 100 36 100 Q6 100 6 55 Q6 10 34 10 Q56 10 60 26 Z M36 56 Q24 56 24 72 Q24 88 36 88 Q48 88 48 72 Q48 56 36 56 Z' },
+  '7': { w: 66, d: 'M4 10 L62 10 L62 24 L30 100 L12 100 L42 26 L4 26 Z' },
+  '8': { w: 70, d: 'M35 10 Q64 10 64 30 Q64 48 48 52 Q66 56 66 76 Q66 100 35 100 Q4 100 4 76 Q4 56 22 52 Q6 48 6 30 Q6 10 35 10 Z M35 26 Q22 26 22 34 Q22 44 35 46 Q48 44 48 34 Q48 26 35 26 Z M35 60 Q20 60 20 74 Q20 88 35 88 Q50 88 50 74 Q50 60 35 60 Z' },
+  '9': { w: 70, d: 'M10 78 L26 78 Q30 88 36 88 Q50 88 50 66 L50 60 Q44 66 32 66 Q4 66 4 34 Q4 10 34 10 Q64 10 64 55 Q64 100 36 100 Q14 100 10 78 Z M34 22 Q22 22 22 36 Q22 50 34 50 Q46 50 46 36 Q46 22 34 22 Z' },
+
+  // Punctuation
+  '!': { w: 32, d: 'M8 10 L24 10 L22 70 L10 70 Z M8 80 L24 80 L24 100 L8 100 Z' },
+  '?': { w: 60, d: 'M4 28 L20 28 Q22 18 30 18 Q44 18 44 32 Q44 48 28 56 L28 68 L14 68 L14 56 Q28 48 28 36 Q28 28 22 28 Z M12 80 L28 80 L28 100 L12 100 Z' },
+  '.': { w: 28, d: 'M6 82 L22 82 L22 100 L6 100 Z' },
+  ',': { w: 28, d: 'M6 82 L22 82 L22 100 L14 114 L6 114 L12 100 L6 100 Z' },
+  '-': { w: 48, d: 'M6 48 L42 48 L42 62 L6 62 Z' },
+  '\'': { w: 24, d: 'M6 10 L18 10 L14 36 L6 36 Z' },
+  '"': { w: 40, d: 'M4 10 L16 10 L12 36 L4 36 Z M22 10 L34 10 L30 36 L22 36 Z' },
+  '/': { w: 50, d: 'M34 10 L50 10 L18 100 L2 100 Z' },
+  '&': { w: 80, d: 'M30 10 Q56 10 56 28 Q56 44 40 50 L62 78 L68 68 L80 78 L66 96 L76 100 L76 116 L56 108 L46 100 Q38 104 28 100 Q4 100 4 76 Q4 60 20 52 Q8 44 8 30 Q8 10 30 10 Z M30 24 Q24 24 24 32 Q24 40 32 46 L42 34 Q42 24 30 24 Z M24 62 Q18 66 18 76 Q18 86 28 88 L44 62 Z' },
+  ' ': { w: 30, d: '' },
+  ':': { w: 28, d: 'M6 30 L22 30 L22 48 L6 48 Z M6 82 L22 82 L22 100 L6 100 Z' },
+  '@': { w: 90, d: 'M45 10 Q82 10 82 50 L82 66 Q82 76 74 76 Q68 76 66 68 Q60 76 50 76 Q34 76 34 56 Q34 38 50 38 Q58 38 62 44 L64 40 L74 40 L74 62 Q74 66 76 66 Q78 66 78 62 L78 50 Q78 22 45 22 Q16 22 16 55 Q16 90 45 90 Q60 90 68 80 L80 86 Q68 100 45 100 Q2 100 2 55 Q2 10 45 10 Z M50 48 Q44 48 44 56 Q44 66 50 66 Q56 66 56 56 Q56 48 50 48 Z' },
+};
+
+// ============================================================
+// SVG Font Renderer
+// ============================================================
+function renderText(text, size, color = '#ffffff', letterSpacing = 0) {
+  const scale = size / 120;
+  let x = 0;
+  const paths = [];
+
+  for (const char of text.toUpperCase()) {
+    const glyph = GLYPHS[char];
+    if (!glyph) continue;
+
+    if (glyph.d) {
+      paths.push(`<g transform="translate(${x}, 0) scale(${scale})"><path d="${glyph.d}" fill="${color}"/></g>`);
+    }
+    x += (glyph.w * scale) + letterSpacing;
+  }
+
+  const totalWidth = x - letterSpacing;
+  const totalHeight = size;
+
+  return { svg: paths.join(''), width: totalWidth, height: totalHeight };
+}
+
+function createSvgElement(text, size, color = '#ffffff', letterSpacing = 0, extraHeight = 0) {
+  const { svg, width, height } = renderText(text, size, color, letterSpacing);
+  return `<svg width="${width}" height="${height + extraHeight}" viewBox="0 0 ${width} ${height + extraHeight}" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`;
+}
+
+// ============================================================
+// App State
+// ============================================================
+let state = {
+  fontSize: 72,
+  letterSpacing: 2,
+  color: '#ffffff',
+  bgColor: '#0a0a0a',
+  testerText: 'PEMULIS WATER & POWER',
+  activeSection: 'all',
+  slant: 0,
+};
+
+function render() {
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>Pemulis Display — Font Lab</h1>
+      <span class="version">v0.1 — Custom SVG Typeface</span>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Size</label>
+        <input type="range" min="24" max="200" value="${state.fontSize}" oninput="updateState('fontSize', +this.value)">
+        <span class="val">${state.fontSize}px</span>
+      </div>
+      <div class="control-group">
+        <label>Tracking</label>
+        <input type="range" min="-4" max="20" value="${state.letterSpacing}" oninput="updateState('letterSpacing', +this.value)">
+        <span class="val">${state.letterSpacing}px</span>
+      </div>
+      <div class="control-group">
+        <label>Slant</label>
+        <input type="range" min="-12" max="12" value="${state.slant}" oninput="updateState('slant', +this.value)">
+        <span class="val">${state.slant}°</span>
+      </div>
+      <div class="control-group">
+        <label>Color</label>
+        <input type="color" value="${state.color}" oninput="updateState('color', this.value)">
+      </div>
+      <div class="control-group">
+        <label>Background</label>
+        <input type="color" value="${state.bgColor}" oninput="updateState('bgColor', this.value)">
+      </div>
+    </div>
+
+    <!-- WORDMARK PREVIEW -->
+    <div class="wordmark-preview" style="background: ${state.bgColor}">
+      <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+        ${createSvgElement(state.testerText, state.fontSize, state.color, state.letterSpacing)}
+      </div>
+    </div>
+
+    <!-- TYPE TESTER -->
+    <div class="type-tester" style="background: ${state.bgColor}">
+      <div class="section-label">Type Tester — click to edit</div>
+      <input class="type-tester-input" value="${state.testerText}"
+             oninput="updateState('testerText', this.value)"
+             style="opacity: 0; position: absolute; pointer-events: all; width: 100%; height: 80px; z-index: 2; cursor: text;">
+      <div style="transform: skewX(${-state.slant}deg); display: inline-block; pointer-events: none;">
+        ${createSvgElement(state.testerText, state.fontSize, state.color, state.letterSpacing)}
+      </div>
+    </div>
+
+    <!-- SIZE SAMPLES -->
+    <div class="preview-section" style="background: ${state.bgColor}">
+      <div class="section-label">Size Scale</div>
+      <div class="size-samples">
+        ${[120, 80, 56, 40, 28, 20].map(s => `
+          <div class="size-sample">
+            <span class="size-label">${s}px</span>
+            <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+              ${createSvgElement('PEMULIS WATER & POWER', s, state.color, Math.max(1, state.letterSpacing * (s/72)))}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- GLYPH MAP -->
+    <div class="preview-section">
+      <div class="section-label">Glyph Map — ${Object.keys(GLYPHS).length} Characters</div>
+      <div class="glyph-grid">
+        ${Object.entries(GLYPHS).map(([char, glyph]) => `
+          <div class="glyph-cell" onclick="copyGlyph('${char === "'" ? "\\'" : char}')">
+            <div class="glyph-char" style="transform: skewX(${-state.slant}deg)">
+              ${glyph.d ? createSvgElement(char, 36, state.color, 0) : '<span style="color:#333">⎵</span>'}
+            </div>
+            <div class="glyph-label">${char === ' ' ? 'SPACE' : char}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- THEME PREVIEWS -->
+    <div class="preview-section">
+      <div class="section-label">Theme Previews</div>
+      <div class="theme-row">
+        <div class="theme-card" style="background: #0a0a0a; border: 1px solid #222;" onclick="setTheme('#ffffff','#0a0a0a')">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('DARK MODE', 32, '#ffffff', 2)}
+          </div>
+        </div>
+        <div class="theme-card" style="background: #f4f1ec;" onclick="setTheme('#1a1a1a','#f4f1ec')">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('CREAM', 32, '#1a1a1a', 2)}
+          </div>
+        </div>
+        <div class="theme-card" style="background: #ff4400;" onclick="setTheme('#ffffff','#ff4400')">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('DANGER', 32, '#ffffff', 2)}
+          </div>
+        </div>
+        <div class="theme-card" style="background: #1a3a5c;" onclick="setTheme('#e8d5b0','#1a3a5c')">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('OCEAN', 32, '#e8d5b0', 2)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USAGE EXAMPLES -->
+    <div class="preview-section" style="background: ${state.bgColor}">
+      <div class="section-label">Usage Examples</div>
+
+      <div style="margin-bottom: 48px;">
+        <div style="color: #444; font-size: 11px; letter-spacing: 0.15em; margin-bottom: 12px;">HERO HEADING</div>
+        <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+          ${createSvgElement('BROWSE OUR LATEST', 64, state.color, 3)}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 48px;">
+        <div style="color: #444; font-size: 11px; letter-spacing: 0.15em; margin-bottom: 12px;">SECTION TITLE</div>
+        <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+          ${createSvgElement('NEW SURFBOARDS', 40, state.color, 2)}
+        </div>
+      </div>
+
+      <div style="margin-bottom: 48px;">
+        <div style="color: #444; font-size: 11px; letter-spacing: 0.15em; margin-bottom: 12px;">BUTTON / CTA</div>
+        <div style="display: inline-block; padding: 16px 32px; border: 2px solid ${state.color}; border-radius: 0;">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('SHOP ALL', 20, state.color, 3)}
+          </div>
+        </div>
+        <div style="display: inline-block; padding: 16px 32px; background: #ff4400; margin-left: 16px;">
+          <div style="transform: skewX(${-state.slant}deg); display: inline-block;">
+            ${createSvgElement('SHOP ALL', 20, '#ffffff', 3)}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="color: #444; font-size: 11px; letter-spacing: 0.15em; margin-bottom: 12px;">MARQUEE</div>
+        <div style="overflow: hidden; white-space: nowrap; padding: 16px 0; border-top: 1px solid #222; border-bottom: 1px solid #222;">
+          <div style="display: inline-block; animation: marquee 12s linear infinite; transform: skewX(${-state.slant}deg);">
+            ${createSvgElement('PEMULIS WATER & POWER  ·  GATO HEROI  ·  TRUE AMES  ·  DRD4  ·  FOX RACING  ·  EL SOLITARIO  ·  PEMULIS WATER & POWER  ·  GATO HEROI  ·  TRUE AMES  ·  DRD4  ·  FOX RACING  ·  EL SOLITARIO  ·  ', 28, state.color, 2)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes marquee {
+        0% { transform: translateX(0) skewX(${-state.slant}deg); }
+        100% { transform: translateX(-50%) skewX(${-state.slant}deg); }
+      }
+    </style>
+  `;
+}
+
+function updateState(key, value) {
+  state[key] = value;
+  render();
+}
+
+function setTheme(color, bg) {
+  state.color = color;
+  state.bgColor = bg;
+  render();
+}
+
+function copyGlyph(char) {
+  navigator.clipboard?.writeText(char);
+}
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>

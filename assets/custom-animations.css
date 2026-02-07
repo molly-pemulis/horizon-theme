@@ -1,0 +1,295 @@
+/* ============================================================
+   PEMULIS WATER & POWER — Custom Hover Animations
+   Desktop-only via @media (hover: hover)
+   Drop into Shopify Horizon theme assets/
+   ============================================================ */
+
+/* All animations gated behind hover capability —
+   phones/tablets won't load any of this */
+@media (hover: hover) {
+
+  /* --------------------------------------------------------
+     BASE: Product card hover transition foundation
+     Targets the <product-card> custom element
+     -------------------------------------------------------- */
+  product-card {
+    --pw-animation: none;
+    display: block;
+  }
+
+  product-card .product-card__link img,
+  product-card .product-card__link video {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.3s ease;
+    will-change: transform;
+  }
+
+  /* --------------------------------------------------------
+     1. SPRING BOUNCE
+     Quick scale-up with elastic overshoot
+     -------------------------------------------------------- */
+  .pw-anim-spring product-card .product-card__link img:hover,
+  .pw-anim-spring product-card .product-card__link video:hover,
+  product-card.pw-spring .product-card__link img:hover,
+  product-card.pw-spring .product-card__link video:hover {
+    transform: scale(1.08);
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* --------------------------------------------------------
+     2. JELLY WOBBLE
+     Scale + subtle rotation wiggle on hover
+     -------------------------------------------------------- */
+  @keyframes pw-jelly {
+    0%   { transform: scale(1) rotate(0deg); }
+    25%  { transform: scale(1.05) rotate(-1.5deg); }
+    50%  { transform: scale(1.08) rotate(1deg); }
+    75%  { transform: scale(1.06) rotate(-0.5deg); }
+    100% { transform: scale(1.06) rotate(0deg); }
+  }
+
+  .pw-anim-jelly product-card .product-card__link img:hover,
+  .pw-anim-jelly product-card .product-card__link video:hover,
+  product-card.pw-jelly .product-card__link img:hover,
+  product-card.pw-jelly .product-card__link video:hover {
+    animation: pw-jelly 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* --------------------------------------------------------
+     3. FLOAT & GLOW
+     Gentle lift with soft box-shadow
+     -------------------------------------------------------- */
+  .pw-anim-float product-card .product-card__link,
+  product-card.pw-float .product-card__link {
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  .pw-anim-float product-card .product-card__link:hover,
+  product-card.pw-float .product-card__link:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  /* --------------------------------------------------------
+     4. TILT 3D
+     Perspective tilt on hover (CSS only, no JS needed)
+     -------------------------------------------------------- */
+  .pw-anim-tilt product-card .product-card__link,
+  product-card.pw-tilt .product-card__link {
+    transition: transform 0.4s ease;
+    transform-style: preserve-3d;
+    perspective: 800px;
+  }
+
+  .pw-anim-tilt product-card .product-card__link:hover,
+  product-card.pw-tilt .product-card__link:hover {
+    transform: perspective(800px) rotateY(-5deg) rotateX(3deg) scale(1.02);
+  }
+
+  /* --------------------------------------------------------
+     5. RUBBER BAND
+     Squash and stretch effect
+     -------------------------------------------------------- */
+  @keyframes pw-rubber {
+    0%   { transform: scale(1, 1); }
+    30%  { transform: scale(1.12, 0.9); }
+    50%  { transform: scale(0.95, 1.05); }
+    70%  { transform: scale(1.04, 0.98); }
+    100% { transform: scale(1.02, 1.0); }
+  }
+
+  .pw-anim-rubber product-card .product-card__link img:hover,
+  .pw-anim-rubber product-card .product-card__link video:hover,
+  product-card.pw-rubber .product-card__link img:hover,
+  product-card.pw-rubber .product-card__link video:hover {
+    animation: pw-rubber 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* --------------------------------------------------------
+     6. SPIN REVEAL
+     Subtle rotation on entry
+     -------------------------------------------------------- */
+  .pw-anim-spin product-card .product-card__link img:hover,
+  .pw-anim-spin product-card .product-card__link video:hover,
+  product-card.pw-spin .product-card__link img:hover,
+  product-card.pw-spin .product-card__link video:hover {
+    transform: rotate(3deg) scale(1.06);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* --------------------------------------------------------
+     7. POP & SHAKE
+     Quick pop then horizontal shake
+     -------------------------------------------------------- */
+  @keyframes pw-pop-shake {
+    0%   { transform: scale(1); }
+    20%  { transform: scale(1.1); }
+    40%  { transform: scale(1.08) translateX(-3px); }
+    60%  { transform: scale(1.08) translateX(3px); }
+    80%  { transform: scale(1.06) translateX(-1px); }
+    100% { transform: scale(1.06) translateX(0); }
+  }
+
+  .pw-anim-popshake product-card .product-card__link img:hover,
+  .pw-anim-popshake product-card .product-card__link video:hover,
+  product-card.pw-popshake .product-card__link img:hover,
+  product-card.pw-popshake .product-card__link video:hover {
+    animation: pw-pop-shake 0.5s ease forwards;
+  }
+
+  /* --------------------------------------------------------
+     8. SWING PENDULUM
+     Rotation swing from top center
+     -------------------------------------------------------- */
+  @keyframes pw-swing {
+    0%   { transform: rotate(0deg); }
+    20%  { transform: rotate(6deg); }
+    40%  { transform: rotate(-4deg); }
+    60%  { transform: rotate(2deg); }
+    80%  { transform: rotate(-1deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  .pw-anim-swing product-card .product-card__link img:hover,
+  .pw-anim-swing product-card .product-card__link video:hover,
+  product-card.pw-swing .product-card__link img:hover,
+  product-card.pw-swing .product-card__link video:hover {
+    transform-origin: top center;
+    animation: pw-swing 0.6s ease forwards;
+  }
+
+  /* --------------------------------------------------------
+     9. PULSE BEAT
+     Rhythmic scale pulse (2 beats then settle)
+     -------------------------------------------------------- */
+  @keyframes pw-pulse {
+    0%   { transform: scale(1); }
+    15%  { transform: scale(1.08); }
+    30%  { transform: scale(1.0); }
+    45%  { transform: scale(1.06); }
+    60%  { transform: scale(1.02); }
+    100% { transform: scale(1.04); }
+  }
+
+  .pw-anim-pulse product-card .product-card__link img:hover,
+  .pw-anim-pulse product-card .product-card__link video:hover,
+  product-card.pw-pulse .product-card__link img:hover,
+  product-card.pw-pulse .product-card__link video:hover {
+    animation: pw-pulse 0.6s ease forwards;
+  }
+
+  /* --------------------------------------------------------
+     10. GLITCH SHIFT
+     Quick chromatic-style horizontal jitter
+     -------------------------------------------------------- */
+  @keyframes pw-glitch {
+    0%   { transform: translate(0, 0) scale(1); }
+    10%  { transform: translate(-3px, 1px) scale(1.02); }
+    20%  { transform: translate(3px, -1px) scale(1.04); }
+    30%  { transform: translate(-2px, 0) scale(1.04); }
+    40%  { transform: translate(2px, 1px) scale(1.06); }
+    50%  { transform: translate(0, -1px) scale(1.06); }
+    100% { transform: translate(0, 0) scale(1.04); }
+  }
+
+  .pw-anim-glitch product-card .product-card__link img:hover,
+  .pw-anim-glitch product-card .product-card__link video:hover,
+  product-card.pw-glitch .product-card__link img:hover,
+  product-card.pw-glitch .product-card__link video:hover {
+    animation: pw-glitch 0.4s ease forwards;
+  }
+
+  /* --------------------------------------------------------
+     SECTION-LEVEL ANIMATIONS
+     Apply to any section wrapper to animate all cards within
+     -------------------------------------------------------- */
+
+  /* Staggered fade-in on scroll (use with JS IntersectionObserver) */
+  @keyframes pw-fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .pw-stagger-in product-card {
+    opacity: 0;
+    animation: pw-fade-up 0.5s ease forwards;
+  }
+  .pw-stagger-in product-card:nth-child(1) { animation-delay: 0s; }
+  .pw-stagger-in product-card:nth-child(2) { animation-delay: 0.08s; }
+  .pw-stagger-in product-card:nth-child(3) { animation-delay: 0.16s; }
+  .pw-stagger-in product-card:nth-child(4) { animation-delay: 0.24s; }
+  .pw-stagger-in product-card:nth-child(5) { animation-delay: 0.32s; }
+  .pw-stagger-in product-card:nth-child(6) { animation-delay: 0.40s; }
+  .pw-stagger-in product-card:nth-child(7) { animation-delay: 0.48s; }
+  .pw-stagger-in product-card:nth-child(8) { animation-delay: 0.56s; }
+
+  /* --------------------------------------------------------
+     UTILITY: Overflow visible for bouncy/rubber animations
+     on transparent-background product images
+     -------------------------------------------------------- */
+  .pw-overflow-visible product-card .product-card__link {
+    overflow: visible;
+  }
+
+  /* --------------------------------------------------------
+     HOVER LIFT — Subtle universal card lift
+     Good default if you just want a gentle hover effect
+     -------------------------------------------------------- */
+  .pw-anim-lift product-card .product-card__link,
+  product-card.pw-lift .product-card__link {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .pw-anim-lift product-card .product-card__link:hover,
+  product-card.pw-lift .product-card__link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+} /* end @media (hover: hover) */
+
+/* ============================================================
+   USAGE GUIDE
+   ============================================================
+
+   OPTION A — Apply to a section wrapper (affects all cards in section):
+   Add a class to the section's wrapper div in the Liquid template.
+
+     <div class="pw-anim-spring">
+       {% for product in collection.products %}
+         {% render 'product-card', product: product %}
+       {% endfor %}
+     </div>
+
+   OPTION B — Apply to individual product cards:
+   Add a class directly to the product-card element.
+
+     <product-card class="pw-spring">
+       ...
+     </product-card>
+
+   OPTION C — Via Shopify theme editor custom CSS:
+   Use Horizon's section-level "Custom CSS" field:
+
+     product-card .product-card__link img:hover {
+       animation: pw-jelly 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+     }
+
+   AVAILABLE ANIMATIONS:
+   Section class          | Card class      | Effect
+   -----------------------|-----------------|---------------------------
+   pw-anim-spring         | pw-spring       | Elastic scale up
+   pw-anim-jelly          | pw-jelly        | Wobbly scale + rotate
+   pw-anim-float          | pw-float        | Lift + shadow
+   pw-anim-tilt           | pw-tilt         | 3D perspective tilt
+   pw-anim-rubber         | pw-rubber       | Squash & stretch
+   pw-anim-spin           | pw-spin         | Rotation + scale
+   pw-anim-popshake       | pw-popshake     | Pop then shake
+   pw-anim-swing          | pw-swing        | Pendulum swing
+   pw-anim-pulse          | pw-pulse        | Double heartbeat
+   pw-anim-glitch         | pw-glitch       | Chromatic jitter
+   pw-anim-lift           | pw-lift         | Gentle lift + shadow
+   pw-stagger-in          | (section only)  | Staggered fade-up entry
+   pw-overflow-visible    | (section only)  | Allow imgs to overflow
+
+   ============================================================ */

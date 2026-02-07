@@ -40,7 +40,7 @@
         --color-shadow: rgb({{ scheme.settings.shadow.rgba }});
         --color-shadow-rgb: {{ scheme.settings.shadow.rgb }};
         --color-primary-button-text: rgb({{ scheme.settings.primary_button_text.rgba }});
-        {% if scheme.settings.primary_button_gradient %}
+        {% if scheme.settings.primary_button_gradient_start != blank and scheme.settings.primary_button_gradient_end != blank %}
           --color-primary-button-background: linear-gradient(180deg, {{ scheme.settings.primary_button_gradient_start }}, {{ scheme.settings.primary_button_gradient_end }});
         {% else %}
           --color-primary-button-background: rgb({{ scheme.settings.primary_button_background.rgba }});

@@ -293,11 +293,3 @@
    pw-overflow-visible    | (section only)  | Allow imgs to overflow
 
    ============================================================ */
-
-/* ── Gradient Primary Buttons ── */
-.button:not(.button-secondary):not(.button-unstyled),
-.button-primary,
-button.shopify-payment-button__button--unbranded {
-  background: linear-gradient(180deg, #32b6b6, #237f7f) !important;
-  border-color: #237f7f !important;
-}

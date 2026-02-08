@@ -221,6 +221,21 @@
           },
           {
             "type": "header",
+            "content": "Gradient (optional)"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_gradient_start",
+            "label": "Gradient top color",
+            "info": "Leave blank to disable gradient"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_gradient_end",
+            "label": "Gradient bottom color"
+          },
+          {
+            "type": "header",
             "content": "t:names.inputs"
           },
           {

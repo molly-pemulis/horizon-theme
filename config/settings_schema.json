@@ -2151,6 +2151,30 @@
         "id": "product_card_carousel",
         "label": "t:settings.product_card_carousel",
         "default": true
+      },
+      {
+        "type": "header",
+        "content": "Hover animation"
+      },
+      {
+        "type": "select",
+        "id": "product_card_hover_animation",
+        "label": "Animation style",
+        "default": "none",
+        "options": [
+          { "value": "none", "label": "None" },
+          { "value": "spring", "label": "Spring bounce" },
+          { "value": "jelly", "label": "Jelly wobble" },
+          { "value": "float", "label": "Float & glow" },
+          { "value": "tilt", "label": "Tilt 3D" },
+          { "value": "rubber", "label": "Rubber band" },
+          { "value": "spin", "label": "Spin reveal" },
+          { "value": "popshake", "label": "Pop & shake" },
+          { "value": "swing", "label": "Swing pendulum" },
+          { "value": "pulse", "label": "Pulse beat" },
+          { "value": "glitch", "label": "Glitch shift" },
+          { "value": "lift", "label": "Gentle lift" }
+        ]
       }
     ]
   },

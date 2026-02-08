@@ -65,7 +65,7 @@
   >
 {%- endif -%}
 <product-card
-  class="product-card"
+  class="product-card{% if settings.product_card_hover_animation != 'none' %} pw-{{ settings.product_card_hover_animation }}{% endif %}"
   data-product-id="{{ product.id }}"
   id="product-card-{{ block.id }}"
   data-product-transition="{{ settings.transition_to_main_product }}"

@@ -185,6 +185,28 @@
       "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
     },
     {
+      "type": "select",
+      "id": "hover_animation",
+      "label": "Hover animation",
+      "info": "Overrides global setting",
+      "default": "",
+      "options": [
+        { "value": "", "label": "Use global setting" },
+        { "value": "none", "label": "None" },
+        { "value": "spring", "label": "Spring bounce" },
+        { "value": "jelly", "label": "Jelly wobble" },
+        { "value": "float", "label": "Float & glow" },
+        { "value": "tilt", "label": "Tilt 3D" },
+        { "value": "rubber", "label": "Rubber band" },
+        { "value": "spin", "label": "Spin reveal" },
+        { "value": "popshake", "label": "Pop & shake" },
+        { "value": "swing", "label": "Swing pendulum" },
+        { "value": "pulse", "label": "Pulse beat" },
+        { "value": "glitch", "label": "Glitch shift" },
+        { "value": "lift", "label": "Gentle lift" }
+      ]
+    },
+    {
       "type": "range",
       "id": "columns_gap",
       "label": "t:settings.horizontal_gap",

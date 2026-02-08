@@ -33,15 +33,15 @@
             "aspect_ratio": "adapt",
             "constrain_to_viewport": true,
             "media_fit": "contain",
-            "media_radius": 0,
+            "media_radius": 27,
             "extend_media": false,
             "zoom": true,
             "video_loop": false,
             "hide_variants": true,
             "padding-block-start": 0,
             "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
+            "padding-inline-start": 100,
+            "padding-inline-end": 100
           },
           "blocks": {}
         },
@@ -281,7 +281,7 @@
               "name": "Product specs",
               "settings": {
                 "show_heading": true,
-                "heading": "Specifications",
+                "heading": "MORE INFO",
                 "heading_size": "h4",
                 "padding-block-start": 16,
                 "padding-block-end": 16

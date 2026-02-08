@@ -407,6 +407,26 @@
       },
       {
         "type": "header",
+        "content": "Custom fonts"
+      },
+      {
+        "type": "paragraph",
+        "content": "Override Shopify fonts with self-hosted custom fonts"
+      },
+      {
+        "type": "checkbox",
+        "id": "use_gfs_didot_heading",
+        "label": "Use GFS Didot for headings",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "use_gfs_didot_accent",
+        "label": "Use GFS Didot for accent text",
+        "default": false
+      },
+      {
+        "type": "header",
         "content": "t:content.text_presets"
       },
       {

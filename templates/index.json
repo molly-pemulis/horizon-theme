@@ -272,6 +272,7 @@
         "columns": 4,
         "mobile_columns": "2",
         "mobile_card_size": "60cqw",
+        "hover_animation": "spring",
         "columns_gap": 8,
         "rows_gap": 24,
         "icons_style": "arrow",

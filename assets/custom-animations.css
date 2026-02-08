@@ -1,5 +1,21 @@
 /* ============================================================
-   PEMULIS WATER & POWER — Custom Hover Animations
+   PEMULIS WATER & POWER — Custom Styles
+   ============================================================ */
+
+/* --------------------------------------------------------
+   GFS Didot — Self-hosted from theme assets (14KB woff2)
+   No external requests, loads from Shopify CDN
+   -------------------------------------------------------- */
+@font-face {
+  font-family: 'GFS Didot';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('gfs-didot-latin.woff2') format('woff2');
+}
+
+/* ============================================================
+   Custom Hover Animations
    Desktop-only via @media (hover: hover)
    Drop into Shopify Horizon theme assets/
    ============================================================ */

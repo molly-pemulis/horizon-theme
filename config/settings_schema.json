@@ -1583,24 +1583,6 @@
         "default": 100
       },
       {
-        "type": "checkbox",
-        "id": "primary_button_use_gradient",
-        "label": "Use gradient background",
-        "default": false
-      },
-      {
-        "type": "color",
-        "id": "primary_button_gradient_top",
-        "label": "Gradient top color",
-        "default": "#32b6b6"
-      },
-      {
-        "type": "color",
-        "id": "primary_button_gradient_bottom",
-        "label": "Gradient bottom color",
-        "default": "#237f7f"
-      },
-      {
         "type": "select",
         "id": "type_font_button_primary",
         "label": "t:settings.font",

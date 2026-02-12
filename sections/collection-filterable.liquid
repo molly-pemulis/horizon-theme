@@ -396,7 +396,8 @@ function buildFilters(prods){
   Object.keys(om).forEach(function(name){
     var s=[...om[name]].sort();
     if(s.length>1){
-      if(H==='single-fins'&&name==='Color'){}
+      if(name==='Size'&&H==='fins'){/* Hide Size on master fins — too many mixed values */}
+      else if(H==='single-fins'&&name==='Color'){}
       else if(H==='single-fins'&&name==='Size'){
         var ranges={};
         s.forEach(function(v){

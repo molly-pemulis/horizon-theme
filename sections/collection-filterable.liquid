@@ -47,7 +47,7 @@
 .pk__prc{font-size:13px;font-weight:600;font-family:var(--fm)}
 .pk__cmp{text-decoration:line-through;color:var(--f-mut);font-weight:400;margin-left:6px}
 .pk__var{font-size:10px;color:var(--f-mut);margin-top:4px}
-.pld{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap);padding:0}.pld__card{background:#f0eeea;border-radius:4px;aspect-ratio:3/4;animation:skPulse 1.5s ease-in-out infinite}@keyframes skPulse{0%,100%{opacity:.6}50%{opacity:1}}@media(max-width:768px){.pld{grid-template-columns:repeat(2,1fr)}}
+.pld{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap);padding:0}.pld__lcp{grid-column:1;grid-row:1}.pld__card{background:#f0eeea;border-radius:4px;aspect-ratio:3/4;animation:skPulse 1.5s ease-in-out infinite}@keyframes skPulse{0%,100%{opacity:.6}50%{opacity:1}}@media(max-width:768px){.pld{grid-template-columns:repeat(2,1fr)}}
 
 
 .pe{text-align:center;padding:60px 20px;color:var(--f-mut)}
@@ -113,6 +113,23 @@
         JS hides this and replaces with the dynamic filtered grid.
         ================================================================
       {%- endcomment -%}
+      {%- comment -%} LCP: First product image visible for fast paint {%- endcomment -%}
+      {%- assign lcp_product = collection.products[0] -%}
+      {%- if lcp_product.featured_image -%}
+        {%- liquid
+          assign lcp_img = lcp_product.featured_image
+          for v in lcp_product.variants
+            if v.available and v.featured_image
+              assign lcp_img = v.featured_image
+              break
+            endif
+          endfor
+        -%}
+        <link rel="preload" as="image" href="{{ lcp_img | image_url: width: 400 }}"
+          imagesrcset="{{ lcp_img | image_url: width: 200 }} 200w, {{ lcp_img | image_url: width: 300 }} 300w, {{ lcp_img | image_url: width: 400 }} 400w"
+          imagesizes="(max-width: 768px) 45vw, 220px" fetchpriority="high">
+      {%- endif -%}
+
       <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
         {%- paginate collection.products by 250 -%}
           {%- for product in collection.products -%}
@@ -151,7 +168,22 @@
 
       {%- comment -%} JS-POWERED GRID — replaces SSR grid once loaded {%- endcomment -%}
       <div class="pg" id="pemG">
-        <div class="pld" id="pemL"><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div></div>
+        <div class="pld" id="pemL">
+          {%- if lcp_product.featured_image -%}
+          <div class="pld__lcp" id="pemLCP">
+            <a href="{{ lcp_product.url }}">
+              <img src="{{ lcp_img | image_url: width: 400 }}"
+                srcset="{{ lcp_img | image_url: width: 200 }} 200w, {{ lcp_img | image_url: width: 300 }} 300w, {{ lcp_img | image_url: width: 400 }} 400w"
+                sizes="(max-width: 768px) 45vw, 220px"
+                alt="{{ lcp_img.alt | escape }}"
+                loading="eager" fetchpriority="high"
+                width="{{ lcp_img.width }}" height="{{ lcp_img.height }}"
+                style="width:100%;height:auto;border-radius:4px;display:block">
+            </a>
+            <p style="margin:8px 0 0;font-size:13px;color:var(--f-txt)">{{ lcp_product.title }}</p>
+            <p style="margin:4px 0 0;font-size:13px;color:var(--f-mut)">{{ lcp_product.price | money }}</p>
+          </div>
+          {%- endif -%}<div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div></div>
       </div>
     </main>
   </div>

@@ -52,10 +52,10 @@
 
 .pe{text-align:center;padding:60px 20px;color:var(--f-mut)}
 /* Hide the server-rendered grid once JS takes over */
-.pg--ssr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.pg--ssr{}
 /* Hide filters/sort until JS is ready */
-.pf--js,.ps--js{display:none}
-.pf--js.ready,.ps--js.ready{display:block}
+.pf--js,.ps--js{opacity:0.4;pointer-events:none}
+.pf--js.ready,.ps--js.ready{opacity:1;pointer-events:auto;transition:opacity .2s}
 @media(max-width:768px){
   .pc{padding:12px 12px 40px}
   .pc__hdr{margin-bottom:16px;padding-bottom:10px}
@@ -114,7 +114,23 @@
         ================================================================
       {%- endcomment -%}
 
-      <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
+      
+      {%- assign lcp_product = collection.products[0] -%}
+      {%- if lcp_product.featured_image -%}
+        {%- liquid
+          assign lcp_img = lcp_product.featured_image
+          for v in lcp_product.variants
+            if v.available and v.featured_image
+              assign lcp_img = v.featured_image
+              break
+            endif
+          endfor
+        -%}
+        <link rel="preload" as="image" href="{{ lcp_img | image_url: width: 400 }}"
+          imagesrcset="{{ lcp_img | image_url: width: 200 }} 200w, {{ lcp_img | image_url: width: 300 }} 300w, {{ lcp_img | image_url: width: 400 }} 400w"
+          imagesizes="(max-width: 768px) 45vw, 220px" fetchpriority="high">
+      {%- endif -%}
+<div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
         {%- paginate collection.products by 250 -%}
           {%- for product in collection.products -%}
             <div class="pk{% unless product.available %} so{% endunless %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
@@ -137,9 +153,12 @@
                   -%}
                   {%- if card_image -%}
                     <img class="pk__img"
-                      data-src="{{ card_image | image_url: width: 400 }}"
-                      data-srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
+                      src="{{ card_image | image_url: width: 400 }}"
+                      srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
+                      sizes="(max-width: 768px) 45vw, 220px"
                       alt="{{ card_image.alt | escape }}"
+                      loading="{% if forloop.index <= 2 %}eager{% else %}lazy{% endif %}"
+                      fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                       width="{{ card_image.width }}" height="{{ card_image.height }}">
                   {%- else -%}
                     <div class="pk__img" style="width:100%;height:100%;background:#f0eeea"></div>
@@ -170,7 +189,7 @@
       </div>
 
       {%- comment -%} JS-POWERED GRID — replaces SSR grid once loaded {%- endcomment -%}
-      <div class="pg" id="pemG">
+      <div class="pg" id="pemG" style="display:none">
         <div class="pld" id="pemL" style="text-align:center;padding:40px 0;color:#8a8680;font-size:13px">Loading...</div>
       </div>
     </main>
@@ -431,6 +450,14 @@ function renderTags(){
 }
 
 function render(){
+  /* On first render (filter interaction), swap from SSR to JS grid */
+  var ssrEl=document.getElementById('pemSSR');
+  var jsEl=document.getElementById('pemG');
+  if(ssrEl&&ssrEl.style.display!=='none'){
+    ssrEl.style.display='none';
+    jsEl.style.display='';
+  }
+
   /* If Color filter is active, use normal product cards (collapsed).
      Otherwise use exploded per-color cards for visual browsing. */
   var colorActive=AF['option:Color']&&AF['option:Color'].size>0;
@@ -558,9 +585,10 @@ async function init(){
     await resolveGids(AP);
     buildExploded(AP);
 
-    /* SWAP: remove loader, JS grid already visible */
+    /* Data loaded — SSR grid stays visible until user interacts with filters */
     var ldEl=document.getElementById('pemL');
     if(ldEl)ldEl.remove();
+    window.__pemDataReady=true;
 
     /* Show filters and sort bar */
     document.getElementById('pemF').classList.add('ready');

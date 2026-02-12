@@ -52,7 +52,7 @@
 
 .pe{text-align:center;padding:60px 20px;color:var(--f-mut)}
 /* Hide the server-rendered grid once JS takes over */
-.pg--ssr{transition:opacity .2s ease}.pg--ssr.hidden{opacity:0;position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.pg--ssr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* Hide filters/sort until JS is ready */
 .pf--js,.ps--js{display:none}
 .pf--js.ready,.ps--js.ready{display:block}
@@ -189,7 +189,7 @@
       </div>
 
       {%- comment -%} JS-POWERED GRID — replaces SSR grid once loaded {%- endcomment -%}
-      <div class="pg" id="pemG" style="display:none">
+      <div class="pg" id="pemG">
         <div class="pld" id="pemL" style="text-align:center;padding:40px 0;color:#8a8680;font-size:13px">Loading...</div>
       </div>
     </main>
@@ -577,13 +577,9 @@ async function init(){
     await resolveGids(AP);
     buildExploded(AP);
 
-    /* SWAP: crossfade from SSR to JS grid */
-    var ssrEl=document.getElementById('pemSSR'),jsEl=document.getElementById('pemG'),ldEl=document.getElementById('pemL');
-    jsEl.style.display='';
-    requestAnimationFrame(function(){requestAnimationFrame(function(){
-      ssrEl.classList.add('hidden');
-      if(ldEl)ldEl.remove();
-    })});
+    /* SWAP: remove loader, JS grid already visible */
+    var ldEl=document.getElementById('pemL');
+    if(ldEl)ldEl.remove();
 
     /* Show filters and sort bar */
     document.getElementById('pemF').classList.add('ready');

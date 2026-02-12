@@ -392,7 +392,24 @@ function buildFilters(prods){
   })});
   Object.keys(om).forEach(function(name){
     var s=[...om[name]].sort();
-    if(s.length>1)fl.push({key:'option:'+name,label:name,type:'pills',values:s});
+    if(s.length>1){
+      if(H==='single-fins'&&name==='Size'){
+        var ranges={};
+        s.forEach(function(v){
+          var n=parseFloat(v);if(isNaN(n))return;
+          var lo=Math.floor(n);
+          var rk=n>=10?'10+':lo+'-'+(lo+1);
+          if(!ranges[rk])ranges[rk]={min:lo,max:n>=10?999:lo+1};
+        });
+        var rKeys=Object.keys(ranges).sort(function(a,b){return ranges[a].min-ranges[b].min});
+        if(rKeys.length>1){
+          window.__sizeRanges=ranges;
+          fl.push({key:'option:Size',label:'Size',type:'pills',values:rKeys,isRange:true});
+        }
+      } else {
+        fl.push({key:'option:'+name,label:name,type:'pills',values:s});
+      }
+    }
   });
 
   /* Skip metafields that duplicate variant options or are redundant on collection pages.
@@ -474,7 +491,16 @@ function matches(p){
     else if(key==='productType')ok=vals.has(p.productType);
     else if(key.startsWith('option:')){
       var on=key.replace('option:','');
-      ok=p.variants.some(function(v){return vals.has(v.options[on])});
+      if(H==='single-fins'&&on==='Size'&&window.__sizeRanges){
+        ok=p.variants.some(function(v){
+          var sv=parseFloat(v.options[on]);if(isNaN(sv))return false;
+          var hit=false;vals.forEach(function(rk){
+            var r=window.__sizeRanges[rk];if(r&&sv>=r.min&&sv<r.max)hit=true;
+          });return hit;
+        });
+      } else {
+        ok=p.variants.some(function(v){return vals.has(v.options[on])});
+      }
     }
     else if(key.startsWith('metafield:')){
       var mk=key.replace('metafield:',''),mf=p.metafields[mk];

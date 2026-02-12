@@ -616,7 +616,10 @@ async function resolveGids(prods){
 var EP=[];  /* exploded product cards */
 function buildExploded(prods){
   EP=[];
+  /* Skip color explosion for single fins — one card per product */
+  var skipExplosion=(H==='single-fins');
   prods.forEach(function(p){
+    if(skipExplosion){EP.push(p);return}
     /* Find the Color option */
     var colorOpt=null;
     p.options.forEach(function(o){if(o.name.toLowerCase()==='color')colorOpt=o});

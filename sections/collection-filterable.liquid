@@ -1,0 +1,618 @@
+{% comment %}
+  PEMULIS WATER & POWER — Filterable Collection Page Section
+  HYBRID: Server-side Liquid renders all products in HTML for SEO,
+  then Storefront API JS takes over for filtering/sorting UX.
+  
+  Google sees: full product grid in source HTML
+  Users see: dynamic filterable grid powered by Storefront API
+{% endcomment %}
+
+<style>
+:root{--f-bg:#fafaf8;--f-bdr:#e0ddd8;--f-txt:#2c2c2c;--f-mut:#8a8680;--f-acc:#1a1a1a;--f-hov:#f0eeea;--f-act:#2c2c2c;--f-act-t:#fff;--c-bg:#fff;--c-bdr:#eae8e4;--c-shad:0 4px 12px rgba(0,0,0,.08);--gap:16px;--max:1400px;--fb:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--fm:"SF Mono","Fira Code",monospace}
+.pc{max-width:var(--max);margin:0 auto;padding:20px 20px 60px;font-family:var(--fb);color:var(--f-txt)}
+.pc__hdr{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--f-bdr)}
+.pc__ttl{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 4px}
+.pc__cnt{font-size:13px;color:var(--f-mut);font-family:var(--fm)}
+.pc__body{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+.pf{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow-y:auto;padding-right:8px}
+.pf::-webkit-scrollbar{width:4px}.pf::-webkit-scrollbar-thumb{background:var(--f-bdr);border-radius:2px}
+.pf__grp{margin-bottom:20px;border-bottom:1px solid var(--f-bdr);padding-bottom:16px}
+.pf__grp:last-child{border-bottom:none}
+.pf__lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--f-mut);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.pf__lbl::after{content:'−';font-size:14px;font-weight:400}.pf__lbl.col::after{content:'+'}
+.pf__opts{display:flex;flex-wrap:wrap;gap:6px;overflow:hidden;transition:max-height .3s}.pf__opts.col{max-height:0;margin:0}
+.pf__pill{font-size:12px;padding:4px 10px;border:1px solid var(--f-bdr);border-radius:20px;background:var(--f-bg);color:var(--f-txt);cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.pf__pill:hover{background:var(--f-hov);border-color:var(--f-mut)}
+.pf__pill.on{background:var(--f-act);color:var(--f-act-t);border-color:var(--f-act)}
+.pf__clr{font-size:11px;color:var(--f-mut);cursor:pointer;text-decoration:underline;margin-top:12px;display:none}.pf__clr.vis{display:block}
+.pf__rng{display:flex;gap:8px;align-items:center}
+.pf__rng input{width:80px;font-size:12px;padding:4px 8px;border:1px solid var(--f-bdr);border-radius:4px;background:#fff;font-family:var(--fm)}
+.pf__rng input:focus{outline:none;border-color:var(--f-acc)}.pf__rng span{font-size:12px;color:var(--f-mut)}
+.ps{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:8px 0}
+.ps__af{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.ps__tag{font-size:11px;padding:3px 8px;background:var(--f-act);color:var(--f-act-t);border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.ps__tag span{font-size:13px;line-height:1}
+.ps select{font-size:12px;padding:6px 28px 6px 10px;border:1px solid var(--f-bdr);border-radius:4px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%238a8680'/%3E%3C/svg%3E") no-repeat right 10px center;appearance:none;cursor:pointer;font-family:var(--fb)}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
+.pk{background:var(--c-bg);border:1px solid var(--c-bdr);border-radius:6px;overflow:hidden;transition:box-shadow .2s,transform .2s;position:relative}
+.pk:hover{box-shadow:var(--c-shad);transform:translateY(-2px)}.pk.so{opacity:.5}
+.pk__bdg{position:absolute;top:8px;left:8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:3px;z-index:2}
+.pk__bdg--so{background:#2c2c2c;color:#fff}.pk__bdg--sl{background:#c0392b;color:#fff}
+.pk__iw{aspect-ratio:1;overflow:hidden;background:#f5f4f0}
+.pk__img{width:100%;height:100%;object-fit:cover;transition:transform .3s}.pk:hover .pk__img{transform:scale(1.03)}
+.pk__nfo{padding:10px 12px 14px}
+.pk__vnd{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--f-mut);margin-bottom:2px}
+.pk__ttl{font-size:13px;font-weight:500;line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pk__ttl a{color:inherit;text-decoration:none}
+.pk__prc{font-size:13px;font-weight:600;font-family:var(--fm)}
+.pk__cmp{text-decoration:line-through;color:var(--f-mut);font-weight:400;margin-left:6px}
+.pk__var{font-size:10px;color:var(--f-mut);margin-top:4px}
+.pld{text-align:center;padding:60px 20px;color:var(--f-mut);font-size:13px}
+.pld__sp{width:24px;height:24px;border:2px solid var(--f-bdr);border-top-color:var(--f-acc);border-radius:50%;animation:ps .6s linear infinite;margin:0 auto 12px}
+@keyframes ps{to{transform:rotate(360deg)}}
+.pe{text-align:center;padding:60px 20px;color:var(--f-mut)}
+/* Hide the server-rendered grid once JS takes over */
+.pg--ssr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Hide filters/sort until JS is ready */
+.pf--js,.ps--js{display:none}
+.pf--js.ready,.ps--js.ready{display:block}
+@media(max-width:768px){
+  .pc{padding:12px 12px 40px}
+  .pc__hdr{margin-bottom:16px;padding-bottom:10px}
+  .pc__ttl{font-size:18px}
+  .pc__body{grid-template-columns:1fr}
+  .pf{position:static;max-height:none;border-bottom:1px solid var(--f-bdr);padding-bottom:12px;margin-bottom:12px}
+  .pf.mc .pf__grp{display:none}
+  .pf__mt{display:block;width:100%;padding:10px;font-size:13px;font-weight:500;border:1px solid var(--f-bdr);border-radius:4px;background:var(--f-bg);cursor:pointer;text-align:center;margin-bottom:12px}
+  .pg{grid-template-columns:repeat(2,1fr);gap:8px}
+  .pk{border-radius:4px}
+  .pk__nfo{padding:8px 8px 10px}
+  .pk__vnd{font-size:9px}
+  .pk__ttl{font-size:12px;-webkit-line-clamp:2}
+  .pk__prc{font-size:12px}
+  .pk__var{font-size:9px}
+  .ps select{font-size:11px;padding:5px 24px 5px 8px}
+  .ps__tag{font-size:10px;padding:2px 6px}
+  .pf__pill{font-size:11px;padding:3px 8px}
+}
+@media(min-width:769px){.pf__mt{display:none}}
+</style>
+
+<div class="pc" id="pemC">
+  <div class="pc__hdr">
+    <h1 class="pc__ttl">{{ collection.title }}</h1>
+    <div class="pc__cnt" id="pemCnt">{{ collection.products_count }} products</div>
+  </div>
+
+  <div class="pc__body">
+    {%- comment -%} FILTER SIDEBAR — hidden until JS loads {%- endcomment -%}
+    <aside class="pf pf--js mc" id="pemF">
+      <button class="pf__mt" id="pemMT">Show Filters</button>
+      <div id="pemFG"></div>
+      <div class="pf__clr" id="pemCA">Clear all filters</div>
+    </aside>
+
+    <main>
+      {%- comment -%} SORT BAR — hidden until JS loads {%- endcomment -%}
+      <div class="ps ps--js" id="pemSort">
+        <div class="ps__af" id="pemAT"></div>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--f-mut);margin-right:12px;user-select:none"><input type="checkbox" id="pemSO" style="cursor:pointer">Show sold out</label>
+        <select id="pemSS">
+          <option value="default">Sort by</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="title-asc">Name: A → Z</option>
+          <option value="title-desc">Name: Z → A</option>
+        </select>
+      </div>
+
+      {%- comment -%}
+        ================================================================
+        SERVER-SIDE RENDERED GRID (SEO)
+        This is what Google sees. Full product data in source HTML.
+        JS hides this and replaces with the dynamic filtered grid.
+        ================================================================
+      {%- endcomment -%}
+      <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
+        {%- paginate collection.products by 250 -%}
+          {%- for product in collection.products -%}
+            <div class="pk{% unless product.available %} so{% endunless %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+              <meta itemprop="position" content="{{ forloop.index }}">
+              {%- unless product.available -%}
+                <div class="pk__bdg pk__bdg--so">Sold out</div>
+              {%- endunless -%}
+              {%- if product.compare_at_price > product.price -%}
+                <div class="pk__bdg pk__bdg--sl">Sale</div>
+              {%- endif -%}
+              <div class="pk__iw"><div class="pk__img" style="width:100%;height:100%;background:#f0eeea"></div></div>
+              {%- if product.featured_image -%}
+                <link itemprop="image" href="{{ product.featured_image | image_url: width: 400 }}">
+              {%- endif -%}
+              <div class="pk__nfo">
+                <div class="pk__vnd" itemprop="brand" itemscope itemtype="https://schema.org/Brand"><span itemprop="name">{{ product.vendor }}</span></div>
+                <div class="pk__ttl"><a href="{{ product.url }}" itemprop="url"><span itemprop="name">{{ product.title }}</span></a></div>
+                <div class="pk__prc" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                  <meta itemprop="priceCurrency" content="{{ shop.currency }}">
+                  <meta itemprop="price" content="{{ product.price | money_without_currency | remove: ',' }}">
+                  <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+                  {{ product.price | money }}
+                  {%- if product.compare_at_price > product.price -%}
+                    <span class="pk__cmp">{{ product.compare_at_price | money }}</span>
+                  {%- endif -%}
+                </div>
+                {%- if product.variants.size > 1 -%}
+                  <div class="pk__var">{{ product.variants.size }} variants</div>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endfor -%}
+        {%- endpaginate -%}
+      </div>
+
+      {%- comment -%} JS-POWERED GRID — replaces SSR grid once loaded {%- endcomment -%}
+      <div class="pg" id="pemG">
+        <div class="pld" id="pemL"><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div><div class="pld__card"></div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var T='4b9996228b1962302dfa1527f3b09415';
+var D='7aa0b1-14.myshopify.com';
+var V='2024-01';
+var U='https://'+D+'/api/'+V+'/graphql.json';
+var H='{{ collection.handle }}';
+var PS=50;
+
+var MF=[
+  {ns:'shopify',k:'color-pattern'},{ns:'shopify',k:'size'},{ns:'shopify',k:'fabric'},
+  {ns:'shopify',k:'fit'},{ns:'shopify',k:'target-gender'},{ns:'shopify',k:'age-group'},
+  {ns:'shopify',k:'board-profile'},{ns:'shopify',k:'surfboard-features'},
+  {ns:'shopify',k:'care-instructions'},{ns:'shopify',k:'accessory-size'},
+  {ns:'shopify',k:'headwear-features'},{ns:'shopify',k:'sleeve-length-type'},
+  {ns:'shopify',k:'outerwear-clothing-features'},{ns:'shopify',k:'waist-rise'},
+  {ns:'shopify',k:'protective-gear-features'},{ns:'shopify',k:'handwear-material'},
+  {ns:'shopify',k:'fin-profile'}
+];
+
+var ML={
+  'color-pattern':'Color','size':'Size','fabric':'Fabric','fit':'Fit',
+  'target-gender':'Gender','age-group':'Age Group','board-profile':'Board Profile',
+  'surfboard-features':'Surfboard Features','care-instructions':'Care',
+  'accessory-size':'Accessory Size','headwear-features':'Headwear',
+  'sleeve-length-type':'Sleeve','outerwear-clothing-features':'Outerwear Features',
+  'waist-rise':'Waist Rise','protective-gear-features':'Protective Features',
+  'handwear-material':'Glove Material','fin-profile':'Fin Type'
+};
+
+var AP=[],AF={},PR={min:null,max:null},CS='default',hideSoldOut=true;
+
+var MS=MF.map(function(m){return'{namespace:"'+m.ns+'",key:"'+m.k+'"}'}).join(',');
+
+function bq(cur){
+  var af=cur?',after:"'+cur+'"':'';
+  return'{collection(handle:"'+H+'"){title products(first:'+PS+af+'){pageInfo{hasNextPage endCursor}edges{node{id title handle vendor productType tags availableForSale createdAt priceRange{minVariantPrice{amount currencyCode}maxVariantPrice{amount currencyCode}}compareAtPriceRange{minVariantPrice{amount}maxVariantPrice{amount}}options{name values}images(first:2){edges{node{url altText}}}variants(first:30){edges{node{id title availableForSale price{amount currencyCode}compareAtPrice{amount}selectedOptions{name value}image{url altText}}}}metafields(identifiers:['+MS+']){key namespace value type}}}}}}';
+}
+
+async function fetchAll(){
+  var edges=[],hasNext=true,cursor=null;
+  while(hasNext){
+    var r=await fetch(U,{method:'POST',headers:{'Content-Type':'application/json','X-Shopify-Storefront-Access-Token':T},body:JSON.stringify({query:bq(cursor)})});
+    var j=await r.json();
+    if(j.errors){console.error('API errors:',j.errors);break;}
+    var p=j.data&&j.data.collection&&j.data.collection.products;
+    if(!p)break;
+    edges=edges.concat(p.edges);
+    hasNext=p.pageInfo.hasNextPage;
+    cursor=p.pageInfo.endCursor;
+  }
+  return edges.map(function(e){return norm(e.node)});
+}
+
+function norm(n){
+  var imgs=(n.images&&n.images.edges||[]).map(function(e){return{url:e.node.url,alt:e.node.altText||n.title}});
+  var vars=(n.variants&&n.variants.edges||[]).map(function(e){
+    var nd=e.node;
+    return{id:nd.id,title:nd.title,price:parseFloat(nd.price&&nd.price.amount||0),
+      compareAt:nd.compareAtPrice?parseFloat(nd.compareAtPrice.amount):null,
+      available:nd.availableForSale,
+      options:(nd.selectedOptions||[]).reduce(function(a,o){a[o.name]=o.value;return a},{}),
+      image:nd.image?{url:nd.image.url,alt:nd.image.altText||''}:null};
+  });
+  var opts=(n.options||[]).filter(function(o){return!(o.name==='Title'&&o.values.length===1&&o.values[0]==='Default Title')}).map(function(o){return{name:o.name,values:o.values}});
+  var mf={};
+  (n.metafields||[]).forEach(function(m){
+    if(!m)return;var v=m.value;
+    if(typeof v==='string'&&v.charAt(0)==='['){try{v=JSON.parse(v)}catch(e){}}
+    mf[m.key]={value:v,type:m.type};
+  });
+  var mn=parseFloat(n.priceRange&&n.priceRange.minVariantPrice&&n.priceRange.minVariantPrice.amount||0);
+  var mx=parseFloat(n.priceRange&&n.priceRange.maxVariantPrice&&n.priceRange.maxVariantPrice.amount||0);
+  var cm=n.compareAtPriceRange&&n.compareAtPriceRange.maxVariantPrice&&n.compareAtPriceRange.maxVariantPrice.amount?parseFloat(n.compareAtPriceRange.maxVariantPrice.amount):null;
+  return{id:n.id,title:n.title,handle:n.handle,url:'/products/'+n.handle,
+    vendor:n.vendor||'',productType:n.productType||'',tags:n.tags||[],
+    available:n.availableForSale,createdAt:n.createdAt,
+    minPrice:mn,maxPrice:mx,compareAt:cm,onSale:cm&&cm>mx,
+    images:imgs,variants:vars,options:opts,metafields:mf};
+}
+
+/* Build filters from IN-STOCK products only so dead-end pills never show */
+function buildFilters(prods){
+  var fl=[];
+  var avail=hideSoldOut?prods.filter(function(p){return p.available}):prods;
+
+  var vn=[...new Set(avail.map(function(p){return p.vendor}).filter(Boolean))].sort();
+  if(vn.length>1)fl.push({key:'vendor',label:'Brand',type:'pills',values:vn});
+
+  var tp=[...new Set(avail.map(function(p){return p.productType}).filter(Boolean))].sort();
+  if(tp.length>1)fl.push({key:'productType',label:'Type',type:'pills',values:tp});
+
+  var om={};
+  avail.forEach(function(p){p.options.forEach(function(o){
+    if(!om[o.name])om[o.name]=new Set();o.values.forEach(function(v){om[o.name].add(v)});
+  })});
+  Object.keys(om).forEach(function(name){
+    var s=[...om[name]].sort();
+    if(s.length>1)fl.push({key:'option:'+name,label:name,type:'pills',values:s});
+  });
+
+  /* Skip metafields that duplicate variant options or are redundant on collection pages.
+     color-pattern = duplicates the "Color" option with unresolved GIDs
+     fin-profile = duplicates product type on fin collection pages (also unresolved GIDs) */
+  var SKIP_MF={'color-pattern':1};
+  var mm={};
+  avail.forEach(function(p){Object.keys(p.metafields).forEach(function(k){
+    if(SKIP_MF[k])return;
+    if(!mm[k])mm[k]=new Set();
+    var vs=Array.isArray(p.metafields[k].value)?p.metafields[k].value:[p.metafields[k].value];
+    vs.forEach(function(v){if(v&&typeof v==='string')mm[k].add(v)});
+  })});
+  Object.keys(mm).forEach(function(k){
+    var s=[...mm[k]].sort();if(s.length>1){
+      var lb=ML[k]||k.replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+      fl.push({key:'metafield:'+k,label:lb,type:'pills',values:s,isGid:s.some(function(v){return v.indexOf('gid://')===0})});
+    }
+  });
+
+  var pr=avail.map(function(p){return p.minPrice}).filter(function(p){return p>0});
+  if(pr.length>0)fl.push({key:'price',label:'Price',type:'range',min:Math.floor(Math.min.apply(null,pr)),max:Math.ceil(Math.max.apply(null,pr))});
+
+  return fl;
+}
+
+function renderFilters(fc){
+  var c=document.getElementById('pemFG');c.innerHTML='';
+  fc.forEach(function(f){
+    var g=document.createElement('div');g.className='pf__grp';
+    var lb=document.createElement('div');lb.className='pf__lbl';lb.textContent=f.label;
+    var opts=document.createElement('div');opts.className='pf__opts';
+    lb.addEventListener('click',function(){lb.classList.toggle('col');opts.classList.toggle('col')});
+    g.appendChild(lb);
+    if(f.type==='pills'){
+      f.values.forEach(function(v){
+        var p=document.createElement('div');p.className='pf__pill';
+        if(f.isGid&&v.indexOf('gid://')===0){p.textContent=GID_LABELS[v]||'#'+v.split('/').pop();p.title=v}
+        else{p.textContent=v}
+        p.dataset.fk=f.key;p.dataset.fv=v;
+        p.addEventListener('click',function(){toggle(f.key,v);p.classList.toggle('on')});
+        opts.appendChild(p);
+      });
+    }else if(f.type==='range'){
+      var rd=document.createElement('div');rd.className='pf__rng';
+      rd.innerHTML='<span>$</span><input type="number" id="pemPMin" placeholder="'+f.min+'" min="'+f.min+'" max="'+f.max+'"><span>—</span><span>$</span><input type="number" id="pemPMax" placeholder="'+f.max+'" min="'+f.min+'" max="'+f.max+'">';
+      opts.appendChild(rd);
+      var pt;
+      rd.querySelectorAll('input').forEach(function(inp){
+        inp.addEventListener('input',function(){
+          clearTimeout(pt);pt=setTimeout(function(){
+            PR.min=parseFloat(document.getElementById('pemPMin').value)||null;
+            PR.max=parseFloat(document.getElementById('pemPMax').value)||null;
+            render();
+          },300);
+        });
+      });
+    }
+    g.appendChild(opts);c.appendChild(g);
+  });
+}
+
+function toggle(k,v){
+  if(!AF[k])AF[k]=new Set();
+  if(AF[k].has(v)){AF[k].delete(v);if(AF[k].size===0)delete AF[k]}
+  else AF[k].add(v);
+  render();
+}
+
+function matches(p){
+  if(hideSoldOut&&!p.available)return false;
+  if(PR.min!==null&&p.minPrice<PR.min)return false;
+  if(PR.max!==null&&p.minPrice>PR.max)return false;
+  for(var key in AF){
+    var vals=AF[key];if(vals.size===0)continue;var ok=false;
+    if(key==='vendor')ok=vals.has(p.vendor);
+    else if(key==='productType')ok=vals.has(p.productType);
+    else if(key.startsWith('option:')){
+      var on=key.replace('option:','');
+      ok=p.variants.some(function(v){return vals.has(v.options[on])});
+    }
+    else if(key.startsWith('metafield:')){
+      var mk=key.replace('metafield:',''),mf=p.metafields[mk];
+      if(mf){var mv=Array.isArray(mf.value)?mf.value:[mf.value];ok=mv.some(function(v){return vals.has(v)})}
+    }
+    if(!ok)return false;
+  }
+  return true;
+}
+
+/* Sort — sold out always at end */
+function doSort(prods){
+  var s=prods.slice();
+  if(CS==='price-asc')s.sort(function(a,b){return a.minPrice-b.minPrice});
+  else if(CS==='price-desc')s.sort(function(a,b){return b.minPrice-a.minPrice});
+  else if(CS==='title-asc')s.sort(function(a,b){return a.title.localeCompare(b.title)});
+  else if(CS==='title-desc')s.sort(function(a,b){return b.title.localeCompare(a.title)});
+  s.sort(function(a,b){return(a.available===b.available)?0:(a.available?-1:1)});
+  return s;
+}
+
+function renderProds(prods){
+  var g=document.getElementById('pemG'),ct=document.getElementById('pemCnt');
+  if(prods.length===0){
+    g.innerHTML='<div class="pe" style="grid-column:1/-1"><div style="font-size:32px;margin-bottom:8px">∅</div>No products match your filters</div>';
+    ct.textContent='0 products';return;
+  }
+  ct.textContent=prods.length+' product'+(prods.length!==1?'s':'');
+  g.innerHTML=prods.map(function(p){
+    /* For non-exploded products, prefer first in-stock variant image over default */
+    var img=p.images[0];
+    if(!p._isExploded&&p.variants){
+      var avV=p.variants.find(function(v){return v.available&&v.image});
+      if(avV)img={url:avV.image.url,alt:avV.image.alt||p.title};
+    }
+    /* Responsive image: 200px mobile, 300px tablet, 400px desktop */
+    var iu=img?img.url+'&width=400':"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><rect fill='%23f0eeea' width='1' height='1'/></svg>";
+    var iuS=img?(img.url+'&width=200 200w, '+img.url+'&width=300 300w, '+img.url+'&width=400 400w'):'';
+    var bdg='';
+    if(!p.available)bdg='<div class="pk__bdg pk__bdg--so">Sold out</div>';
+    else if(p.onSale)bdg='<div class="pk__bdg pk__bdg--sl">Sale</div>';
+    var cmp=p.onSale?'<span class="pk__cmp">'+fmt(p.compareAt)+'</span>':'';
+    var vi='';
+    if(p._isExploded){
+      vi='<div class="pk__var" style="color:var(--f-txt);font-weight:500">'+p._colorLabel+'</div>';
+    }else if(p.options.length>0){
+      vi='<div class="pk__var">'+p.options.map(function(o){return o.values.length+' '+o.name.toLowerCase()+(o.values.length>1?'s':'')}).join(' · ')+'</div>';
+    }
+    return'<div class="pk'+(p.available?'':' so')+'"><a href="'+p.url+'" style="text-decoration:none;color:inherit">'+bdg+'<div class="pk__iw"><img class="pk__img" src="'+iu+'"'+(iuS?' srcset="'+iuS+'" sizes="(max-width:768px) 45vw, 220px"':'')+' alt="'+(img&&img.alt||p.title)+'" loading="lazy"></div><div class="pk__nfo"><div class="pk__vnd">'+p.vendor+'</div><div class="pk__ttl">'+p.title+'</div><div class="pk__prc">'+fmt(p.minPrice)+cmp+'</div>'+vi+'</div></a></div>';
+  }).join('');
+}
+
+function renderTags(){
+  var c=document.getElementById('pemAT'),cb=document.getElementById('pemCA'),tgs=[];
+  for(var key in AF){
+    AF[key].forEach(function(v){
+      var dk=key.replace('option:','').replace('metafield:','');
+      dk=ML[dk]||dk;
+      var dv=v.indexOf('gid://')===0?(GID_LABELS[v]||'#'+v.split('/').pop()):v;
+      tgs.push('<div class="ps__tag" data-k="'+key+'" data-v="'+v+'">'+dk+': '+dv+' <span>×</span></div>');
+    });
+  }
+  c.innerHTML=tgs.join('');
+  cb.classList.toggle('vis',tgs.length>0);
+  c.querySelectorAll('.ps__tag').forEach(function(tag){
+    tag.addEventListener('click',function(){
+      var k=tag.dataset.k,v=tag.dataset.v;
+      if(k&&v){toggle(k,v);var pill=document.querySelector('.pf__pill[data-fk="'+k+'"][data-fv="'+v+'"]');if(pill)pill.classList.remove('on')}
+    });
+  });
+}
+
+function render(){
+  /* If Color filter is active, use normal product cards (collapsed).
+     Otherwise use exploded per-color cards for visual browsing. */
+  var colorActive=AF['option:Color']&&AF['option:Color'].size>0;
+  var src=colorActive?AP:EP;
+  var filtered=src.filter(matches);
+  var sorted=doSort(filtered);
+  renderProds(sorted);
+  renderTags();
+}
+
+function fmt(a){return'$'+parseFloat(a).toFixed(2).replace(/\.00$/,'')}
+
+/* Resolve metaobject GIDs to display labels.
+   Fetches metaobject nodes by ID and returns GID→label map. */
+var GID_LABELS={};
+async function resolveGids(prods){
+  /* Collect all unique GIDs from metafields */
+  var gids=new Set();
+  prods.forEach(function(p){
+    Object.keys(p.metafields).forEach(function(k){
+      var mf=p.metafields[k];
+      if(mf.type==='list.metaobject_reference'){
+        var vs=Array.isArray(mf.value)?mf.value:[mf.value];
+        vs.forEach(function(v){if(v&&v.indexOf('gid://')===0)gids.add(v)});
+      }
+    });
+  });
+  if(gids.size===0)return;
+  /* Batch fetch metaobjects — Storefront API supports nodes() query */
+  var arr=[...gids];
+  /* Process in batches of 50 */
+  for(var i=0;i<arr.length;i+=50){
+    var batch=arr.slice(i,i+50);
+    var ids=batch.map(function(g){return'"'+g+'"'}).join(',');
+    var q='{nodes(ids:['+ids+']){... on Metaobject{id type displayName fields{key value}}}}';
+    try{
+      var r=await fetch(U,{method:'POST',headers:{'Content-Type':'application/json','X-Shopify-Storefront-Access-Token':T},body:JSON.stringify({query:q})});
+      var j=await r.json();
+      if(j.data&&j.data.nodes){
+        j.data.nodes.forEach(function(n){
+          if(n&&n.id){
+            /* Use displayName if available, otherwise look for 'label' field */
+            var lbl=n.displayName;
+            if(!lbl||(n.fields&&n.fields.length)){
+              var lf=n.fields&&n.fields.find(function(f){return f.key==='label'});
+              if(lf&&lf.value)lbl=lf.value;
+            }
+            if(lbl)GID_LABELS[n.id]=lbl;
+          }
+        });
+      }
+    }catch(e){console.error('GID resolve error:',e)}
+  }
+}
+
+/* Explode products into per-color cards for browsing.
+   Only explodes products with a Color option and 2+ in-stock color variants.
+   Each exploded card uses the variant's own image and price. */
+var EP=[];  /* exploded product cards */
+function buildExploded(prods){
+  EP=[];
+  prods.forEach(function(p){
+    /* Find the Color option */
+    var colorOpt=null;
+    p.options.forEach(function(o){if(o.name.toLowerCase()==='color')colorOpt=o});
+    
+    /* If no Color option or only 1 value, keep as single card */
+    if(!colorOpt||colorOpt.values.length<2){
+      EP.push(p);return;
+    }
+    
+    /* Group variants by color */
+    var byColor={};
+    p.variants.forEach(function(v){
+      var c=v.options['Color']||v.options['color'];
+      if(!c)return;
+      if(!byColor[c])byColor[c]={variants:[],image:null,available:false,minPrice:Infinity,compareAt:null};
+      byColor[c].variants.push(v);
+      if(v.available)byColor[c].available=true;
+      /* Store this color's variant image (prefer first one found) */
+      if(!byColor[c].image&&v.image)byColor[c].image={url:v.image.url,alt:v.image.alt||''};
+      if(v.price<byColor[c].minPrice)byColor[c].minPrice=v.price;
+      if(v.compareAt&&v.compareAt>v.price)byColor[c].compareAt=v.compareAt;
+    });
+    
+    /* Create a card per in-stock color (or all colors if showing sold out) */
+    var colors=Object.keys(byColor);
+    colors.forEach(function(color){
+      var cd=byColor[color];
+      /* Use the color-specific variant image, NOT the product default */
+      var colorImg=cd.image?{url:cd.image.url,alt:p.title+' - '+color}:
+                   (p.images.length>0?p.images[0]:null);
+      
+      EP.push({
+        id:p.id+'__color__'+color,
+        _parentId:p.id,
+        title:p.title,
+        _colorLabel:color,
+        handle:p.handle,
+        url:p.url,
+        vendor:p.vendor,
+        productType:p.productType,
+        tags:p.tags,
+        available:cd.available,
+        createdAt:p.createdAt,
+        minPrice:cd.minPrice===Infinity?p.minPrice:cd.minPrice,
+        maxPrice:p.maxPrice,
+        compareAt:cd.compareAt,
+        onSale:cd.compareAt&&cd.compareAt>cd.minPrice,
+        images:colorImg?[colorImg]:p.images,
+        variants:cd.variants,
+        options:p.options,
+        metafields:p.metafields,
+        _isExploded:true
+      });
+    });
+  });
+}
+
+async function init(){
+  try{
+    AP=await fetchAll();
+    /* Filter out FREE SHIPPING duplicate products (Shop channel only) */
+    AP=AP.filter(function(p){return p.title.indexOf('FREE SHIPPING')===-1&&p.title.indexOf('Free Shipping')===-1});
+    await resolveGids(AP);
+    buildExploded(AP);
+
+    /* SWAP: show JS grid (SSR already hidden via CSS for SEO only) */
+    document.getElementById('pemG').style.display='';
+    document.getElementById('pemL').remove();
+
+    /* Show filters and sort bar */
+    document.getElementById('pemF').classList.add('ready');
+    document.getElementById('pemSort').classList.add('ready');
+
+    var fc=buildFilters(AP);
+    renderFilters(fc);
+    hideSoldOut=true;
+    render();
+
+    document.getElementById('pemSS').addEventListener('change',function(e){CS=e.target.value;render()});
+
+    /* Show/hide sold out toggle */
+    document.getElementById('pemSO').addEventListener('change',function(e){
+      hideSoldOut=!e.target.checked;
+      buildExploded(AP);
+      var fc=buildFilters(AP);
+      renderFilters(fc);
+      for(var key in AF){
+        AF[key].forEach(function(v){
+          var pill=document.querySelector('.pf__pill[data-fk="'+key+'"][data-fv="'+v+'"]');
+          if(pill)pill.classList.add('on');
+        });
+      }
+      render();
+    });
+
+    document.getElementById('pemCA').addEventListener('click',function(){
+      AF={};PR={min:null,max:null};hideSoldOut=true;
+      var soBox=document.getElementById('pemSO');if(soBox)soBox.checked=false;
+      document.querySelectorAll('.pf__pill.on').forEach(function(p){p.classList.remove('on')});
+      var mi=document.getElementById('pemPMin'),ma=document.getElementById('pemPMax');
+      if(mi)mi.value='';if(ma)ma.value='';
+      buildExploded(AP);var fc=buildFilters(AP);renderFilters(fc);render();
+    });
+
+    document.getElementById('pemMT').addEventListener('click',function(){
+      var f=document.getElementById('pemF'),b=document.getElementById('pemMT');
+      f.classList.toggle('mc');b.textContent=f.classList.contains('mc')?'Show Filters':'Hide Filters';
+    });
+
+  }catch(err){
+    console.error('Failed:',err);
+    /* On failure, SSR grid stays visible — user still sees products */
+  }
+}
+
+/* Defer API fetch until after initial paint for faster mobile load */
+function startInit(){
+  if('requestIdleCallback' in window){requestIdleCallback(init)}
+  else{setTimeout(init,100)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startInit);
+else startInit();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Filterable Collection",
+  "tag": "section",
+  "class": "pem-filterable-collection",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Pemulis Filterable Collection"
+    },
+    {
+      "type": "paragraph",
+      "content": "Hybrid: server-rendered HTML for SEO + Storefront API for filtering UX."
+    }
+  ],
+  "templates": ["collection"]
+}
+{% endschema %}

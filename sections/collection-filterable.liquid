@@ -416,7 +416,7 @@ function buildFilters(prods){
   /* Skip metafields that duplicate variant options or are redundant on collection pages.
      color-pattern = duplicates the "Color" option with unresolved GIDs
      fin-profile = duplicates product type on fin collection pages (also unresolved GIDs) */
-  var SKIP_MF={'color-pattern':1,'accessory-size':1};
+  var SKIP_MF={'color-pattern':1,'accessory-size':1,'size':1,'fin-profile':1};
   var mm={};
   avail.forEach(function(p){Object.keys(p.metafields).forEach(function(k){
     if(SKIP_MF[k])return;

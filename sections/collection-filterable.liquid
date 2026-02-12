@@ -349,7 +349,7 @@ function renderFilters(fc){
         if(f.isGid&&v.indexOf('gid://')===0){p.textContent=GID_LABELS[v]||'#'+v.split('/').pop();p.title=v}
         else{p.textContent=v}
         p.dataset.fk=f.key;p.dataset.fv=v;
-        p.addEventListener('click',function(){toggle(f.key,v);p._ui=true;classList.toggle('on')});
+        p.addEventListener('click',function(){_ui=true;toggle(f.key,v);p.classList.toggle('on')});
         opts.appendChild(p);
       });
     }else if(f.type==='range'){
@@ -454,7 +454,7 @@ function renderTags(){
   c.innerHTML=tgs.join('');
   cb.classList.toggle('vis',tgs.length>0);
   c.querySelectorAll('.ps__tag').forEach(function(tag){
-    tag.addEventListener('click',function(){
+    tag.addEventListener('click',function(){_ui=true;
       var k=tag.dataset.k,v=tag.dataset.v;
       if(k&&v){toggle(k,v);var pill=document.querySelector('.pf__pill[data-fk="'+k+'"][data-fv="'+v+'"]');if(pill)pill.classList.remove('on')}
     });

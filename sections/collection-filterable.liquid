@@ -393,7 +393,8 @@ function buildFilters(prods){
   Object.keys(om).forEach(function(name){
     var s=[...om[name]].sort();
     if(s.length>1){
-      if(H==='single-fins'&&name==='Size'){
+      if(H==='single-fins'&&name==='Color'){}
+      else if(H==='single-fins'&&name==='Size'){
         var ranges={};
         s.forEach(function(v){
           var n=parseFloat(v);if(isNaN(n))return;

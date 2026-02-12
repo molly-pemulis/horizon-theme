@@ -147,7 +147,8 @@
 
             {%- comment -%} COLOR EXPLOSION: Group variants by Color option, render one card per color {%- endcomment -%}
             {%- assign skip_explosion = false -%}
-            {%- if collection.handle == 'single-fins' -%}{%- assign skip_explosion = true -%}{%- endif -%}
+            {%- assign fin_handles = 'single-fins,thruster,twin-fins,twinzer-fins,quad-fins,side-bites,trailer-fins,fins,gato-heroi-fins,wild-things-fins,drd4-fins,true-ames' -%}
+            {%- if fin_handles contains collection.handle -%}{%- assign skip_explosion = true -%}{%- endif -%}
             {%- assign has_color = false -%}
             {%- assign seen_colors = '' -%}
             {%- for option in product.options -%}
@@ -388,6 +389,8 @@ function buildFilters(prods){
 
   var om={};
   avail.forEach(function(p){p.options.forEach(function(o){
+    /* Skip Title option — it's the default Shopify option, not a real filter */
+    if(o.name==='Title')return;
     if(!om[o.name])om[o.name]=new Set();o.values.forEach(function(v){om[o.name].add(v)});
   })});
   Object.keys(om).forEach(function(name){
@@ -406,6 +409,21 @@ function buildFilters(prods){
         if(rKeys.length>1){
           window.__sizeRanges=ranges;
           fl.push({key:'option:Size',label:'Size',type:'pills',values:rKeys,isRange:true});
+        }
+      } else if(H==='crap-eyewear'&&name==='Color'){
+        /* Group Crap Eyewear colors by base color */
+        var baseColors={};
+        s.forEach(function(v){
+          var base=v.split(/[\/\s]/)[0].trim();
+          /* Capitalize first letter */
+          base=base.charAt(0).toUpperCase()+base.slice(1);
+          if(!baseColors[base])baseColors[base]=[];
+          baseColors[base].push(v);
+        });
+        var bKeys=Object.keys(baseColors).sort();
+        if(bKeys.length>1){
+          window.__crapColorMap=baseColors;
+          fl.push({key:'option:Color',label:'Color',type:'pills',values:bKeys,isCrapGroup:true});
         }
       } else {
         fl.push({key:'option:'+name,label:name,type:'pills',values:s});
@@ -492,7 +510,15 @@ function matches(p){
     else if(key==='productType')ok=vals.has(p.productType);
     else if(key.startsWith('option:')){
       var on=key.replace('option:','');
-      if(H==='single-fins'&&on==='Size'&&window.__sizeRanges){
+      if(H==='crap-eyewear'&&on==='Color'&&window.__crapColorMap){
+        ok=p.variants.some(function(v){
+          var cv=v.options[on];if(!cv)return false;
+          var hit=false;vals.forEach(function(base){
+            var group=window.__crapColorMap[base];
+            if(group&&group.indexOf(cv)!==-1)hit=true;
+          });return hit;
+        });
+      } else if(H==='single-fins'&&on==='Size'&&window.__sizeRanges){
         ok=p.variants.some(function(v){
           var sv=parseFloat(v.options[on]);if(isNaN(sv))return false;
           var hit=false;vals.forEach(function(rk){
@@ -648,7 +674,7 @@ var EP=[];  /* exploded product cards */
 function buildExploded(prods){
   EP=[];
   /* Skip color explosion for single fins — one card per product */
-  var skipExplosion=(H==='single-fins');
+  var skipExplosion=(H==='single-fins'||H==='thruster'||H==='twin-fins'||H==='twinzer-fins'||H==='quad-fins'||H==='side-bites'||H==='trailer-fins'||H==='fins'||H==='gato-heroi-fins'||H==='wild-things-fins'||H==='drd4-fins'||H==='true-ames');
   prods.forEach(function(p){
     if(skipExplosion){EP.push(p);return}
     /* Find the Color option */

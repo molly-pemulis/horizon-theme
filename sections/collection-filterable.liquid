@@ -113,22 +113,6 @@
         JS hides this and replaces with the dynamic filtered grid.
         ================================================================
       {%- endcomment -%}
-      {%- comment -%} LCP: First product image visible for fast paint {%- endcomment -%}
-      {%- assign lcp_product = collection.products[0] -%}
-      {%- if lcp_product.featured_image -%}
-        {%- liquid
-          assign lcp_img = lcp_product.featured_image
-          for v in lcp_product.variants
-            if v.available and v.featured_image
-              assign lcp_img = v.featured_image
-              break
-            endif
-          endfor
-        -%}
-        <link rel="preload" as="image" href="{{ lcp_img | image_url: width: 400 }}"
-          imagesrcset="{{ lcp_img | image_url: width: 200 }} 200w, {{ lcp_img | image_url: width: 300 }} 300w, {{ lcp_img | image_url: width: 400 }} 400w"
-          imagesizes="(max-width: 768px) 45vw, 220px" fetchpriority="high">
-      {%- endif -%}
 
       <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
         {%- paginate collection.products by 250 -%}
@@ -153,12 +137,9 @@
                   -%}
                   {%- if card_image -%}
                     <img class="pk__img"
-                      src="{{ card_image | image_url: width: 400 }}"
-                      srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
-                      sizes="(max-width: 768px) 45vw, 220px"
+                      data-src="{{ card_image | image_url: width: 400 }}"
+                      data-srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
                       alt="{{ card_image.alt | escape }}"
-                      loading="{% if forloop.index <= 2 %}eager{% else %}lazy{% endif %}"
-                      fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                       width="{{ card_image.width }}" height="{{ card_image.height }}">
                   {%- else -%}
                     <div class="pk__img" style="width:100%;height:100%;background:#f0eeea"></div>

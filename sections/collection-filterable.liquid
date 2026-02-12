@@ -646,10 +646,8 @@ async function init(){
 }
 
 /* Defer API fetch until after initial paint for faster mobile load */
-function startInit(){
-  if('requestIdleCallback' in window){requestIdleCallback(init)}
-  else{setTimeout(init,100)}
-}
+/* Start API fetch immediately — data ready before user interacts with filters */
+function startInit(){init()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startInit);
 else startInit();
 })();

@@ -260,6 +260,9 @@ async function fetchAll(){
   }
   return edges.map(function(e){return norm(e.node)});
 }
+/* PREFETCH: fire API request immediately, await in init() */
+var _pf=fetchAll();
+
 
 function norm(n){
   var imgs=(n.images&&n.images.edges||[]).map(function(e){return{url:e.node.url,alt:e.node.altText||n.title}});
@@ -588,7 +591,7 @@ function buildExploded(prods){
 
 async function init(){
   try{
-    AP=await fetchAll();
+    AP=await _pf;
     /* Filter out FREE SHIPPING duplicate products (Shop channel only) */
     AP=AP.filter(function(p){return p.title.indexOf('FREE SHIPPING')===-1&&p.title.indexOf('Free Shipping')===-1});
     await resolveGids(AP);
@@ -647,7 +650,7 @@ async function init(){
 
 /* Defer API fetch until after initial paint for faster mobile load */
 /* Start API fetch shortly after paint — early enough to preload, late enough to not block LCP */
-function startInit(){setTimeout(init,200)}
+function startInit(){setTimeout(init,50)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startInit);
 else startInit();
 })();

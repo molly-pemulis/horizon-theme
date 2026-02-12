@@ -142,7 +142,6 @@
                 <div class="pk__bdg pk__bdg--sl">Sale</div>
               {%- endif -%}
               <div class="pk__iw">
-                {%- if forloop.index <= 4 -%}
                   {%- liquid
                     assign card_image = product.featured_image
                     for variant in product.variants
@@ -164,9 +163,6 @@
                   {%- else -%}
                     <div class="pk__img" style="width:100%;height:100%;background:#f0eeea"></div>
                   {%- endif -%}
-                {%- else -%}
-                  <div class="pk__img" style="width:100%;height:100%;background:#f0eeea"></div>
-                {%- endif -%}
               </div>
               {%- if product.featured_image -%}
                 <link itemprop="image" href="{{ product.featured_image | image_url: width: 400 }}">

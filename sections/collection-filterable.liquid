@@ -141,7 +141,64 @@
       {%- endif -%}
 <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
         {%- paginate collection.products by 250 -%}
+          {%- comment -%} PASS 1: In-stock products first {%- endcomment -%}
           {%- for product in collection.products -%}
+            {%- unless product.available -%}{%- continue -%}{%- endunless -%}
+            <div class="pk{% unless product.available %} so{% endunless %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+              <meta itemprop="position" content="{{ forloop.index }}">
+              {%- unless product.available -%}
+                <div class="pk__bdg pk__bdg--so">Sold out</div>
+              {%- endunless -%}
+              {%- if product.compare_at_price > product.price -%}
+                <div class="pk__bdg pk__bdg--sl">Sale</div>
+              {%- endif -%}
+              <div class="pk__iw">
+                  {%- liquid
+                    assign card_image = product.featured_image
+                    for variant in product.variants
+                      if variant.available and variant.featured_image
+                        assign card_image = variant.featured_image
+                        break
+                      endif
+                    endfor
+                  -%}
+                  {%- if card_image -%}
+                    <img class="pk__img"
+                      src="{{ card_image | image_url: width: 400 }}"
+                      srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
+                      sizes="(max-width: 768px) 45vw, 220px"
+                      alt="{{ card_image.alt | escape }}"
+                      loading="{% if forloop.index <= 2 %}eager{% else %}lazy{% endif %}"
+                      fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+                      width="{{ card_image.width }}" height="{{ card_image.height }}">
+                  {%- else -%}
+                    <div class="pk__img" style="width:100%;height:100%;background:#f0f0f0"></div>
+                  {%- endif -%}
+              </div>
+              {%- if product.featured_image -%}
+                <link itemprop="image" href="{{ product.featured_image | image_url: width: 400 }}">
+              {%- endif -%}
+              <div class="pk__nfo">
+                <div class="pk__vnd" itemprop="brand" itemscope itemtype="https://schema.org/Brand"><span itemprop="name">{{ product.vendor }}</span></div>
+                <div class="pk__ttl"><a href="{{ product.url }}" itemprop="url"><span itemprop="name">{{ product.title }}</span></a></div>
+                <div class="pk__prc" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                  <meta itemprop="priceCurrency" content="{{ shop.currency }}">
+                  <meta itemprop="price" content="{{ product.price | money_without_currency | remove: ',' }}">
+                  <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+                  {{ product.price | money }}
+                  {%- if product.compare_at_price > product.price -%}
+                    <span class="pk__cmp">{{ product.compare_at_price | money }}</span>
+                  {%- endif -%}
+                </div>
+                {%- if product.variants.size > 1 -%}
+                  <div class="pk__var">{{ product.variants.size }} variants</div>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endfor -%}
+          {%- comment -%} PASS 2: Sold-out products at bottom {%- endcomment -%}
+          {%- for product in collection.products -%}
+            {%- if product.available -%}{%- continue -%}{%- endif -%}
             <div class="pk{% unless product.available %} so{% endunless %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
               <meta itemprop="position" content="{{ forloop.index }}">
               {%- unless product.available -%}

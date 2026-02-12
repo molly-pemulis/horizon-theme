@@ -349,7 +349,7 @@ function renderFilters(fc){
         if(f.isGid&&v.indexOf('gid://')===0){p.textContent=GID_LABELS[v]||'#'+v.split('/').pop();p.title=v}
         else{p.textContent=v}
         p.dataset.fk=f.key;p.dataset.fv=v;
-        p.addEventListener('click',function(){toggle(f.key,v);p.classList.toggle('on')});
+        p.addEventListener('click',function(){toggle(f.key,v);p._ui=true;classList.toggle('on')});
         opts.appendChild(p);
       });
     }else if(f.type==='range'){
@@ -461,13 +461,16 @@ function renderTags(){
   });
 }
 
+var _ui=false; /* true after user clicks filter/sort/toggle */
 function render(){
-  /* On first render (filter interaction), swap from SSR to JS grid */
-  var ssrEl=document.getElementById('pemSSR');
-  var jsEl=document.getElementById('pemG');
-  if(ssrEl&&ssrEl.style.display!=='none'){
-    ssrEl.style.display='none';
-    jsEl.style.display='';
+  /* Only swap from SSR to JS grid when user has interacted */
+  if(_ui){
+    var ssrEl=document.getElementById('pemSSR');
+    var jsEl=document.getElementById('pemG');
+    if(ssrEl&&ssrEl.style.display!=='none'){
+      ssrEl.style.display='none';
+      jsEl.style.display='';
+    }
   }
 
   /* If Color filter is active, use normal product cards (collapsed).
@@ -611,10 +614,10 @@ async function init(){
     hideSoldOut=true;
     render();
 
-    document.getElementById('pemSS').addEventListener('change',function(e){CS=e.target.value;render()});
+    document.getElementById('pemSS').addEventListener('change',function(e){_ui=true;CS=e.target.value;render()});
 
     /* Show/hide sold out toggle */
-    document.getElementById('pemSO').addEventListener('change',function(e){
+    document.getElementById('pemSO').addEventListener('change',function(e){_ui=true;
       hideSoldOut=!e.target.checked;
       buildExploded(AP);
       var fc=buildFilters(AP);
@@ -628,7 +631,7 @@ async function init(){
       render();
     });
 
-    document.getElementById('pemCA').addEventListener('click',function(){
+    document.getElementById('pemCA').addEventListener('click',function(){_ui=true;
       AF={};PR={min:null,max:null};hideSoldOut=true;
       var soBox=document.getElementById('pemSO');if(soBox)soBox.checked=false;
       document.querySelectorAll('.pf__pill.on').forEach(function(p){p.classList.remove('on')});

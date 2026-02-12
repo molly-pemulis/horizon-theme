@@ -32,7 +32,7 @@
 .ps__af{display:flex;flex-wrap:wrap;gap:6px;flex:1}
 .ps__tag{font-size:11px;padding:3px 8px;background:var(--f-act);color:var(--f-act-t);border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer}
 .ps__tag span{font-size:13px;line-height:1}
-.ps select{font-size:12px;padding:6px 28px 6px 10px;border:1px solid var(--f-bdr);border-radius:4px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%238a8680'/%3E%3C/svg%3E") no-repeat right 10px center;appearance:none;cursor:pointer;font-family:var(--fb)}
+.ps select{font-size:12px;padding:6px 28px 6px 10px;border:1px solid var(--f-bdr);border-radius:4px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%23666666'/%3E%3C/svg%3E") no-repeat right 10px center;appearance:none;cursor:pointer;font-family:var(--fb)}
 .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)}
 .pk{background:var(--c-bg);border:1px solid var(--c-bdr);border-radius:6px;overflow:hidden;transition:box-shadow .2s,transform .2s;position:relative}
 .pk:hover{box-shadow:var(--c-shad);transform:translateY(-2px)}.pk.so{opacity:.5}
@@ -422,7 +422,7 @@ function renderProds(prods){
       if(avV)img={url:avV.image.url,alt:avV.image.alt||p.title};
     }
     /* Responsive image: 200px mobile, 300px tablet, 400px desktop */
-    var iu=img?img.url+'&width=400':"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><rect fill='%23f0eeea' width='1' height='1'/></svg>";
+    var iu=img?img.url+'&width=400':"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'><rect fill='%23f0f0f0' width='1' height='1'/></svg>";
     var iuS=img?(img.url+'&width=200 200w, '+img.url+'&width=300 300w, '+img.url+'&width=400 400w'):'';
     var bdg='';
     if(!p.available)bdg='<div class="pk__bdg pk__bdg--so">Sold out</div>';

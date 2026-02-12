@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Were You Aware?</title>
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#060612; display:flex; min-height:100vh; overflow:hidden; font-family:-apple-system,sans-serif; }
+
+.scene-wrap { flex:1; display:flex; align-items:center; justify-content:center; margin-right:290px; overflow:hidden; }
+.scene-scaler { transform-origin:center center; }
+.scene {
+  position:relative; width:1000px; height:560px; overflow:hidden;
+  background:
+    radial-gradient(1px 1px at 100px 80px,rgba(255,255,255,.5),transparent),
+    radial-gradient(1px 1px at 250px 420px,rgba(255,255,255,.3),transparent),
+    radial-gradient(1px 1px at 400px 50px,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 600px 380px,rgba(255,255,255,.3),transparent),
+    radial-gradient(1px 1px at 750px 120px,rgba(255,255,255,.5),transparent),
+    radial-gradient(1px 1px at 850px 450px,rgba(255,255,255,.3),transparent),
+    radial-gradient(1px 1px at 50px 300px,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 920px 250px,rgba(255,255,255,.3),transparent),
+    radial-gradient(1px 1px at 500px 500px,rgba(255,255,255,.35),transparent),
+    radial-gradient(1px 1px at 180px 180px,rgba(255,255,255,.25),transparent),
+    radial-gradient(ellipse at 85% 30%,rgba(20,20,60,.8),transparent 50%),
+    #080818;
+}
+
+/* Rainbow rendered as a static image on canvas — no animation loop */
+.rainbow-canvas { position:absolute; width:100%; height:100%; top:0; left:0; z-index:1; pointer-events:none; }
+
+/* 3D TEXT */
+.text-group { position:absolute; z-index:5; cursor:grab; user-select:none; }
+.text-group:active { cursor:grabbing; }
+.text-layer { position:absolute; left:0; top:0; font-weight:400; line-height:1; white-space:nowrap; }
+.text-depth {
+  color:#1a1a44;
+  text-shadow:1px 1px 0 #1a1a44,2px 2px 0 #181840,3px 3px 0 #16163c,4px 4px 0 #141438,5px 5px 0 #121234,6px 6px 0 #101030,7px 7px 0 #0e0e2c,8px 8px 0 #0c0c28,9px 9px 0 #0a0a24,10px 10px 0 #080820,11px 11px 2px rgba(0,0,0,.6),13px 13px 8px rgba(0,0,0,.4);
+}
+.text-face {
+  background:linear-gradient(180deg,#6633cc 0%,#4444bb 30%,#3355aa 50%,#2266cc 70%,#3344aa 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.text-shine {
+  background:linear-gradient(160deg,rgba(180,160,255,.6) 0%,rgba(100,100,200,.3) 25%,transparent 50%,rgba(80,80,180,.2) 75%,rgba(150,140,255,.4) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; mix-blend-mode:screen;
+}
+
+/* STAR */
+.star-group { position:absolute; z-index:10; cursor:grab; user-select:none; }
+.star-group:active { cursor:grabbing; }
+
+/* SPARKLES - CSS only, no canvas */
+.sparkle { position:absolute; width:3px; height:3px; background:#fff; border-radius:50%; opacity:0;
+  box-shadow:0 0 6px 2px rgba(255,255,255,.7),0 0 14px 4px rgba(255,200,50,.25); }
+.sp1{left:200px;top:370px;animation:pop .6s ease-out .6s forwards}
+.sp2{left:350px;top:310px;animation:pop .6s ease-out .9s forwards}
+.sp3{left:500px;top:250px;animation:pop .6s ease-out 1.2s forwards}
+.sp4{left:650px;top:190px;animation:pop .6s ease-out 1.5s forwards}
+.sp5{left:780px;top:140px;animation:pop .6s ease-out 1.8s forwards}
+.sp6{left:280px;top:340px;animation:pop .6s ease-out .75s forwards}
+.sp7{left:430px;top:280px;animation:pop .6s ease-out 1.05s forwards}
+.sp8{left:580px;top:215px;animation:pop .6s ease-out 1.35s forwards}
+@keyframes pop { 0%{opacity:0;transform:scale(0)} 50%{opacity:1;transform:scale(2)} 100%{opacity:0;transform:scale(0)} }
+
+/* CONTROLS */
+.controls {
+  position:fixed; right:0; top:0; width:290px; height:100vh;
+  background:rgba(10,10,25,.96); border-left:1px solid rgba(255,255,255,.1);
+  padding:14px 12px; overflow-y:auto; z-index:100; color:#ccc; font-size:12px;
+}
+.controls h3 { color:#fff; font-size:11px; margin:12px 0 6px; padding-bottom:3px; border-bottom:1px solid rgba(255,255,255,.1); letter-spacing:1px; text-transform:uppercase; }
+.controls h3:first-child { margin-top:0; }
+.ctrl-row { display:flex; align-items:center; gap:6px; margin:4px 0; }
+.ctrl-row label { width:72px; flex-shrink:0; color:#999; font-size:11px; }
+.ctrl-row input[type="range"] { flex:1; accent-color:#6633cc; height:3px; }
+.ctrl-row .val { width:38px; text-align:right; color:#7788cc; font-family:monospace; font-size:10px; }
+.ctrl-row select { flex:1; background:rgba(30,30,60,.8); color:#bba8ee; border:1px solid rgba(102,51,204,.4); border-radius:3px; padding:3px 4px; font-size:11px; outline:none; cursor:pointer; }
+.ctrl-row select option { background:#1a1a3a; }
+.btn-row { display:flex; gap:5px; margin:8px 0; }
+.btn-row button { flex:1; padding:5px 6px; background:rgba(102,51,204,.3); border:1px solid rgba(102,51,204,.5); color:#bba8ee; border-radius:4px; cursor:pointer; font-size:10px; transition:all .2s; }
+.btn-row button:hover { background:rgba(102,51,204,.5); color:#fff; }
+.export-box { margin-top:8px; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.1); border-radius:4px; padding:8px; font-family:monospace; font-size:10px; color:#7788cc; word-break:break-all; max-height:140px; overflow-y:auto; display:none; white-space:pre-wrap; }
+.zoom-label { position:fixed; bottom:12px; left:12px; color:rgba(255,255,255,.25); font-size:11px; font-family:monospace; z-index:50; }
+
+/* Tab switcher */
+.tab-bar { display:flex; gap:0; margin-bottom:10px; }
+.tab-bar button { flex:1; padding:6px 4px; font-size:11px; border:1px solid rgba(102,51,204,.3); background:rgba(20,20,40,.6); color:#888; cursor:pointer; transition:all .2s; }
+.tab-bar button:first-child { border-radius:4px 0 0 4px; }
+.tab-bar button:last-child { border-radius:0 4px 4px 0; }
+.tab-bar button.active { background:rgba(102,51,204,.4); color:#ddd; border-color:rgba(102,51,204,.6); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="scene-wrap" id="sceneWrap">
+  <div class="scene-scaler" id="sceneScaler">
+    <div class="scene" id="scene">
+      <canvas class="rainbow-canvas" id="rainbowCanvas" width="1000" height="560"></canvas>
+
+      <div class="text-group" id="textGroup">
+        <div class="text-layer text-depth" id="tDepth">Were You Aware?</div>
+        <div class="text-layer text-face" id="tFace">Were You Aware?</div>
+        <div class="text-layer text-shine" id="tShine">Were You Aware?</div>
+      </div>
+
+      <div class="star-group" id="starGroup">
+        <svg id="starSvg" viewBox="0 0 120 120" style="width:110px;height:110px;">
+          <defs>
+            <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fff9a8"/>
+              <stop offset="40%" stop-color="#ffdd33"/>
+              <stop offset="100%" stop-color="#ddaa00"/>
+            </linearGradient>
+            <filter id="starShadow">
+              <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/>
+            </filter>
+          </defs>
+          <g filter="url(#starShadow)">
+            <polygon points="60,5 72,42 112,42 80,65 90,102 60,80 30,102 40,65 8,42 48,42" fill="url(#starGrad)" stroke="#cc8800" stroke-width="1.5"/>
+            <polygon points="60,18 68,44 98,44 74,60 82,88 60,72 38,88 46,60 22,44 52,44" fill="rgba(255,255,240,0.45)" stroke="none"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="sparkle sp1"></div><div class="sparkle sp2"></div>
+      <div class="sparkle sp3"></div><div class="sparkle sp4"></div>
+      <div class="sparkle sp5"></div><div class="sparkle sp6"></div>
+      <div class="sparkle sp7"></div><div class="sparkle sp8"></div>
+    </div>
+  </div>
+</div>
+
+<div class="zoom-label" id="zoomLabel">100%</div>
+
+<div class="controls">
+  <div class="tab-bar">
+    <button class="active" onclick="switchTab('text')">Text</button>
+    <button onclick="switchTab('star')">Star</button>
+    <button onclick="switchTab('scene')">Scene</button>
+  </div>
+
+  <!-- TEXT TAB -->
+  <div class="tab-panel active" id="tab-text">
+    <h3>Font</h3>
+    <div class="ctrl-row"><label>Family</label>
+      <select id="fontFamily">
+        <option value="'GFS Didot', serif" selected>GFS Didot</option>
+        <option value="'Bodoni Moda', serif">Bodoni Moda</option>
+        <option value="'Playfair Display', serif">Playfair Display</option>
+        <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+        <option value="'EB Garamond', serif">EB Garamond</option>
+        <option value="'Libre Baskerville', serif">Libre Baskerville</option>
+        <option value="'DM Serif Display', serif">DM Serif Display</option>
+        <option value="'Cinzel', serif">Cinzel</option>
+        <option value="'Georgia', serif">Georgia</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+      </select>
+    </div>
+    <div class="ctrl-row"><label>Weight</label>
+      <select id="fontWeight">
+        <option value="400" selected>Regular</option>
+        <option value="700">Bold</option>
+      </select>
+    </div>
+    <div class="ctrl-row"><label>Italic</label><input type="range" id="italic" min="0" max="1" value="1" step="1"><span class="val" id="italic_v">on</span></div>
+
+    <h3>Size & Spacing</h3>
+    <div class="ctrl-row"><label>Font Size</label><input type="range" id="fontSize" min="20" max="200" value="88"><span class="val" id="fontSize_v">88</span></div>
+    <div class="ctrl-row"><label>Tracking</label><input type="range" id="tracking" min="-20" max="40" value="0" step="0.5"><span class="val" id="tracking_v">0px</span></div>
+    <div class="ctrl-row"><label>Word Space</label><input type="range" id="wordSpace" min="-10" max="40" value="0" step="0.5"><span class="val" id="wordSpace_v">0px</span></div>
+
+    <h3>Position</h3>
+    <div class="ctrl-row"><label>X</label><input type="range" id="posX" min="-400" max="800" value="60"><span class="val" id="posX_v">60</span></div>
+    <div class="ctrl-row"><label>Y</label><input type="range" id="posY" min="-200" max="600" value="120"><span class="val" id="posY_v">120</span></div>
+
+    <h3>3D Rotation</h3>
+    <div class="ctrl-row"><label>Rotate Y</label><input type="range" id="rotY" min="-60" max="60" value="-28"><span class="val" id="rotY_v">-28</span></div>
+    <div class="ctrl-row"><label>Rotate X</label><input type="range" id="rotX" min="-40" max="40" value="8"><span class="val" id="rotX_v">8</span></div>
+    <div class="ctrl-row"><label>Rotate Z</label><input type="range" id="rotZ" min="-45" max="45" value="-12"><span class="val" id="rotZ_v">-12</span></div>
+    <div class="ctrl-row"><label>Skew Y</label><input type="range" id="skewY" min="-20" max="20" value="2"><span class="val" id="skewY_v">2</span></div>
+    <div class="ctrl-row"><label>Perspective</label><input type="range" id="persp" min="100" max="2000" value="500"><span class="val" id="persp_v">500</span></div>
+
+    <h3>Extrusion</h3>
+    <div class="ctrl-row"><label>Depth</label><input type="range" id="extrude" min="0" max="25" value="10"><span class="val" id="extrude_v">10</span></div>
+  </div>
+
+  <!-- STAR TAB -->
+  <div class="tab-panel" id="tab-star">
+    <h3>Position</h3>
+    <div class="ctrl-row"><label>X</label><input type="range" id="starX" min="-200" max="1000" value="850"><span class="val" id="starX_v">850</span></div>
+    <div class="ctrl-row"><label>Y</label><input type="range" id="starY" min="-200" max="600" value="75"><span class="val" id="starY_v">75</span></div>
+
+    <h3>Size</h3>
+    <div class="ctrl-row"><label>Scale</label><input type="range" id="starScale" min="30" max="300" value="110"><span class="val" id="starScale_v">110</span></div>
+
+    <h3>Rotation</h3>
+    <div class="ctrl-row"><label>Rotate</label><input type="range" id="starRot" min="-180" max="180" value="0"><span class="val" id="starRot_v">0</span></div>
+
+    <h3>3D</h3>
+    <div class="ctrl-row"><label>Rotate Y</label><input type="range" id="starRotY" min="-60" max="60" value="0"><span class="val" id="starRotY_v">0</span></div>
+    <div class="ctrl-row"><label>Rotate X</label><input type="range" id="starRotX" min="-60" max="60" value="0"><span class="val" id="starRotX_v">0</span></div>
+    <div class="ctrl-row"><label>Perspective</label><input type="range" id="starPersp" min="100" max="2000" value="800"><span class="val" id="starPersp_v">800</span></div>
+
+    <h3>Shadow / Glow</h3>
+    <div class="ctrl-row"><label>Drop Shadow</label><input type="range" id="starShadow" min="0" max="30" value="3"><span class="val" id="starShadow_v">3</span></div>
+    <div class="ctrl-row"><label>Glow</label><input type="range" id="starGlow" min="0" max="60" value="15"><span class="val" id="starGlow_v">15</span></div>
+  </div>
+
+  <!-- SCENE TAB -->
+  <div class="tab-panel" id="tab-scene">
+    <h3>Zoom</h3>
+    <div class="ctrl-row"><label>Scene Zoom</label><input type="range" id="zoom" min="30" max="200" value="100"><span class="val" id="zoom_v">100%</span></div>
+
+    <h3>Actions</h3>
+    <div class="btn-row">
+      <button onclick="replay()">Replay</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
+    <div class="btn-row">
+      <button onclick="exportCSS()">Export CSS</button>
+    </div>
+    <div class="export-box" id="exportBox"></div>
+  </div>
+</div>
+
+<script>
+// ====== ELEMENTS ======
+const group = document.getElementById('textGroup');
+const layers = document.querySelectorAll('.text-layer');
+const scaler = document.getElementById('sceneScaler');
+const zoomLabel = document.getElementById('zoomLabel');
+const starGroup = document.getElementById('starGroup');
+const starSvg = document.getElementById('starSvg');
+const starShadowFilter = document.querySelector('#starShadow feDropShadow');
+
+// ====== TAB SWITCHING ======
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector('.tab-bar button[onclick="switchTab(\'' + name + '\')"]').classList.add('active');
+}
+
+// ====== STATE ======
+let S = {
+  posX:60, posY:120, fontSize:88, tracking:0, wordSpace:0,
+  rotY:-28, rotX:8, rotZ:-12, skewY:2, persp:500,
+  italic:1, extrude:10, zoom:100,
+  fontFamily:"'GFS Didot', serif", fontWeight:'400',
+  starX:850, starY:75, starScale:110, starRot:0,
+  starRotY:0, starRotX:0, starPersp:800,
+  starShadow:3, starGlow:15
+};
+
+// ====== SLIDER BINDING ======
+const rangeIds = ['posX','posY','fontSize','tracking','wordSpace','rotY','rotX','rotZ','skewY','persp','italic','extrude','zoom',
+                  'starX','starY','starScale','starRot','starRotY','starRotX','starPersp','starShadow','starGlow'];
+rangeIds.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    S[id] = parseFloat(el.value);
+    updateLabel(id);
+    apply();
+  });
+});
+
+function updateLabel(id) {
+  const v = S[id];
+  let disp = v;
+  if (id === 'italic') disp = v ? 'on' : 'off';
+  else if (id === 'zoom') disp = v + '%';
+  else if (id === 'tracking' || id === 'wordSpace') disp = v + 'px';
+  const lbl = document.getElementById(id + '_v');
+  if (lbl) lbl.textContent = disp;
+}
+
+document.getElementById('fontFamily').addEventListener('change', e => { S.fontFamily = e.target.value; apply(); });
+document.getElementById('fontWeight').addEventListener('change', e => { S.fontWeight = e.target.value; apply(); });
+
+// ====== APPLY ======
+function apply() {
+  // TEXT
+  group.style.left = S.posX + 'px';
+  group.style.top = S.posY + 'px';
+  const tf = 'perspective(' + S.persp + 'px) rotateY(' + S.rotY + 'deg) rotateX(' + S.rotX + 'deg) rotateZ(' + S.rotZ + 'deg) skewY(' + S.skewY + 'deg)';
+  let shadows = [];
+  for (let i = 1; i <= S.extrude; i++) {
+    let c = Math.max(8, 26 - i*2), b = Math.max(32, 68 - i*3);
+    shadows.push(i + 'px ' + i + 'px 0 #' + c.toString(16).padStart(2,'0') + c.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0'));
+  }
+  if (S.extrude > 0) {
+    shadows.push((S.extrude+1) + 'px ' + (S.extrude+1) + 'px 2px rgba(0,0,0,.6)');
+    shadows.push((S.extrude+3) + 'px ' + (S.extrude+3) + 'px 8px rgba(0,0,0,.4)');
+  }
+  layers.forEach(l => {
+    l.style.fontFamily = S.fontFamily;
+    l.style.fontWeight = S.fontWeight;
+    l.style.fontSize = S.fontSize + 'px';
+    l.style.fontStyle = S.italic ? 'italic' : 'normal';
+    l.style.letterSpacing = S.tracking + 'px';
+    l.style.wordSpacing = S.wordSpace + 'px';
+    l.style.transform = tf;
+  });
+  document.getElementById('tDepth').style.textShadow = shadows.join(',');
+
+  // STAR
+  starGroup.style.left = S.starX + 'px';
+  starGroup.style.top = S.starY + 'px';
+  starSvg.style.width = S.starScale + 'px';
+  starSvg.style.height = S.starScale + 'px';
+  starGroup.style.transform = 'perspective(' + S.starPersp + 'px) rotateY(' + S.starRotY + 'deg) rotateX(' + S.starRotX + 'deg) rotate(' + S.starRot + 'deg)';
+  starSvg.style.filter = 'drop-shadow(0 0 ' + S.starGlow + 'px rgba(255,230,50,.9)) drop-shadow(0 0 ' + (S.starGlow*2.5) + 'px rgba(255,200,0,.5))';
+  starShadowFilter.setAttribute('dx', S.starShadow);
+  starShadowFilter.setAttribute('dy', S.starShadow);
+  starShadowFilter.setAttribute('stdDeviation', Math.max(1, S.starShadow * 0.7));
+
+  // ZOOM
+  scaler.style.transform = 'scale(' + (S.zoom / 100) + ')';
+  zoomLabel.textContent = S.zoom + '%';
+}
+
+// ====== DRAG (both text and star) ======
+let dragging = null, dx, dy, sx, sy;
+
+function startDrag(target, propX, propY, e) {
+  dragging = { target:target, propX:propX, propY:propY };
+  dx = e.clientX; dy = e.clientY; sx = S[propX]; sy = S[propY];
+  e.preventDefault();
+}
+
+group.addEventListener('mousedown', function(e) { startDrag(group, 'posX', 'posY', e); });
+starGroup.addEventListener('mousedown', function(e) { startDrag(starGroup, 'starX', 'starY', e); });
+
+window.addEventListener('mousemove', function(e) {
+  if (!dragging) return;
+  var z = S.zoom / 100;
+  S[dragging.propX] = Math.round(sx + (e.clientX - dx) / z);
+  S[dragging.propY] = Math.round(sy + (e.clientY - dy) / z);
+  var elX = document.getElementById(dragging.propX);
+  var elY = document.getElementById(dragging.propY);
+  if (elX) { elX.value = S[dragging.propX]; updateLabel(dragging.propX); }
+  if (elY) { elY.value = S[dragging.propY]; updateLabel(dragging.propY); }
+  apply();
+});
+window.addEventListener('mouseup', function() { dragging = null; });
+
+// Scroll zoom
+document.getElementById('sceneWrap').addEventListener('wheel', function(e) {
+  e.preventDefault();
+  S.zoom = Math.max(30, Math.min(200, S.zoom + (e.deltaY > 0 ? -5 : 5)));
+  document.getElementById('zoom').value = S.zoom;
+  document.getElementById('zoom_v').textContent = S.zoom + '%';
+  apply();
+}, { passive: false });
+
+// ====== REPLAY / RESET ======
+function replay() {
+  document.querySelectorAll('.sparkle').forEach(function(el) { el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; });
+  drawRainbow();
+}
+
+function resetAll() {
+  S = {
+    posX:60, posY:120, fontSize:88, tracking:0, wordSpace:0,
+    rotY:-28, rotX:8, rotZ:-12, skewY:2, persp:500,
+    italic:1, extrude:10, zoom:100,
+    fontFamily:"'GFS Didot', serif", fontWeight:'400',
+    starX:850, starY:75, starScale:110, starRot:0,
+    starRotY:0, starRotX:0, starPersp:800, starShadow:3, starGlow:15
+  };
+  rangeIds.forEach(function(id) { var el = document.getElementById(id); if(el) el.value = S[id]; updateLabel(id); });
+  document.getElementById('fontFamily').value = S.fontFamily;
+  document.getElementById('fontWeight').value = S.fontWeight;
+  apply();
+  drawRainbow();
+}
+
+function exportCSS() {
+  var box = document.getElementById('exportBox');
+  box.textContent = '.were-you-aware-text {\n' +
+    '  font-family: ' + S.fontFamily + ';\n' +
+    '  font-size: ' + S.fontSize + 'px;\n' +
+    '  font-weight: ' + S.fontWeight + ';\n' +
+    '  font-style: ' + (S.italic ? 'italic' : 'normal') + ';\n' +
+    '  letter-spacing: ' + S.tracking + 'px;\n' +
+    '  word-spacing: ' + S.wordSpace + 'px;\n' +
+    '  transform: perspective(' + S.persp + 'px) rotateY(' + S.rotY + 'deg) rotateX(' + S.rotX + 'deg) rotateZ(' + S.rotZ + 'deg) skewY(' + S.skewY + 'deg);\n' +
+    '  left: ' + S.posX + 'px; top: ' + S.posY + 'px;\n' +
+    '}\n' +
+    '.were-you-aware-star {\n' +
+    '  left: ' + S.starX + 'px; top: ' + S.starY + 'px;\n' +
+    '  width: ' + S.starScale + 'px; height: ' + S.starScale + 'px;\n' +
+    '  transform: perspective(' + S.starPersp + 'px) rotateY(' + S.starRotY + 'deg) rotateX(' + S.starRotX + 'deg) rotate(' + S.starRot + 'deg);\n' +
+    '}';
+  box.style.display = 'block';
+}
+
+apply();
+
+// ====== LIGHTWEIGHT SMOKY RAINBOW — STATIC RENDER (no animation loop) ======
+var canvas = document.getElementById('rainbowCanvas');
+var ctx = canvas.getContext('2d');
+
+// 7 classic rainbow colors
+var COLORS = [
+  [255,0,0], [255,127,0], [255,255,0], [0,200,0],
+  [0,100,255], [75,0,130], [148,0,211]
+];
+
+function trailPoint(t) {
+  var x = 20 + t * 885;
+  var y = 490 - t * 360 + Math.sin(t * Math.PI * 0.8) * 20;
+  return { x:x, y:y };
+}
+
+// Seeded random for consistent look
+var seed = 42;
+function sRand() {
+  seed = (seed * 16807 + 0) % 2147483647;
+  return (seed - 1) / 2147483646;
+}
+
+function drawRainbow() {
+  ctx.clearRect(0, 0, 1000, 560);
+  seed = 42; // reset seed for consistency
+
+  var STEPS = 300;
+  var bandWidth = 80;
+  var angle = Math.atan2(-360, 885);
+  var perpX = Math.sin(angle);
+  var perpY = -Math.cos(angle);
+
+  // Pre-generate all particles into a flat array
+  var pts = [];
+  for (var s = 0; s < STEPS; s++) {
+    var t = s / STEPS;
+    var pt = trailPoint(t);
+    for (var b = 0; b < COLORS.length; b++) {
+      var bandOffset = ((b / (COLORS.length - 1)) - 0.5) * bandWidth;
+      var rgb = COLORS[b];
+      // 2 particles per band per step = 4200 total (very manageable)
+      for (var p = 0; p < 2; p++) {
+        var jA = (sRand() - 0.5) * 8;
+        var jP = (sRand() - 0.5) * (bandWidth / COLORS.length) * 1.2;
+        pts.push({
+          x: pt.x + perpX * (bandOffset + jP) + jA * Math.cos(angle),
+          y: pt.y + perpY * (bandOffset + jP) + jA * Math.sin(angle),
+          r: rgb[0], g: rgb[1], b: rgb[2],
+          size: 1.5 + sRand() * 3,
+          alpha: 0.3 + sRand() * 0.5
+        });
+      }
+    }
+  }
+
+  // Layer 1: Soft glow (draw every 4th particle, big and blurry via globalAlpha)
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  for (var i = 0; i < pts.length; i += 4) {
+    var p = pts[i];
+    ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',0.4)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Layer 2: Medium dots
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  for (var i = 0; i < pts.length; i += 2) {
+    var p = pts[i];
+    ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',0.5)';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Layer 3: Sharp particles (all)
+  ctx.save();
+  for (var i = 0; i < pts.length; i++) {
+    var p = pts[i];
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = 'rgb(' + p.r + ',' + p.g + ',' + p.b + ')';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Sparkle highlights (a few white dots)
+  ctx.save();
+  ctx.fillStyle = '#fff';
+  for (var i = 0; i < pts.length; i += 12) {
+    var p = pts[i];
+    ctx.globalAlpha = 0.4 + sRand() * 0.5;
+    ctx.beginPath();
+    ctx.arc(p.x + (sRand()-0.5)*2, p.y + (sRand()-0.5)*2, 1 + sRand(), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+drawRainbow();
+</script>
+</body>
+</html>

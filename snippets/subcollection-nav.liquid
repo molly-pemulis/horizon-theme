@@ -120,6 +120,10 @@
     .collection-wrapper:has(.subcollection-sidebar) {
       grid-template-columns: 1fr;
     }
+    .collection-wrapper:has(.subcollection-sidebar) .main-collection-grid,
+    .collection-wrapper:has(.subcollection-sidebar) .pagination-wrapper {
+      grid-column: 1;
+    }
     .subcollection-sidebar {
       position: static;
       max-width: none;

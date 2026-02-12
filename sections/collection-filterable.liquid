@@ -37,8 +37,8 @@
 .pk{background:var(--c-bg);border:1px solid var(--c-bdr);border-radius:6px;overflow:hidden;transition:box-shadow .2s,transform .2s;position:relative}
 .pk:hover{box-shadow:var(--c-shad);transform:translateY(-2px)}.pk.so{opacity:.5}
 .pk__bdg{position:absolute;top:8px;left:8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:3px;z-index:2}
-.pk__bdg--so{background:#2c2c2c;color:#fff}.pk__bdg--sl{background:#c0392b;color:#fff}
-.pk__iw{aspect-ratio:1;overflow:hidden;background:#f5f4f0}
+.pk__bdg--so{background:#000;color:#fff}.pk__bdg--sl{background:#c0392b;color:#fff}
+.pk__iw{aspect-ratio:1;overflow:hidden;background:#fff}
 .pk__img{width:100%;height:100%;object-fit:cover;transition:transform .3s}.pk:hover .pk__img{transform:scale(1.03)}
 .pk__nfo{padding:10px 12px 14px}
 .pk__vnd{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--f-mut);margin-bottom:2px}
@@ -76,6 +76,15 @@
   .pf__pill{font-size:11px;padding:3px 8px}
 }
 @media(min-width:769px){.pf__mt{display:none}}
+
+/* Override theme backgrounds */
+.section-collection-filterable{background:transparent !important}
+.pk{background:#fff !important;border-color:#ddd !important}
+.pk__iw{background:#fff !important}
+.pf__pill{background:transparent !important;border-color:#000 !important;color:#000 !important}
+.pf__pill.on{background:#000 !important;color:#fff !important;border-color:#000 !important}
+.pf__pill:hover{background:#f0f0f0 !important}
+.pc{background:transparent !important}
 </style>
 
 <div class="pc" id="pemC">

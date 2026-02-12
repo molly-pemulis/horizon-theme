@@ -140,63 +140,142 @@
           imagesizes="(max-width: 768px) 45vw, 220px" fetchpriority="high">
       {%- endif -%}
 <div class="pg pg--ssr" id="pemSSR" itemscope itemtype="https://schema.org/ItemList">
-        {%- paginate collection.products by 250 -%}
-          {%- comment -%} PASS 1: In-stock products first {%- endcomment -%}
+          {%- paginate collection.products by 250 -%}
+          {%- assign card_index = 0 -%}
           {%- for product in collection.products -%}
             {%- unless product.available -%}{%- continue -%}{%- endunless -%}
-            <div class="pk{% unless product.available %} so{% endunless %}" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
-              <meta itemprop="position" content="{{ forloop.index }}">
-              {%- unless product.available -%}
-                <div class="pk__bdg pk__bdg--so">Sold out</div>
-              {%- endunless -%}
-              {%- if product.compare_at_price > product.price -%}
-                <div class="pk__bdg pk__bdg--sl">Sale</div>
+
+            {%- comment -%} COLOR EXPLOSION: Group variants by Color option, render one card per color {%- endcomment -%}
+            {%- assign has_color = false -%}
+            {%- assign seen_colors = '' -%}
+            {%- for option in product.options -%}
+              {%- if option == 'Color' -%}
+                {%- assign color_index = forloop.index0 -%}
+                {%- assign has_color = true -%}
+                {%- break -%}
               {%- endif -%}
-              <div class="pk__iw">
-                  {%- liquid
-                    assign card_image = product.featured_image
-                    for variant in product.variants
-                      if variant.available and variant.featured_image
-                        assign card_image = variant.featured_image
-                        break
-                      endif
-                    endfor
-                  -%}
+            {%- endfor -%}
+
+            {%- if has_color -%}
+              {%- for variant in product.variants -%}
+                {%- assign color_val = variant.options[color_index] -%}
+                {%- assign color_check = color_val | append: '|||' -%}
+                {%- if seen_colors contains color_check -%}{%- continue -%}{%- endif -%}
+                {%- assign seen_colors = seen_colors | append: color_check -%}
+
+                {%- comment -%} Check if ANY variant of this color is available {%- endcomment -%}
+                {%- assign color_available = false -%}
+                {%- assign color_image = nil -%}
+                {%- assign color_price = nil -%}
+                {%- assign color_compare = nil -%}
+                {%- for v in product.variants -%}
+                  {%- if v.options[color_index] == color_val -%}
+                    {%- if v.available -%}{%- assign color_available = true -%}{%- endif -%}
+                    {%- if color_image == nil and v.featured_image -%}
+                      {%- assign color_image = v.featured_image -%}
+                    {%- endif -%}
+                    {%- if color_price == nil -%}
+                      {%- assign color_price = v.price -%}
+                      {%- assign color_compare = v.compare_at_price -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- unless color_available -%}{%- continue -%}{%- endunless -%}
+
+                {%- assign card_index = card_index | plus: 1 -%}
+                {%- if color_image == nil -%}{%- assign color_image = product.featured_image -%}{%- endif -%}
+
+                <div class="pk" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+                  <meta itemprop="position" content="{{ card_index }}">
+                  {%- if color_compare and color_compare > color_price -%}
+                    <div class="pk__bdg pk__bdg--sl">Sale</div>
+                  {%- endif -%}
+                  <div class="pk__iw">
+                    {%- if color_image -%}
+                      <img class="pk__img"
+                        src="{{ color_image | image_url: width: 400 }}"
+                        srcset="{{ color_image | image_url: width: 200 }} 200w, {{ color_image | image_url: width: 300 }} 300w, {{ color_image | image_url: width: 400 }} 400w"
+                        sizes="(max-width: 768px) 45vw, 220px"
+                        alt="{{ color_image.alt | default: product.title | escape }}"
+                        loading="{% if card_index <= 2 %}eager{% else %}lazy{% endif %}"
+                        fetchpriority="{% if card_index == 1 %}high{% else %}auto{% endif %}"
+                        width="{{ color_image.width }}" height="{{ color_image.height }}">
+                    {%- else -%}
+                      <div class="pk__img" style="width:100%;height:100%;background:#f0f0f0"></div>
+                    {%- endif -%}
+                  </div>
+                  {%- if color_image -%}
+                    <link itemprop="image" href="{{ color_image | image_url: width: 400 }}">
+                  {%- endif -%}
+                  <div class="pk__nfo">
+                    <div class="pk__vnd" itemprop="brand" itemscope itemtype="https://schema.org/Brand"><span itemprop="name">{{ product.vendor }}</span></div>
+                    <div class="pk__ttl"><a href="{{ product.url }}?variant={{ variant.id }}" itemprop="url"><span itemprop="name">{{ product.title }} — {{ color_val }}</span></a></div>
+                    <div class="pk__prc" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                      <meta itemprop="priceCurrency" content="{{ shop.currency }}">
+                      <meta itemprop="price" content="{{ color_price | money_without_currency | remove: ',' }}">
+                      <link itemprop="availability" href="https://schema.org/InStock">
+                      {{ color_price | money }}
+                      {%- if color_compare and color_compare > color_price -%}
+                        <span class="pk__cmp">{{ color_compare | money }}</span>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </div>
+              {%- endfor -%}
+
+            {%- else -%}
+              {%- comment -%} No Color option — render single card {%- endcomment -%}
+              {%- assign card_index = card_index | plus: 1 -%}
+              {%- assign card_image = product.featured_image -%}
+              {%- for variant in product.variants -%}
+                {%- if variant.available and variant.featured_image -%}
+                  {%- assign card_image = variant.featured_image -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+
+              <div class="pk" itemprop="itemListElement" itemscope itemtype="https://schema.org/Product">
+                <meta itemprop="position" content="{{ card_index }}">
+                {%- if product.compare_at_price > product.price -%}
+                  <div class="pk__bdg pk__bdg--sl">Sale</div>
+                {%- endif -%}
+                <div class="pk__iw">
                   {%- if card_image -%}
                     <img class="pk__img"
                       src="{{ card_image | image_url: width: 400 }}"
                       srcset="{{ card_image | image_url: width: 200 }} 200w, {{ card_image | image_url: width: 300 }} 300w, {{ card_image | image_url: width: 400 }} 400w"
                       sizes="(max-width: 768px) 45vw, 220px"
                       alt="{{ card_image.alt | escape }}"
-                      loading="{% if forloop.index <= 2 %}eager{% else %}lazy{% endif %}"
-                      fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+                      loading="{% if card_index <= 2 %}eager{% else %}lazy{% endif %}"
+                      fetchpriority="{% if card_index == 1 %}high{% else %}auto{% endif %}"
                       width="{{ card_image.width }}" height="{{ card_image.height }}">
                   {%- else -%}
                     <div class="pk__img" style="width:100%;height:100%;background:#f0f0f0"></div>
                   {%- endif -%}
-              </div>
-              {%- if product.featured_image -%}
-                <link itemprop="image" href="{{ product.featured_image | image_url: width: 400 }}">
-              {%- endif -%}
-              <div class="pk__nfo">
-                <div class="pk__vnd" itemprop="brand" itemscope itemtype="https://schema.org/Brand"><span itemprop="name">{{ product.vendor }}</span></div>
-                <div class="pk__ttl"><a href="{{ product.url }}" itemprop="url"><span itemprop="name">{{ product.title }}</span></a></div>
-                <div class="pk__prc" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                  <meta itemprop="priceCurrency" content="{{ shop.currency }}">
-                  <meta itemprop="price" content="{{ product.price | money_without_currency | remove: ',' }}">
-                  <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
-                  {{ product.price | money }}
-                  {%- if product.compare_at_price > product.price -%}
-                    <span class="pk__cmp">{{ product.compare_at_price | money }}</span>
+                </div>
+                {%- if product.featured_image -%}
+                  <link itemprop="image" href="{{ product.featured_image | image_url: width: 400 }}">
+                {%- endif -%}
+                <div class="pk__nfo">
+                  <div class="pk__vnd" itemprop="brand" itemscope itemtype="https://schema.org/Brand"><span itemprop="name">{{ product.vendor }}</span></div>
+                  <div class="pk__ttl"><a href="{{ product.url }}" itemprop="url"><span itemprop="name">{{ product.title }}</span></a></div>
+                  <div class="pk__prc" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                    <meta itemprop="priceCurrency" content="{{ shop.currency }}">
+                    <meta itemprop="price" content="{{ product.price | money_without_currency | remove: ',' }}">
+                    <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+                    {{ product.price | money }}
+                    {%- if product.compare_at_price > product.price -%}
+                      <span class="pk__cmp">{{ product.compare_at_price | money }}</span>
+                    {%- endif -%}
+                  </div>
+                  {%- if product.variants.size > 1 -%}
+                    <div class="pk__var">{{ product.variants.size }} variants</div>
                   {%- endif -%}
                 </div>
-                {%- if product.variants.size > 1 -%}
-                  <div class="pk__var">{{ product.variants.size }} variants</div>
-                {%- endif -%}
               </div>
-            </div>
+            {%- endif -%}
           {%- endfor -%}
-          {%- comment -%} Sold-out products hidden from SSR — toggle "Show sold out" to see via JS grid {%- endcomment -%}
         {%- endpaginate -%}
       </div>
 

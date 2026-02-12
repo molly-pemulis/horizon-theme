@@ -422,6 +422,8 @@ function buildFilters(prods){
 function renderFilters(fc){
   var c=document.getElementById('pemFG');c.innerHTML='';
   fc.forEach(function(f){
+    /* Store size range map globally for matches() to use */
+    if(f.isRange&&f.rangeMap)window.__sizeRanges=f.rangeMap;
     var g=document.createElement('div');g.className='pf__grp';
     var lb=document.createElement('div');lb.className='pf__lbl';lb.textContent=f.label;
     var opts=document.createElement('div');opts.className='pf__opts';

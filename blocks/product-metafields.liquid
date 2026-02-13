@@ -1,8 +1,8 @@
 {% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
-  Generated: 2026-02-13 14:01 UTC
-  Regular fields: 34
+  Generated: 2026-02-13 15:40 UTC
+  Regular fields: 35
   Metaobject types: country_of_origin, fin_characteristics
   Namespaces: custom, gato_heroi, reviews, descriptors
 
@@ -320,6 +320,12 @@
       <div class="product-metafields__item">
         <dt class="product-metafields__label">Recommended Fins</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.recommended_fins.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.promotion_id.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Promotion ID</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.promotion_id.value }}</dd>
       </div>
     {% endif %}
   </dl>

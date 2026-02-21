@@ -1,8 +1,8 @@
 {% comment %}
   PRODUCT METAFIELDS - AUTO-GENERATED
   ====================================
-  Generated: 2026-02-21 01:51 UTC
-  Regular fields: 36
+  Generated: 2026-02-21 04:05 UTC
+  Regular fields: 40
   Metaobject types: country_of_origin, fin_characteristics
   Namespaces: custom, gato_heroi, reviews, descriptors
 
@@ -332,6 +332,30 @@
       <div class="product-metafields__item">
         <dt class="product-metafields__label">Eyewear Fit</dt>
         <dd class="product-metafields__value">{{ product.metafields.custom.eyewear_fit.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.supplementary_images.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Supplementary Images</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.supplementary_images.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.spec_sheet.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Spec Sheet</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.spec_sheet.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.product_recommendations.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Product Recommendations</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.product_recommendations.value }}</dd>
+      </div>
+    {% endif %}
+    {% if product.metafields.custom.related_blog_posts.value != blank %}
+      <div class="product-metafields__item">
+        <dt class="product-metafields__label">Related Blog Posts</dt>
+        <dd class="product-metafields__value">{{ product.metafields.custom.related_blog_posts.value }}</dd>
       </div>
     {% endif %}
   </dl>
